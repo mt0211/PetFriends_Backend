@@ -15,7 +15,7 @@ public class Email
             string pass = "gghu bytj lrta vohe";
             MimeMessage message = new();
             message.From.Add(MailboxAddress.Parse(from));
-            message.Subject = "[SSB] " + Subject;
+            message.Subject = "[PetFriends] " + Subject;
             message.To.Add(MailboxAddress.Parse(toEmail));
             message.Body = new TextPart(MimeKit.Text.TextFormat.Html)
             {
