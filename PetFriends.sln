@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIGateWay", "APIGateWay\APIGateWay.csproj", "{CF6E3221-7312-4E0C-BB0C-9E1E7C99D905}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetFriendsUnitTest", "PetFriendsUnitTest\PetFriendsUnitTest.csproj", "{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{CF6E3221-7312-4E0C-BB0C-9E1E7C99D905}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF6E3221-7312-4E0C-BB0C-9E1E7C99D905}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF6E3221-7312-4E0C-BB0C-9E1E7C99D905}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
