@@ -1,3 +1,5 @@
+using DataAccess.Models;
+
 namespace DataAccess.Repositories;
 
     public interface IRepository<T> where T : class
@@ -9,6 +11,7 @@ namespace DataAccess.Repositories;
         Task AddRange(List<T> entities);
         Task DeleteRange(List<T> entities);
         Task UpdateRange(List<T> entities);
+       // Task<User> GetUserByID(Guid id);
     }
 
 

@@ -63,6 +63,15 @@ public class Repository<T> : IRepository<T> where T : class
         _entities.UpdateRange(entities);
         await context.SaveChangesAsync();
     }
+    //public async Task<User> GetUserByID(Guid id)
+    //{
+    //   var user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
+    //    if (user == null)
+    //    {
+    //        return null;
+    //    }
+    //    return user;
+    //}
 
 }
 
