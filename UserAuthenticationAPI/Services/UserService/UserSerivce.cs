@@ -35,7 +35,13 @@ public class UserService : IUserService
                 Result.Message = "Please verify your account";
                 return Result;
             }
-            else
+            else if (User.Role != "PARTNER")
+            {
+                Result.IsSuccess = false;
+                Result.Code = 401;
+                Result.Message = "Permission Denied";
+                return Result;
+            }else
             {
                 var Salt = User.Salt;
                 var PasswordStored = User.Password;
@@ -198,7 +204,7 @@ public class UserService : IUserService
             if (user == null)
             {
                 Result.IsSuccess = false;
-                Result.Code = 400;
+                Result.Code = 404;
                 Result.Message = "Not found";
                 return Result;
             }

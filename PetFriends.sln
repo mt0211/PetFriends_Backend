@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIGateWay", "APIGateWay\AP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetFriendsUnitTest", "PetFriendsUnitTest\PetFriendsUnitTest.csproj", "{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppointmentManagementAPI", "AppointmentManagementAPI\AppointmentManagementAPI.csproj", "{EAAD0DA6-FE73-43F2-8C8F-4114271E1DE5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAAD0DA6-FE73-43F2-8C8F-4114271E1DE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAAD0DA6-FE73-43F2-8C8F-4114271E1DE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAAD0DA6-FE73-43F2-8C8F-4114271E1DE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAAD0DA6-FE73-43F2-8C8F-4114271E1DE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
