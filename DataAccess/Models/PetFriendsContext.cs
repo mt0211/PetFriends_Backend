@@ -51,6 +51,12 @@ public partial class PetFriendsContext : DbContext
             entity.Property(e => e.CreatedAt).HasPrecision(6);
             entity.Property(e => e.EndAt).HasPrecision(6);
             entity.Property(e => e.StartAt).HasPrecision(6);
+            entity.Property(e => e.Status).HasMaxLength(10);
+
+            entity.HasOne(d => d.ClinicService).WithMany(p => p.Appointments)
+                .HasForeignKey(d => d.ClinicServiceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_appointment_Clinicservice");
 
             entity.HasOne(d => d.Pet).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.PetId)
@@ -71,6 +77,7 @@ public partial class PetFriendsContext : DbContext
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreateAt).HasPrecision(6);
+            entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Feedback>(entity =>

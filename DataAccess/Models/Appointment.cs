@@ -19,6 +19,12 @@ public partial class Appointment
 
     public DateTime? EndAt { get; set; }
 
+    public string? Status { get; set; }
+
+    public string? Note { get; set; }
+
+    public virtual Clinicservice ClinicService { get; set; } = null!;
+
     public virtual Pet Pet { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;
