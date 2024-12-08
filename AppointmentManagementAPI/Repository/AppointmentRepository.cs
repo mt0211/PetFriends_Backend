@@ -28,5 +28,7 @@ namespace AppointmentManagementAPI.Repository
                     Status = a.Status,
                 }).ToListAsync();
         }
+       
+       
     }
 }

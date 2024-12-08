@@ -10,4 +10,9 @@
         public string? ServiceType { get; set; }
         public string? Status { get; set; }
     }
+    public class AppointmentUpdateStatusModel
+    {
+        public Guid Id { get; set; }
+        public string? Status { get; set; }
+    }
 }

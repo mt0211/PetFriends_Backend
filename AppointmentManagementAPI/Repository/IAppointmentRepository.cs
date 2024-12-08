@@ -1,6 +1,9 @@
-﻿namespace AppointmentManagementAPI.Repository
+﻿using DataAccess.Models;
+using DataAccess.Repositories;
+
+namespace AppointmentManagementAPI.Repository
 {
-    public interface IAppointmentRepository
+    public interface IAppointmentRepository : IRepository<Appointment>
     {
         Task<IEnumerable<dynamic>> GetAllApointment();
     }

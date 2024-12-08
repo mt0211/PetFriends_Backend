@@ -2,6 +2,8 @@
 using AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs;
 using AppointmentManagementAPI.Repository;
 using AppointmentManagementAPI.Utilities;
+using DataAccess.Models;
+using MySqlX.XDevAPI.Common;
 
 namespace AppointmentManagementAPI.Services
 {
@@ -61,6 +63,34 @@ namespace AppointmentManagementAPI.Services
                     : ex.Message + "\n" + ex.StackTrace;
             }
             return result;
+        }
+
+        public async Task<ResultModel> UpdateAppointmentStatus(AppointmentUpdateStatusModel appointmentstatusmodel)
+        {
+            ResultModel Result = new();
+            try
+            {
+                var appointment = await _appointmentrepository.Get(appointmentstatusmodel.Id);
+                if (appointment == null) {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "Not found";
+                    return Result;
+                }
+                appointment.Status = appointmentstatusmodel.Status;
+                _ = await _appointmentrepository.Update(appointment);
+                Result.IsSuccess = true;
+                Result.Data = appointment;
+                Result.Code = 200;
+                Result.Message = "Appointment updated successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 500; // Internal Server Error
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return Result;
         }
     }
 }
