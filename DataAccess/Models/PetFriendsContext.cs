@@ -37,7 +37,7 @@ public partial class PetFriendsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=tcp:petfriends.database.windows.net,1433;Initial Catalog=PetFriends;Persist Security Info=False;User ID=admin123;Password=Admin@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=240;");
+        => optionsBuilder.UseSqlServer("Server=103.75.180.192,1433;Database=petfriends;User Id=sa;Password=admin@123;Encrypt=False;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
