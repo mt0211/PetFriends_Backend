@@ -30,11 +30,4 @@
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="Controllers\" />
-    <Folder Include="Repository\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>
