@@ -281,18 +281,27 @@ public class UserService : IUserService
         {
             var user = await _userRepository.Get(userId);
 
-            if (user == null)
-            {
-                result.IsSuccess = false;
-                result.Code = 404; // Not Found
-                result.Message = "User not found";
-                return result;
-            }
+            //if (user == null)
+            //{
+            //    result.IsSuccess = false;
+            //    result.Code = 404; // Not Found
+            //    result.Message = "User not found";
+            //    return result;
+            //}
 
             // Verify the old password
             var oldPasswordHash = user.Password;
             var oldPasswordSalt = user.Salt;
             var isOldPasswordValid = Encoder.VerifyPasswordHashed(changePasswordModel.OldPassword, oldPasswordSalt, oldPasswordHash);
+
+            if (changePasswordModel.OldPassword == changePasswordModel.NewPassword)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "You have entered the old password, please enter the new password!";
+                return result;
+            }
+
 
             if (!isOldPasswordValid)
             {
@@ -301,6 +310,7 @@ public class UserService : IUserService
                 result.Message = "Old password is incorrect";
                 return result;
             }
+           
 
             // Generate new password hash and salt
             var newPasswordHashModel = Encoder.CreateHashPassword(changePasswordModel.NewPassword);

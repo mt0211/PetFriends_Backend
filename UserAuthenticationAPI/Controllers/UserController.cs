@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using UserAuthenticationAPI.Services;
 using UserAuthenticationAPI.DTOs.ResultModel;
 using UserAuthenticationAPI.DTOs.UserDTOs;
@@ -25,6 +25,7 @@ namespace UserAuthenticationAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> CreateUser([FromBody] UserReqModel Form)
         {
+            
             ResultModel result = await _userService.CreateAccount(Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
