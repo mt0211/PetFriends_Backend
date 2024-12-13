@@ -27,13 +27,13 @@ namespace PetManagementAPI.Services
             try
             {
                 var pets = await _petRepository.GetAllPets();
-                if (pets == null || !pets.Any())
-                {
-                    result.IsSuccess = false;
-                    result.Code = 404;
-                    result.Message = "Not found pet";
-                    return result;
-                }
+                //if (pets == null || !pets.Any())
+                //{
+                //    result.IsSuccess = false;
+                //    result.Code = 404;
+                //    result.Message = "Not found pet";
+                //    return result;
+                //}
                 if (page == 0)
                 {
                     page = 1;
@@ -186,13 +186,13 @@ namespace PetManagementAPI.Services
             try
             {
                 var pet = await _petRepository.GetPetById(guid);
-                if (pet == null)
-                {
-                    result.IsSuccess = false;
-                    result.Code = 404;
-                    result.Message = "Not found";
-                    return result;
-                }
+                //if (pet == null)
+                //{
+                //    result.IsSuccess = false;
+                //    result.Code = 404;
+                //    result.Message = "Not found";
+                //    return result;
+                //}
                 var petDetail =  new PetModel
                 {
                     Id = pet.Id,
@@ -239,13 +239,13 @@ namespace PetManagementAPI.Services
             try
             {
                 var pet = await _petRepository.GetPetById(petId);
-                if (pet == null)
-                {
-                    result.IsSuccess = false;
-                    result.Code = 404; // Not found
-                    result.Message = "Pet not found.";
-                    return result;
-                }
+                //if (pet == null)
+                //{
+                //    result.IsSuccess = false;
+                //    result.Code = 404; // Not found
+                //    result.Message = "Pet not found.";
+                //    return result;
+                //}
 
                 // Xóa Pet và các bản ghi liên quan trong PetVaccine
                 await _petRepository.DeletePetWithVaccinesAsync(petId);
@@ -273,13 +273,13 @@ namespace PetManagementAPI.Services
             try
             {
                 var pet = await _petRepository.GetPetByUpdate(petDto.Id);
-                if (pet == null)
-                {
-                    result.IsSuccess = false;
-                    result.Code = 404;
-                    result.Message = "Pet not found.";
-                    return result;
-                }
+                //if (pet == null)
+                //{
+                //    result.IsSuccess = false;
+                //    result.Code = 404;
+                //    result.Message = "Pet not found.";
+                //    return result;
+                //}
 
                 // Nếu có số điện thoại, tìm User liên kết
                 if (!string.IsNullOrEmpty(petDto.PhoneNumber))

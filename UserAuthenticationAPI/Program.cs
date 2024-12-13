@@ -78,6 +78,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key is not configured.")))
         };
     });
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(80);
+    serverOptions.ListenAnyIP(3000);
+});
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<VerifyService>();
@@ -89,11 +94,7 @@ builder.Services.AddTransient<IOtpRepository, OtpRepository>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
 
 app.UseSwagger();
 app.UseSwaggerUI();
