@@ -61,7 +61,7 @@ builder.Services.AddCors(options =>
                    .AllowAnyMethod();
         });
 });
-builder.Services.AddDbContext<PetFriendsContext>(option =>
+builder.Services.AddDbContext<PetfriendsContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking),
     ServiceLifetime.Transient);
@@ -79,11 +79,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+<<<<<<< HEAD
 //builder.WebHost.ConfigureKestrel(serverOptions =>
 //{
 //    serverOptions.ListenAnyIP(80);
 //    serverOptions.ListenAnyIP(3000);
 //});
+=======
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(80);
+    serverOptions.ListenAnyIP(3000);
+});
+>>>>>>> thong
 
 //Register Dependency Injection here:
 ///////////////////////

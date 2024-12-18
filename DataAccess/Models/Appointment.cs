@@ -7,9 +7,9 @@ public partial class Appointment
 {
     public Guid Id { get; set; }
 
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
-    public Guid PetId { get; set; }
+    public Guid? PetId { get; set; }
 
     public Guid ClinicServiceId { get; set; }
 
@@ -23,9 +23,17 @@ public partial class Appointment
 
     public string? Note { get; set; }
 
-    public virtual Clinicservice ClinicService { get; set; } = null!;
+    public Guid? GuestUserId { get; set; }
 
-    public virtual Pet Pet { get; set; } = null!;
+    public Guid? GuestPetId { get; set; }
 
-    public virtual User User { get; set; } = null!;
+    public virtual ClinicService ClinicService { get; set; } = null!;
+
+    public virtual GuestPet? GuestPet { get; set; }
+
+    public virtual GuestUser? GuestUser { get; set; }
+
+    public virtual Pet? Pet { get; set; }
+
+    public virtual User? User { get; set; }
 }
