@@ -36,8 +36,7 @@
 			<HintPath>..\lib\DataAccess.dll</HintPath>
 		</Reference>
 	</ItemGroup>
-<<<<<<< HEAD
-=======
+
 
 	<ItemGroup>
 		<None Update="TemplateEmail\ConfirmAppointment.html">
@@ -51,6 +50,5 @@
 		</None>
 
 	</ItemGroup>
->>>>>>> thong
 
 </Project>
