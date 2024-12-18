@@ -61,7 +61,7 @@ builder.Services.AddCors(options =>
                    .AllowAnyMethod();
         });
 });
-builder.Services.AddDbContext<PetFriendsContext>(option =>
+builder.Services.AddDbContext<PetfriendsContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking),
     ServiceLifetime.Transient);

@@ -9,29 +9,23 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 builder.Services.AddOcelot(builder.Configuration);
-builder.Services.AddCors(options =>
+builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    options.AddDefaultPolicy(builder =>
-    {
-        builder.WithOrigins("http://localhost:3000")
-             .AllowAnyHeader()
-             .AllowAnyMethod();
-    });
+    serverOptions.ListenAnyIP(80);
+    serverOptions.ListenAnyIP(3000);
 });
-
 var app = builder.Build();
-app.UseSwagger();
-app.UseSwaggerUI();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseHttpsRedirection();
-app.UseCors();
-app.UseOcelot().Wait();
+
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -49,12 +43,15 @@ app.MapGet("/weatherforecast", () =>
         .ToArray();
     return forecast;
 })
+
+
+
 .WithName("GetWeatherForecast")
 .WithOpenApi();
-
+app.UseOcelot().Wait();
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }

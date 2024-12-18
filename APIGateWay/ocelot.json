@@ -2,11 +2,11 @@
   "Routes": [
     {
       "DownstreamPathTemplate": "/api/user/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "userauthenticationapi20241019141632.azurewebsites.net",
-          "Port": 443
+          "Host": "103.75.180.192",
+          "Port": 5000
         }
       ],
       "UpstreamPathTemplate": "/apigateway/user/{everything}",
@@ -14,11 +14,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/pet/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "petmanagementapi20241202151735.azurewebsites.net",
-          "Port": 443
+          "Host": "103.75.180.192",
+          "Port": 5002
         }
       ],
       "UpstreamPathTemplate": "/apigateway/pet/{everything}",
@@ -26,18 +26,15 @@
     },
     {
       "DownstreamPathTemplate": "/api/appointment/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "appointmentmanagementapi20241208032702.azurewebsites.net",
-          "Port": 443
+          "Host": "103.75.180.192",
+          "Port": 5004
         }
       ],
       "UpstreamPathTemplate": "/apigateway/appointment/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
-  ],
-  "GlobalConfiguration": {
-    "BaseUrl": "https://apigatewaypetfriends.azurewebsites.net" // URL chính của API Gateway sau deploy
-  }
+  ]
 }

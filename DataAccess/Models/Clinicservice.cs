@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DataAccess.Models;
 
-public partial class Clinicservice
+public partial class ClinicService
 {
     public Guid Id { get; set; }
 
