@@ -79,6 +79,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+//builder.WebHost.ConfigureKestrel(serverOptions =>
+//{
+//    serverOptions.ListenAnyIP(80);
+//    serverOptions.ListenAnyIP(3000);
+//});
+
 //Register Dependency Injection here:
 ///////////////////////
 builder.Services.AddScoped<PetService>();

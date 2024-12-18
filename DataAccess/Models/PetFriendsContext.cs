@@ -4,24 +4,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Models;
 
-public partial class PetFriendsContext : DbContext
+public partial class PetfriendsContext : DbContext
 {
-    public PetFriendsContext()
+    public PetfriendsContext()
     {
     }
 
-    public PetFriendsContext(DbContextOptions<PetFriendsContext> options)
+    public PetfriendsContext(DbContextOptions<PetfriendsContext> options)
         : base(options)
     {
     }
 
     public virtual DbSet<Appointment> Appointments { get; set; }
 
-    public virtual DbSet<Clinicservice> Clinicservices { get; set; }
+    public virtual DbSet<ClinicService> ClinicServices { get; set; }
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
     public virtual DbSet<ForumPost> ForumPosts { get; set; }
+
+    public virtual DbSet<GuestPet> GuestPets { get; set; }
+
+    public virtual DbSet<GuestUser> GuestUsers { get; set; }
 
     public virtual DbSet<OtpVerify> OtpVerifies { get; set; }
 
@@ -37,82 +41,127 @@ public partial class PetFriendsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=103.75.180.192,1433;Database=petfriends;User Id=sa;Password=admin@123;Encrypt=False;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=103.75.180.192,1433;Database=petfriends;User Id=sa;Password=Admin@123;Encrypt=False;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Appointment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_appointment");
+            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC07F56F5CE9");
 
             entity.ToTable("Appointment");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.CreatedAt).HasPrecision(6);
-            entity.Property(e => e.EndAt).HasPrecision(6);
-            entity.Property(e => e.StartAt).HasPrecision(6);
-            entity.Property(e => e.Status).HasMaxLength(10);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.EndAt).HasColumnType("datetime");
+            entity.Property(e => e.StartAt).HasColumnType("datetime");
+            entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.ClinicService).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.ClinicServiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_appointment_Clinicservice");
+                .HasConstraintName("FK__Appointme__Clini__5BE2A6F2");
+
+            entity.HasOne(d => d.GuestPet).WithMany(p => p.Appointments)
+                .HasForeignKey(d => d.GuestPetId)
+                .HasConstraintName("FK_Appointment_GuestPetId");
+
+            entity.HasOne(d => d.GuestUser).WithMany(p => p.Appointments)
+                .HasForeignKey(d => d.GuestUserId)
+                .HasConstraintName("FK_Appointment_GuestUserId");
 
             entity.HasOne(d => d.Pet).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.PetId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_appointment_Pet");
+                .HasConstraintName("FK__Appointme__PetId__5CD6CB2B");
 
             entity.HasOne(d => d.User).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_appointment_User");
+                .HasConstraintName("FK__Appointme__UserI__5DCAEF64");
         });
 
-        modelBuilder.Entity<Clinicservice>(entity =>
+        modelBuilder.Entity<ClinicService>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_clinicservice");
+            entity.HasKey(e => e.Id).HasName("PK__ClinicSe__3214EC07C764AC58");
 
-            entity.ToTable("Clinicservice");
+            entity.ToTable("ClinicService");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.CreateAt).HasPrecision(6);
-            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.Name).HasMaxLength(255);
         });
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_feedback");
+            entity.HasKey(e => e.Id).HasName("PK__Feedback__3214EC07E870925F");
 
             entity.ToTable("Feedback");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.CreatedAt).HasPrecision(6);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.User).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_feedback_User");
+                .HasConstraintName("FK__Feedback__UserId__5EBF139D");
         });
 
         modelBuilder.Entity<ForumPost>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PK__ForumPos__3214EC07C36E4CE7");
+
             entity.ToTable("ForumPost");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.CreatedAt).HasPrecision(6);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.User).WithMany(p => p.ForumPosts)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK_ForumPost_User");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ForumPost__UserI__5FB337D6");
+        });
+
+        modelBuilder.Entity<GuestPet>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__GuestPet__3214EC077E3B1122");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Gender).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Species).HasMaxLength(50);
+
+            entity.HasOne(d => d.GuestUser).WithMany(p => p.GuestPets)
+                .HasForeignKey(d => d.GuestUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__GuestPets__Guest__74AE54BC");
+        });
+
+        modelBuilder.Entity<GuestUser>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__GuestUse__3214EC073D2A39DE");
+
+            entity.HasIndex(e => e.PhoneNumber, "UQ__GuestUse__85FB4E380230435F").IsUnique();
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Address).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(15);
         });
 
         modelBuilder.Entity<OtpVerify>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PK__OtpVerif__3214EC0701A83075");
+
             entity.ToTable("OtpVerify");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasPrecision(6);
             entity.Property(e => e.ExpiredAt).HasPrecision(6);
             entity.Property(e => e.OtpCode).HasMaxLength(50);
@@ -120,92 +169,89 @@ public partial class PetFriendsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.OtpVerifies)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OtpVerify_User");
+                .HasConstraintName("FK__OtpVerify__UserI__60A75C0F");
         });
 
         modelBuilder.Entity<Pet>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Pet__3214EC07A2E4DD17");
+            entity.HasKey(e => e.Id).HasName("PK__Pet__3214EC07A97A3E50");
 
             entity.ToTable("Pet");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Breed).HasMaxLength(50);
-            entity.Property(e => e.DateOfBirth).HasPrecision(6);
-            entity.Property(e => e.Description).HasMaxLength(250);
+            entity.Property(e => e.DateOfBirth).HasColumnType("datetime");
             entity.Property(e => e.Gender).HasMaxLength(50);
-            entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(255);
             entity.Property(e => e.Species).HasMaxLength(50);
             entity.Property(e => e.UserPhoneNumber).HasMaxLength(50);
-            entity.Property(e => e.Weight).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.Weight).HasColumnType("decimal(10, 2)");
 
             entity.HasOne(d => d.User).WithMany(p => p.Pets)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK_Pet_UserId");
+                .HasConstraintName("FK__Pet__UserId__619B8048");
         });
 
         modelBuilder.Entity<PetVaccine>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PetVacci__3214EC071628EA17");
+            entity.HasKey(e => e.Id).HasName("PK__PetVacci__3214EC0701F0144E");
 
             entity.ToTable("PetVaccine");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.DateGiven).HasPrecision(6);
-            entity.Property(e => e.Notes).HasMaxLength(250);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.DateGiven).HasColumnType("datetime");
 
             entity.HasOne(d => d.Pet).WithMany(p => p.PetVaccines)
                 .HasForeignKey(d => d.PetId)
-                .HasConstraintName("FK_PetVaccine_Pet");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PetVaccin__PetId__628FA481");
 
             entity.HasOne(d => d.Vaccine).WithMany(p => p.PetVaccines)
                 .HasForeignKey(d => d.VaccineId)
-                .HasConstraintName("FK_PetVaccine_Vaccine");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PetVaccin__Vacci__6383C8BA");
         });
 
         modelBuilder.Entity<Promotion>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_promotion");
+            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC071344B554");
 
             entity.ToTable("Promotion");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.DiscountRate).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.EndDate).HasPrecision(6);
-            entity.Property(e => e.IsActive).HasDefaultValue((byte)1);
-            entity.Property(e => e.StartDate).HasPrecision(6);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.DiscountRate).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.EndDate).HasColumnType("datetime");
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PK__User__3214EC07B0AB6E81");
+
             entity.ToTable("User");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Address).HasMaxLength(50);
-            entity.Property(e => e.AvatarUrl).HasMaxLength(250);
-            entity.Property(e => e.CreatedAt).HasPrecision(6);
-            entity.Property(e => e.Dob)
-                .HasPrecision(6)
-                .HasColumnName("DOB");
-            entity.Property(e => e.Email).HasMaxLength(50);
-            entity.Property(e => e.FullName).HasMaxLength(50);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Address).HasMaxLength(255);
+            entity.Property(e => e.AvatarUrl).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.Dob).HasColumnType("datetime");
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.FullName).HasMaxLength(255);
             entity.Property(e => e.Gender).HasMaxLength(50);
-            entity.Property(e => e.LastLoggedIn).HasPrecision(6);
-            entity.Property(e => e.Password).HasMaxLength(512);
+            entity.Property(e => e.LastLoggedIn).HasColumnType("datetime");
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.Role).HasMaxLength(50);
-            entity.Property(e => e.Salt).HasMaxLength(512);
             entity.Property(e => e.Status).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Vaccine>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Vaccine__3214EC07886CE678");
+            entity.HasKey(e => e.Id).HasName("PK__Vaccine__3214EC07041DE512");
 
             entity.ToTable("Vaccine");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(255);
         });
 
         OnModelCreatingPartial(modelBuilder);

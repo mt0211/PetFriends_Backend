@@ -13,5 +13,5 @@ public partial class Promotion
 
     public DateTime? EndDate { get; set; }
 
-    public byte IsActive { get; set; }
+    public bool IsActive { get; set; }
 }
