@@ -17,6 +17,10 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<Appointment> Appointments { get; set; }
 
+    public virtual DbSet<AppointmentClinicService> AppointmentClinicServices { get; set; }
+
+    public virtual DbSet<Category> Categories { get; set; }
+
     public virtual DbSet<ClinicService> ClinicServices { get; set; }
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
@@ -47,7 +51,7 @@ public partial class PetfriendsContext : DbContext
     {
         modelBuilder.Entity<Appointment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC07F56F5CE9");
+            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC07DB5DA627");
 
             entity.ToTable("Appointment");
 
@@ -56,11 +60,6 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.EndAt).HasColumnType("datetime");
             entity.Property(e => e.StartAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasMaxLength(50);
-
-            entity.HasOne(d => d.ClinicService).WithMany(p => p.Appointments)
-                .HasForeignKey(d => d.ClinicServiceId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Appointme__Clini__5BE2A6F2");
 
             entity.HasOne(d => d.GuestPet).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.GuestPetId)
@@ -72,27 +71,65 @@ public partial class PetfriendsContext : DbContext
 
             entity.HasOne(d => d.Pet).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.PetId)
-                .HasConstraintName("FK__Appointme__PetId__5CD6CB2B");
+                .HasConstraintName("FK__Appointme__PetId__7D439ABD");
 
             entity.HasOne(d => d.User).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Appointme__UserI__5DCAEF64");
+                .HasConstraintName("FK__Appointme__UserI__7E37BEF6");
+        });
+
+        modelBuilder.Entity<AppointmentClinicService>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC0743306B69");
+
+            entity.ToTable("AppointmentClinicService");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.DateGiven).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Appointment).WithMany(p => p.AppointmentClinicServices)
+                .HasForeignKey(d => d.AppointmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Appointme__Appoi__114A936A");
+
+            entity.HasOne(d => d.ClinicService).WithMany(p => p.AppointmentClinicServices)
+                .HasForeignKey(d => d.ClinicServiceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Appointme__Clini__123EB7A3");
+        });
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC071D2BA653");
+
+            entity.ToTable("Category");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Name).HasMaxLength(255);
         });
 
         modelBuilder.Entity<ClinicService>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ClinicSe__3214EC07C764AC58");
+            entity.HasKey(e => e.Id).HasName("PK__ClinicSe__3214EC072F6208C0");
 
             entity.ToTable("ClinicService");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.EstimateTime).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.Price).HasColumnType("decimal(12, 2)");
+            entity.Property(e => e.Status).HasMaxLength(50);
+
+            entity.HasOne(d => d.CategoryNavigation).WithMany(p => p.ClinicServices)
+                .HasForeignKey(d => d.Category)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_ClinicService_Category");
         });
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Feedback__3214EC07E870925F");
+            entity.HasKey(e => e.Id).HasName("PK__Feedback__3214EC071EDB6BC2");
 
             entity.ToTable("Feedback");
 
@@ -102,12 +139,12 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Feedback__UserId__5EBF139D");
+                .HasConstraintName("FK__Feedback__UserId__6754599E");
         });
 
         modelBuilder.Entity<ForumPost>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ForumPos__3214EC07C36E4CE7");
+            entity.HasKey(e => e.Id).HasName("PK__ForumPos__3214EC07B8519389");
 
             entity.ToTable("ForumPost");
 
@@ -118,32 +155,32 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.ForumPosts)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ForumPost__UserI__5FB337D6");
+                .HasConstraintName("FK__ForumPost__UserI__68487DD7");
         });
 
         modelBuilder.Entity<GuestPet>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__GuestPet__3214EC077E3B1122");
+            entity.HasKey(e => e.Id).HasName("PK__GuestPet__3214EC075CA90B40");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.DateOfBirth).HasColumnType("datetime");
             entity.Property(e => e.Gender).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Species).HasMaxLength(50);
 
             entity.HasOne(d => d.GuestUser).WithMany(p => p.GuestPets)
                 .HasForeignKey(d => d.GuestUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__GuestPets__Guest__74AE54BC");
+                .HasConstraintName("FK_GuestPets_GuestUsers");
         });
 
         modelBuilder.Entity<GuestUser>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__GuestUse__3214EC073D2A39DE");
+            entity.HasKey(e => e.Id).HasName("PK__GuestUse__3214EC072E091C34");
 
-            entity.HasIndex(e => e.PhoneNumber, "UQ__GuestUse__85FB4E380230435F").IsUnique();
+            entity.HasIndex(e => e.PhoneNumber, "UQ__GuestUse__85FB4E3809B0CA6E").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(255);
@@ -157,7 +194,7 @@ public partial class PetfriendsContext : DbContext
 
         modelBuilder.Entity<OtpVerify>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OtpVerif__3214EC0701A83075");
+            entity.HasKey(e => e.Id).HasName("PK__OtpVerif__3214EC077A4649AE");
 
             entity.ToTable("OtpVerify");
 
@@ -169,12 +206,12 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.OtpVerifies)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__OtpVerify__UserI__60A75C0F");
+                .HasConstraintName("FK__OtpVerify__UserI__6A30C649");
         });
 
         modelBuilder.Entity<Pet>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Pet__3214EC07A97A3E50");
+            entity.HasKey(e => e.Id).HasName("PK__Pet__3214EC07252B8EDC");
 
             entity.ToTable("Pet");
 
@@ -189,12 +226,12 @@ public partial class PetfriendsContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Pets)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK__Pet__UserId__619B8048");
+                .HasConstraintName("FK__Pet__UserId__6B24EA82");
         });
 
         modelBuilder.Entity<PetVaccine>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PetVacci__3214EC0701F0144E");
+            entity.HasKey(e => e.Id).HasName("PK__PetVacci__3214EC0757BB1F16");
 
             entity.ToTable("PetVaccine");
 
@@ -204,17 +241,17 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.Pet).WithMany(p => p.PetVaccines)
                 .HasForeignKey(d => d.PetId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PetVaccin__PetId__628FA481");
+                .HasConstraintName("FK__PetVaccin__PetId__6C190EBB");
 
             entity.HasOne(d => d.Vaccine).WithMany(p => p.PetVaccines)
                 .HasForeignKey(d => d.VaccineId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PetVaccin__Vacci__6383C8BA");
+                .HasConstraintName("FK__PetVaccin__Vacci__6D0D32F4");
         });
 
         modelBuilder.Entity<Promotion>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC071344B554");
+            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC07BFAFAB00");
 
             entity.ToTable("Promotion");
 
@@ -226,7 +263,7 @@ public partial class PetfriendsContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User__3214EC07B0AB6E81");
+            entity.HasKey(e => e.Id).HasName("PK__User__3214EC07AC849BC5");
 
             entity.ToTable("User");
 
@@ -246,7 +283,7 @@ public partial class PetfriendsContext : DbContext
 
         modelBuilder.Entity<Vaccine>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Vaccine__3214EC07041DE512");
+            entity.HasKey(e => e.Id).HasName("PK__Vaccine__3214EC07F8B7F98F");
 
             entity.ToTable("Vaccine");
 

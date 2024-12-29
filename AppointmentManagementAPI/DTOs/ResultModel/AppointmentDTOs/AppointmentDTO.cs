@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using AppointmentManagementAPI.DTOs.ResultModel.ServiceDTOs;
+using System.Text.Json.Serialization;
 
 namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
 {
@@ -9,7 +10,7 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
         public string? PetName { get; set; }
         public DateTime? Date { get; set; }
         public DateTime? StartTime { get; set; }
-        public string? ServiceType { get; set; }
+        public List<string>? ServiceNames { get; set; } // Danh sách tên các dịch vụ
         public string? Status { get; set; }
     }
     public class AppointmentUpdateStatusModel
@@ -21,7 +22,7 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
     {
         public Guid? UserId { get; set; }
         public Guid? PetId { get; set; }
-        public Guid ClinicServiceId { get; set; }
+        public List<Guid> ClinicServiceIds { get; set; } = new List<Guid>(); // Danh sách các dịch vụ
         public DateTime? StartAt { get; set; }
         public string? Status { get; set; }
         public string? Note { get; set; }
@@ -33,6 +34,7 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
         public string? GuestPhoneNumber { get; set; }
         public string? GuestEmail { get; set; }
         public string? Address { get; set; }
+
         // Thông tin cho Guest Pet
         public string? GuestPetName { get; set; }
         public DateTime? GuestPetDateOfBirth { get; set; }
@@ -51,8 +53,8 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
         public DateTime? DataOfBirth { get; set; }
         public string? Gender { get; set; }
         public string? Species { get; set; }
-        public Guid? ClinicServiceId { get; set; }
-        public string? ServiceName { get; set; }
+        public List<ServiceModel>? services { get; set; }
+
         public string? Status { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? StartAt { get; set; }
@@ -63,8 +65,8 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
     public class AppointmentUpdateModel
     {
         public Guid Id { get; set; } // ID của cuộc hẹn cần cập nhật
-       
-        public Guid ClinicServiceId { get; set; } // ID dịch vụ của cuộc hẹn (ServiceType)
+
+        public List<Guid> ServiceIds { get; set; } = new List<Guid>(); // ID dịch vụ của cuộc hẹn (ServiceType)
         public string? Status { get; set; } // Trạng thái cuộc hẹn (Confirmed, Canceled, Completed)
         public DateTime? StartAt { get; set; } // Thời gian bắt đầu cuộc hẹn       
         public string? Note { get; set; } // Ghi chú về cuộc hẹn

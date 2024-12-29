@@ -13,5 +13,15 @@ public partial class ClinicService
 
     public DateTime? CreateAt { get; set; }
 
-    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public Guid? Category { get; set; }
+
+    public decimal? Price { get; set; }
+
+    public string? Status { get; set; }
+
+    public string? EstimateTime { get; set; }
+
+    public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();
+
+    public virtual Category? CategoryNavigation { get; set; }
 }
