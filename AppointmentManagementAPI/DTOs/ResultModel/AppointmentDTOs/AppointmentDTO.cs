@@ -71,5 +71,24 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
         public DateTime? StartAt { get; set; } // Thời gian bắt đầu cuộc hẹn       
         public string? Note { get; set; } // Ghi chú về cuộc hẹn
     }
+    public class AppointmentServiceDetailModel
+    {
+        public string? ServiceName { get; set; }
+        public decimal? Price { get; set; }
+    }
+
+    public class AppointmentStatusResultModel
+    {
+        public string? Status { get; set; }
+        public List<AppointmentServiceDetailModel>? Services { get; set; }
+        public decimal? TotalPrice { get; set; }
+    }
+    public class AppointmentUpdateResultModel
+    {
+        public string? Status { get; set; }
+        public List<AppointmentServiceDetailModel>? Services { get; set; }
+        public decimal? TotalPrice { get; set; }
+        public DateTime? EndAt { get; set; }
+    }
 
 }

@@ -143,5 +143,36 @@ namespace AppointmentManagementAPI.Repository
             _context.AppointmentClinicServices.Remove(appointmentClinicService);
             await _context.SaveChangesAsync();
         }
+
+       
+        public async Task<List<AppointmentServiceDetailModel>> GetAppointmentServices(Guid appointmentId)
+        {
+            return await _context.AppointmentClinicServices
+                .Where(acs => acs.AppointmentId == appointmentId)
+                .Select(acs => new AppointmentServiceDetailModel
+                {
+                    ServiceName = acs.ClinicService.Name,
+                    Price = acs.ClinicService.Price
+                })
+                .ToListAsync();
+        }
+
+        public async Task<UserBookingSummary> GetUserBookingSummary(Guid userId)
+        {
+            return await _context.UserBookingSummaries.FirstOrDefaultAsync(ubs => ubs.UserId == userId);
+        }
+
+        public async Task AddUserBookingSummary(UserBookingSummary userBookingSummary)
+        {
+            await _context.UserBookingSummaries.AddAsync(userBookingSummary);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateUserBookingSummary(UserBookingSummary userBookingSummary)
+        {
+            _context.UserBookingSummaries.Update(userBookingSummary);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
