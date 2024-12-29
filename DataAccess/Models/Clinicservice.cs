@@ -13,5 +13,5 @@ public partial class ClinicService
 
     public DateTime? CreateAt { get; set; }
 
-    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();
 }

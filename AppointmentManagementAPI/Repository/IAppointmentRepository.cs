@@ -15,6 +15,8 @@ namespace AppointmentManagementAPI.Repository
         Task InsertGuestUser(GuestUser guestUser);
         Task InsertGuestPet(GuestPet guestPet);
         Task<Appointment> GetAppointmentByID(Guid appointmentId);
+        Task InsertAppointmentClinicService(AppointmentClinicService appointmentClinicService);
+        Task RemoveAppointmentClinicService(AppointmentClinicService appointmentClinicService);
 
     }
 }
