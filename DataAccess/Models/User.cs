@@ -44,4 +44,6 @@ public partial class User
     public virtual ICollection<OtpVerify> OtpVerifies { get; set; } = new List<OtpVerify>();
 
     public virtual ICollection<Pet> Pets { get; set; } = new List<Pet>();
+
+    public virtual ICollection<UserBookingSummary> UserBookingSummaries { get; set; } = new List<UserBookingSummary>();
 }
