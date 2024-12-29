@@ -11,8 +11,6 @@ public partial class Appointment
 
     public Guid? PetId { get; set; }
 
-    public Guid ClinicServiceId { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? StartAt { get; set; }
@@ -27,7 +25,7 @@ public partial class Appointment
 
     public Guid? GuestPetId { get; set; }
 
-    public virtual ClinicService ClinicService { get; set; } = null!;
+    public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();
 
     public virtual GuestPet? GuestPet { get; set; }
 

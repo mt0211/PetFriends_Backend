@@ -17,22 +17,27 @@ namespace AppointmentManagementAPI.Repository
         public async Task<IEnumerable<dynamic>> GetAllApointment()
         {
             return await _context.Appointments
-        .Include(a => a.User)
-        .Include(a => a.Pet)
-        .Include(a => a.GuestUser)
-        .Include(a => a.GuestPet)
-        .Include(a => a.ClinicService)
-        .Select(a => new
-        {
-            Id = a.Id,
-            CustomerName = a.UserId != null ? a.User.FullName : a.GuestUser.FullName,
-            PetName = a.PetId != null ? a.Pet.Name : a.GuestPet.Name,
-            Date = a.PetId != null ? a.Pet.DateOfBirth : a.GuestPet.DateOfBirth,
-            StartTime = a.StartAt,
-            ServiceType = a.ClinicService.Name,
-            Status = a.Status,
-        })
-        .ToListAsync();
+       .Include(a => a.User)
+       .Include(a => a.Pet)
+       .Include(a => a.GuestUser)
+       .Include(a => a.GuestPet)
+       .Include(a => a.AppointmentClinicServices)
+           .ThenInclude(acs => acs.ClinicService)
+       .Select(appointment => new
+       {
+           Id = appointment.Id,
+           CreatedAt = appointment.CreatedAt,
+           StartAt = appointment.StartAt,
+           EndAt = appointment.EndAt,
+           Status = appointment.Status,
+           Note = appointment.Note,
+           UserName = appointment.UserId != null ? appointment.User.FullName : appointment.GuestUser.FullName,
+           PetName = appointment.PetId != null ? appointment.Pet.Name : appointment.GuestPet.Name,
+           ServiceNames = appointment.AppointmentClinicServices
+               .Select(service => service.ClinicService.Name)
+               .ToList()
+       })
+       .ToListAsync();
         }
 
         public async Task<(string Email, string FullName, string status, DateTime? CreatedAt, DateTime? StartAt, DateTime? EndAt)> GetAppointmentAndUserEmail(Guid AppointmentID)
@@ -118,12 +123,25 @@ namespace AppointmentManagementAPI.Repository
         public async Task<Appointment> GetAppointmentByID(Guid appointmentId)
         {
             return await _context.Appointments
-            .Include(a => a.User)
-            .Include(a => a.Pet)
-            .Include(a => a.GuestUser)
-            .Include(a => a.GuestPet)
-            .Include(a => a.ClinicService)
-            .FirstOrDefaultAsync(a => a.Id == appointmentId);
+        .Include(a => a.User) 
+        .Include(a => a.Pet) 
+        .Include(a => a.GuestUser)
+        .Include(a => a.GuestPet) 
+        .Include(a => a.AppointmentClinicServices) 
+            .ThenInclude(acs => acs.ClinicService) 
+        .FirstOrDefaultAsync(a => a.Id == appointmentId); 
+        }
+
+        public async Task InsertAppointmentClinicService(AppointmentClinicService appointmentClinicService)
+        {
+            _context.AppointmentClinicServices.Add(appointmentClinicService);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveAppointmentClinicService(AppointmentClinicService appointmentClinicService)
+        {
+            _context.AppointmentClinicServices.Remove(appointmentClinicService);
+            await _context.SaveChangesAsync();
         }
     }
 }
