@@ -79,19 +79,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-<<<<<<< HEAD
+
 //builder.WebHost.ConfigureKestrel(serverOptions =>
 //{
 //    serverOptions.ListenAnyIP(80);
 //    serverOptions.ListenAnyIP(3000);
 //});
-=======
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenAnyIP(80);
-    serverOptions.ListenAnyIP(3000);
-});
->>>>>>> thong
+
 
 //Register Dependency Injection here:
 ///////////////////////
