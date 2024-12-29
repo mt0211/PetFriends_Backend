@@ -41,6 +41,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserBookingSummary> UserBookingSummaries { get; set; }
+
     public virtual DbSet<Vaccine> Vaccines { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -279,6 +281,20 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.Role).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<UserBookingSummary>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserBook__3214EC07288FDE8E");
+
+            entity.ToTable("UserBookingSummary");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Amount).HasColumnType("decimal(14, 2)");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserBookingSummaries)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_UserBookingSummary_User");
         });
 
         modelBuilder.Entity<Vaccine>(entity =>

@@ -1,4 +1,5 @@
-﻿using DataAccess.Models;
+﻿using AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs;
+using DataAccess.Models;
 using DataAccess.Repositories;
 
 namespace AppointmentManagementAPI.Repository
@@ -17,6 +18,10 @@ namespace AppointmentManagementAPI.Repository
         Task<Appointment> GetAppointmentByID(Guid appointmentId);
         Task InsertAppointmentClinicService(AppointmentClinicService appointmentClinicService);
         Task RemoveAppointmentClinicService(AppointmentClinicService appointmentClinicService);
+        Task<List<AppointmentServiceDetailModel>> GetAppointmentServices(Guid appointmentId);
+        Task<UserBookingSummary> GetUserBookingSummary(Guid userId);
+        Task AddUserBookingSummary(UserBookingSummary userBookingSummary);
+        Task UpdateUserBookingSummary(UserBookingSummary userBookingSummary);
 
     }
 }
