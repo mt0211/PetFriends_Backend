@@ -37,4 +37,18 @@
 		</Reference>
 	</ItemGroup>
 
+
+	<ItemGroup>
+		<None Update="TemplateEmail\ConfirmAppointment.html">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="TemplateEmail\CancelAppointment.html">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+
+	</ItemGroup>
+
 </Project>

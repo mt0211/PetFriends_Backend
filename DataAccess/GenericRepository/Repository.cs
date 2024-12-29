@@ -6,10 +6,10 @@ namespace DataAccess.Repositories;
 
 public class Repository<T> : IRepository<T> where T : class
 {
-    protected readonly PetFriendsContext context;
+    protected readonly PetfriendsContext context;
     private readonly DbSet<T> _entities;
 
-    public Repository(PetFriendsContext context)
+    public Repository(PetfriendsContext context)
     {
         this.context = context;
         _entities = context.Set<T>();
