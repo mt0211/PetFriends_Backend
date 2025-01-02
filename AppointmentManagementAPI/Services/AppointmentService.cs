@@ -77,8 +77,6 @@ namespace AppointmentManagementAPI.Services
 
             return result;
         }
-
-
         public async Task<ResultModel> UpdateAppointmentStatus(string token, AppointmentUpdateStatusModel appointmentstatusmodel)
         {
             ResultModel Result = new();
@@ -322,9 +320,6 @@ namespace AppointmentManagementAPI.Services
             }
             return result;
         }
-
-
-
 
         public async Task<ResultModel> GetListClinicservice(string token)
         {
