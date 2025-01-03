@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppointmentManagementAPI", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{A6291B32-D88F-4CFB-B7A3-E10E6AC7C8EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClinicServiceManagementAPI", "ClinicServiceManagement\ClinicServiceManagementAPI.csproj", "{6591DCBF-FFB2-4505-978A-9C7AF084378B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{A6291B32-D88F-4CFB-B7A3-E10E6AC7C8EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6291B32-D88F-4CFB-B7A3-E10E6AC7C8EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6291B32-D88F-4CFB-B7A3-E10E6AC7C8EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6591DCBF-FFB2-4505-978A-9C7AF084378B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6591DCBF-FFB2-4505-978A-9C7AF084378B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6591DCBF-FFB2-4505-978A-9C7AF084378B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6591DCBF-FFB2-4505-978A-9C7AF084378B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
