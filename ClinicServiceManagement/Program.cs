@@ -1,6 +1,7 @@
 
-using AppointmentManagementAPI.Repository;
-using AppointmentManagementAPI.Services;
+
+using ClinicServiceManagement.Repository;
+using ClinicServiceManagement.Services;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -89,9 +90,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 //Register Dependency Injection here:
 ///////////////////////
-builder.Services.AddScoped<AppointmentService>();
-builder.Services.AddTransient<IAppointmentService, AppointmentService>();
-builder.Services.AddTransient<IAppointmentRepository, AppointmentRepository>();
+builder.Services.AddScoped<ClinicServiceService>();
+builder.Services.AddTransient<IClinicServiceService, ClinicServiceService>();
+builder.Services.AddTransient<IClinicServiceRepository, ClinicServiceRepository>();
 
 
 

@@ -21,6 +21,14 @@ public partial class ClinicService
 
     public string? EstimateTime { get; set; }
 
+    public decimal? DiscountAmount { get; set; }
+
+    public DateTime? DiscountFrom { get; set; }
+
+    public DateTime? DiscountTo { get; set; }
+
+    public string? Image { get; set; }
+
     public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();
 
     public virtual Category? CategoryNavigation { get; set; }
