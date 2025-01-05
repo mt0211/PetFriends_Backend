@@ -152,7 +152,7 @@ namespace AppointmentManagementAPI.Repository
                 .Select(acs => new AppointmentServiceDetailModel
                 {
                     ServiceName = acs.ClinicService.Name,
-                    Price = acs.ClinicService.Price
+                    Price = acs.ClinicService.DiscountedPrice
                 })
                 .ToListAsync();
         }

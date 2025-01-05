@@ -29,6 +29,8 @@ public partial class ClinicService
 
     public string? Image { get; set; }
 
+    public decimal? DiscountedPrice { get; set; }
+
     public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();
 
     public virtual Category? CategoryNavigation { get; set; }
