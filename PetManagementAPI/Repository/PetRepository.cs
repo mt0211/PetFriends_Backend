@@ -29,7 +29,7 @@ namespace PetManagementAPI.Repository.PetRepository
                     Species = joinResult.Pet.Species,
                     Breed = joinResult.Pet.Breed,
                     DateOfBirth = joinResult.Pet.DateOfBirth,
-                    OwnerName = joinResult.Users.FirstOrDefault() != null ? joinResult.Users.FirstOrDefault().FullName : "N/A", 
+                    OwnerName = joinResult.Users.FirstOrDefault() != null ? joinResult.Users.FirstOrDefault().FullName : "N/A",
                     OwnerPhoneNumber = joinResult.Pet.UserPhoneNumber,
                     Vaccinated = joinResult.Pet.PetVaccines.Any() ? "Vaccinated" : "Not yet",
                     VaccineNames = joinResult.Pet.PetVaccines != null && joinResult.Pet.PetVaccines.Any()

@@ -2,6 +2,7 @@
 
 using ClinicServiceManagement.Repository;
 using ClinicServiceManagement.Services;
+using ClinicServiceManagementAPI.BackgroundServices;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -93,7 +94,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<ClinicServiceService>();
 builder.Services.AddTransient<IClinicServiceService, ClinicServiceService>();
 builder.Services.AddTransient<IClinicServiceRepository, ClinicServiceRepository>();
-
+builder.Services.AddHostedService<DiscountedPriceUpdater>();
 
 
 
