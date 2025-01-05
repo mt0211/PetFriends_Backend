@@ -72,7 +72,7 @@ namespace AppointmentManagementAPI.Controllers
             var result = await _appointmentService.GetAppointmentDetail(token, AppointmentID);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-        [HttpDelete("delete-appointment")]
+        [HttpDelete("delete-appointment/{id}")]
         public async Task<IActionResult> DeleteAppointment(Guid id)
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
