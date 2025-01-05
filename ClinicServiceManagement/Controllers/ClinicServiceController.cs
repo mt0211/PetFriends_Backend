@@ -1,4 +1,5 @@
 ﻿using ClinicServiceManagement.DTOs.ResultModel;
+using ClinicServiceManagement.DTOs.ServiceDTOs;
 using ClinicServiceManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,5 +25,27 @@ namespace ClinicServiceManagement.Controllers
             ResultModel result = await _service.GetAllService(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpPost("add-service")]
+        public async Task<IActionResult> AddService([FromBody] ServiceAddDTO serviceAddDTO)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.AddNewService(token, serviceAddDTO);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("category-list")]
+        public async Task<IActionResult> GetCategoryList()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.GetAllCategory(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("service-detail")]
+        public async Task<IActionResult> GetServiceDetail(Guid id)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.GetServiceDetail(token,id);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+       
     }
 }
