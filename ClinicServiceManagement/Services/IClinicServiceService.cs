@@ -9,6 +9,7 @@ namespace ClinicServiceManagement.Services
         Task<ResultModel> AddNewService(string token, ServiceAddDTO serviceAddDTO);
         Task<ResultModel> GetAllCategory(string token);
         Task<ResultModel> GetServiceDetail(string token, Guid ServiceID);
-        Task UpdateDiscountedPrices();
+        Task<ResultModel> UpdateServiceStatus(string token, Guid serviceId);
+        Task<ResultModel> UpdateService(string token, ServiceUpdateDTO serviceUpdateDTO);
     }
 }

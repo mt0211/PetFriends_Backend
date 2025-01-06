@@ -90,7 +90,7 @@ namespace ClinicServiceManagement.Services
                 };
 
                 await _clinicServiceRepository.Insert(newService);
-                await _clinicServiceRepository.UpdateDiscountedPrice(newService);
+              //  await _clinicServiceRepository.UpdateDiscountedPrice(newService);
                
 
                 result.IsSuccess = true;
@@ -176,7 +176,7 @@ namespace ClinicServiceManagement.Services
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = ServiceDetail;
-                result.Message = "Successfully get pet detail";
+                result.Message = "Successfully get service detail";
             }
             catch (Exception ex)
             {
@@ -188,26 +188,136 @@ namespace ClinicServiceManagement.Services
             return result;
         }
 
-        //Background job to update discount price
-        public async Task UpdateDiscountedPrices()
+        public async Task<ResultModel> UpdateServiceStatus(string token, Guid serviceId)
         {
-            var services = await _clinicServiceRepository.GetAllClinicService();
-
-            foreach (var service in services)
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
             {
-                if (service.DiscountFrom.HasValue && service.DiscountTo.HasValue)
-                {
-                    if (DateTime.UtcNow >= service.DiscountFrom.Value && DateTime.UtcNow <= service.DiscountTo.Value)
-                    {
-                        service.DiscountedPrice = service.Price - (service.DiscountAmount ?? 0);
-                    }
-                    else
-                    {
-                        service.DiscountedPrice = service.Price;
-                    }
-                    await _clinicServiceRepository.Update(service);
-                }
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
             }
+
+            try
+            {
+                // Lấy thông tin dịch vụ
+                var service = await _clinicServiceRepository.GetServiceStatusByID(serviceId);
+                if (service == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404; // Not found
+                    result.Message = "Service not found";
+                    return result;
+                }
+
+                // Cập nhật trạng thái
+                if (service.Status == "ACTIVE")
+                {
+                    service.Status = "INACTIVE";
+                }
+                else if (service.Status == "INACTIVE")
+                {
+                    service.Status = "ACTIVE";
+                }
+                else
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400; // Bad request
+                    result.Message = "Invalid service status";
+                    return result;
+                }
+
+                // Cập nhật trạng thái vào database
+                await _clinicServiceRepository.UpdateStatus(service);
+
+                // Chuẩn bị dữ liệu trả về
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = new
+                {
+                    Id = service.Id,
+                    Status = service.Status
+                };
+                result.Message = "Successfully updated service status";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
+        public async Task<ResultModel> UpdateService(string token, ServiceUpdateDTO serviceUpdateDTO)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+
+            try
+            {
+                // Lấy thông tin service từ database
+                var service = await _clinicServiceRepository.GetServiceStatusByID(serviceUpdateDTO.Id ?? Guid.Empty);
+                if (service == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404; // Not found
+                    result.Message = "Service not found";
+                    return result;
+                }
+
+                // Cập nhật thông tin service từ DTO
+                service.Name = serviceUpdateDTO.Name ?? service.Name;
+                service.Description = serviceUpdateDTO.Description ?? service.Description;
+                service.Price = serviceUpdateDTO.Price ?? service.Price;
+                service.Status = serviceUpdateDTO.Status ?? service.Status;
+                service.Category = serviceUpdateDTO.Category ?? service.Category;
+                service.EstimateTime = serviceUpdateDTO.EstimateTime ?? service.EstimateTime;
+                service.DiscountAmount = serviceUpdateDTO.DiscountAmount ?? service.DiscountAmount;
+                service.DiscountFrom = serviceUpdateDTO.DiscountFrom ?? service.DiscountFrom;
+                service.DiscountTo = serviceUpdateDTO.DiscountTo ?? service.DiscountTo;
+                service.Image = serviceUpdateDTO.Image ?? service.Image;
+
+                // Gọi repository để cập nhật service
+                await _clinicServiceRepository.UpdateService(service);
+
+                // Trả về kết quả
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = new
+                {
+                    Id = service.Id,
+                    Name = service.Name,
+                    Description = service.Description,
+                    Price = service.Price,
+                    Status = service.Status,
+                    Category = service.Category,
+                    EstimateTime = service.EstimateTime,
+                    DiscountAmount = service.DiscountAmount,
+                    DiscountFrom = service.DiscountFrom,
+                    DiscountTo = service.DiscountTo,
+                    Image = service.Image
+                };
+                result.Message = "Successfully updated service";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+
+            return result;
         }
     }
 }
