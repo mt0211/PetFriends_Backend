@@ -53,25 +53,38 @@ namespace ClinicServiceManagement.Repository
                 }).FirstOrDefaultAsync();
         }
 
-        public async Task UpdateDiscountedPrice(ClinicService service)
+        public async Task<ClinicService> GetServiceStatusByID(Guid id)
         {
-            if (service.DiscountFrom.HasValue && service.DiscountTo.HasValue)
-            {
-                if (DateTime.UtcNow >= service.DiscountFrom.Value && DateTime.UtcNow <= service.DiscountTo.Value)
-                {
-                    service.DiscountedPrice = service.Price - (service.DiscountAmount ?? 0);
-                }
-                else
-                {
-                    service.DiscountedPrice = service.Price;
-                }
-            }
-            else
-            {
-                service.DiscountedPrice = service.Price; // Không có giảm giá
-            }
+            return await _context.ClinicServices
+                .Where(s => s.Id == id)
+                .FirstOrDefaultAsync(); // Trả về trực tiếp model ClinicService
+        }
 
-            _context.ClinicServices.Update(service);
+       
+
+        public async Task UpdateStatus(ClinicService service)
+        {
+            _context.ClinicServices.Attach(service);
+            _context.Entry(service).Property(s => s.Status).IsModified = true; // Chỉ cập nhật cột Status
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateService(ClinicService service)
+        {
+            _context.ClinicServices.Attach(service);
+
+            // Chỉ cập nhật các cột không phải cột tính toán
+            _context.Entry(service).Property(s => s.Name).IsModified = true;
+            _context.Entry(service).Property(s => s.Description).IsModified = true;
+            _context.Entry(service).Property(s => s.Price).IsModified = true;
+            _context.Entry(service).Property(s => s.Status).IsModified = true;
+            _context.Entry(service).Property(s => s.Category).IsModified = true;
+            _context.Entry(service).Property(s => s.EstimateTime).IsModified = true;
+            _context.Entry(service).Property(s => s.DiscountAmount).IsModified = true;
+            _context.Entry(service).Property(s => s.DiscountFrom).IsModified = true;
+            _context.Entry(service).Property(s => s.DiscountTo).IsModified = true;
+            _context.Entry(service).Property(s => s.Image).IsModified = true;
+
             await _context.SaveChangesAsync();
         }
 

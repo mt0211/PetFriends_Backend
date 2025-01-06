@@ -46,6 +46,21 @@ namespace ClinicServiceManagement.Controllers
             ResultModel result = await _service.GetServiceDetail(token,id);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-       
+
+        [HttpPut("update-service-status")]
+        public async Task<IActionResult> UpdateStatus(Guid id)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.UpdateServiceStatus(token, id);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPut("update-service")]
+        public async Task<IActionResult> UpdateService([FromBody] ServiceUpdateDTO updateDTO)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.UpdateService(token, updateDTO);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
     }
 }

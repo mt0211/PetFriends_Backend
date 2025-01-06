@@ -61,7 +61,9 @@ namespace AppointmentManagementAPI.Repository
         }
         public async Task<IEnumerable<ClinicService>> GetListClinicservices()
         {
-            return await _context.ClinicServices.ToListAsync();
+            return await _context.ClinicServices
+        .Where(service => service.Status == "ACTIVE")
+        .ToListAsync();
         }
 
 
@@ -144,7 +146,7 @@ namespace AppointmentManagementAPI.Repository
             await _context.SaveChangesAsync();
         }
 
-       
+
         public async Task<List<AppointmentServiceDetailModel>> GetAppointmentServices(Guid appointmentId)
         {
             return await _context.AppointmentClinicServices
