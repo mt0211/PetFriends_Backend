@@ -8,6 +8,8 @@ namespace ClinicServiceManagement.Repository
         Task<IEnumerable<dynamic>> GetAllClinicService();
         Task<IEnumerable<Category>> GetAllCategory();
         Task<dynamic> GetServiceByID(Guid id);
-        Task UpdateDiscountedPrice(ClinicService service);
+        Task<ClinicService> GetServiceStatusByID(Guid id);
+        Task UpdateStatus(ClinicService service);
+        Task UpdateService(ClinicService service);
     }
 }
