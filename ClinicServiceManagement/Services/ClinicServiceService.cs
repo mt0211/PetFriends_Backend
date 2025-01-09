@@ -3,6 +3,7 @@ using ClinicServiceManagement.DTOs.ServiceDTOs;
 using ClinicServiceManagement.Repository;
 using ClinicServiceManagement.Utilites;
 using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -11,6 +12,7 @@ namespace ClinicServiceManagement.Services
     public class ClinicServiceService : IClinicServiceService
     {
         private readonly IClinicServiceRepository _clinicServiceRepository;
+        private readonly PetfriendsContext _context;
         public ClinicServiceService(IClinicServiceRepository clinicServiceRepository)
         {
             _clinicServiceRepository = clinicServiceRepository;
@@ -81,15 +83,14 @@ namespace ClinicServiceManagement.Services
                     CreateAt = DateTimeOffset.Now.DateTime,
                     Category = serviceAddDTO.Category,
                     Price = serviceAddDTO.Price,
-                    Status = serviceAddDTO.Status,
+                    Status = "ACTIVE",
                     EstimateTime = serviceAddDTO.EstimateTime,
                     DiscountAmount = serviceAddDTO.DiscountAmount,
                     DiscountFrom = serviceAddDTO.DiscountFrom,
                     DiscountTo = serviceAddDTO.DiscountTo,
                     Image = serviceAddDTO.Image,
                 };
-
-                await _clinicServiceRepository.Insert(newService);
+                await _clinicServiceRepository.AddService(newService);
               //  await _clinicServiceRepository.UpdateDiscountedPrice(newService);
                
 
@@ -124,14 +125,14 @@ namespace ClinicServiceManagement.Services
                 {
                     result.IsSuccess = false;
                     result.Code = 404;
-                    result.Message = "Not found vaccines";
+                    result.Message = "Not found category";
                     return result;
                 }
                 //Success response
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = vaccines;
-                result.Message = "Successfully get all vaccine";
+                result.Message = "Successfully get all category";
             }
             catch (Exception ex)
             {
