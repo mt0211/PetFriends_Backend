@@ -11,5 +11,6 @@ namespace ClinicServiceManagement.Repository
         Task<ClinicService> GetServiceStatusByID(Guid id);
         Task UpdateStatus(ClinicService service);
         Task UpdateService(ClinicService service);
+        Task AddService(ClinicService service);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repositories;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClinicServiceManagement.Repository
@@ -72,7 +73,6 @@ namespace ClinicServiceManagement.Repository
         public async Task UpdateService(ClinicService service)
         {
             _context.ClinicServices.Attach(service);
-
             // Chỉ cập nhật các cột không phải cột tính toán
             _context.Entry(service).Property(s => s.Name).IsModified = true;
             _context.Entry(service).Property(s => s.Description).IsModified = true;
@@ -86,6 +86,31 @@ namespace ClinicServiceManagement.Repository
             _context.Entry(service).Property(s => s.Image).IsModified = true;
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task AddService(ClinicService service)
+        {
+            var sql = @"INSERT INTO ClinicService (Id, Name, Description, CreateAt, Category, Price, Status, 
+                EstimateTime, DiscountAmount, DiscountFrom, DiscountTo, Image) 
+                VALUES (@Id, @Name, @Description, @CreateAt, @Category, @Price, @Status,
+                @EstimateTime, @DiscountAmount, @DiscountFrom, @DiscountTo, @Image)";
+
+            var parameters = new[] {
+        new SqlParameter("@Id", service.Id),
+        new SqlParameter("@Name", service.Name),
+        new SqlParameter("@Description", service.Description ?? (object)DBNull.Value),
+        new SqlParameter("@CreateAt", service.CreateAt),
+        new SqlParameter("@Category", service.Category ?? (object)DBNull.Value),
+        new SqlParameter("@Price", service.Price),
+        new SqlParameter("@Status", service.Status),
+        new SqlParameter("@EstimateTime", service.EstimateTime ?? (object)DBNull.Value),
+        new SqlParameter("@DiscountAmount", service.DiscountAmount ?? (object)DBNull.Value),
+        new SqlParameter("@DiscountFrom", service.DiscountFrom ?? (object)DBNull.Value),
+        new SqlParameter("@DiscountTo", service.DiscountTo ?? (object)DBNull.Value),
+        new SqlParameter("@Image", service.Image ?? (object)DBNull.Value)
+    };
+
+            await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
 
     }
