@@ -1,18 +1,18 @@
 ﻿using ClinicServiceManagement.DTOs.ResultModel;
 using ClinicServiceManagement.DTOs.ServiceDTOs;
-using ClinicServiceManagement.Repository;
 using ClinicServiceManagement.Utilites;
+using ClinicServiceManagementAPI.Repository.ClinicServiceRepository;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace ClinicServiceManagement.Services
+namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
 {
     public class ClinicServiceService : IClinicServiceService
     {
         private readonly IClinicServiceRepository _clinicServiceRepository;
-        private readonly PetfriendsContext _context;
+       // private readonly PetfriendsContext _context;
         public ClinicServiceService(IClinicServiceRepository clinicServiceRepository)
         {
             _clinicServiceRepository = clinicServiceRepository;
@@ -38,16 +38,16 @@ namespace ClinicServiceManagement.Services
             try
             {
                 var Services = await _clinicServiceRepository.GetAllClinicService();
-              var ServiceList = Services.Select(c=> new ServiceListDTO
-              {
-                  Id = c.Id,
-                  Name = c.Name,
-                  CategoryName = c.CategoryName,
-                  EstimateTime = c.EstimateTime,
-                  Price = c.Price,
-                  DiscountedPrice = c.DiscountedPrice,
-                  Image = c.Image,
-              }).ToList();
+                var ServiceList = Services.Select(c => new ServiceListDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    CategoryName = c.CategoryName,
+                    EstimateTime = c.EstimateTime,
+                    Price = c.Price,
+                    DiscountedPrice = c.DiscountedPrice,
+                    Image = c.Image,
+                }).ToList();
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = Services;
@@ -91,8 +91,8 @@ namespace ClinicServiceManagement.Services
                     Image = serviceAddDTO.Image,
                 };
                 await _clinicServiceRepository.AddService(newService);
-              //  await _clinicServiceRepository.UpdateDiscountedPrice(newService);
-               
+                //  await _clinicServiceRepository.UpdateDiscountedPrice(newService);
+
 
                 result.IsSuccess = true;
                 result.Code = 200;
@@ -238,8 +238,8 @@ namespace ClinicServiceManagement.Services
                 result.Code = 200;
                 result.Data = new
                 {
-                    Id = service.Id,
-                    Status = service.Status
+                    service.Id,
+                    service.Status
                 };
                 result.Message = "Successfully updated service status";
             }
@@ -296,17 +296,17 @@ namespace ClinicServiceManagement.Services
                 result.Code = 200;
                 result.Data = new
                 {
-                    Id = service.Id,
-                    Name = service.Name,
-                    Description = service.Description,
-                    Price = service.Price,
-                    Status = service.Status,
-                    Category = service.Category,
-                    EstimateTime = service.EstimateTime,
-                    DiscountAmount = service.DiscountAmount,
-                    DiscountFrom = service.DiscountFrom,
-                    DiscountTo = service.DiscountTo,
-                    Image = service.Image
+                    service.Id,
+                    service.Name,
+                    service.Description,
+                    service.Price,
+                    service.Status,
+                    service.Category,
+                    service.EstimateTime,
+                    service.DiscountAmount,
+                    service.DiscountFrom,
+                    service.DiscountTo,
+                    service.Image
                 };
                 result.Message = "Successfully updated service";
             }

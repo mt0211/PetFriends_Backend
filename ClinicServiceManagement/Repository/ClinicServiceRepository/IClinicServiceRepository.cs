@@ -1,7 +1,7 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repositories;
 
-namespace ClinicServiceManagement.Repository
+namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
 {
     public interface IClinicServiceRepository : IRepository<ClinicService>
     {

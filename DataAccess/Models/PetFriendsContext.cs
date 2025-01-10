@@ -123,9 +123,7 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.DiscountTo).HasColumnType("datetime");
             entity.Property(e => e.DiscountedPrice)
                 .HasComputedColumnSql("(case when getutcdate()>=[DiscountFrom] AND getutcdate()<=[DiscountTo] then [Price]-isnull([DiscountAmount],(0)) else [Price] end)", false)
-                .HasColumnType("decimal(13, 2)")
-                 .ValueGeneratedOnAddOrUpdate() // Thêm dòng này
-    .Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore); // Bỏ qua khi lưu;
+                .HasColumnType("decimal(13, 2)");
             entity.Property(e => e.EstimateTime).HasMaxLength(50);
             entity.Property(e => e.Image).HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(255);

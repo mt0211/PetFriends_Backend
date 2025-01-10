@@ -1,6 +1,6 @@
 ﻿using ClinicServiceManagement.DTOs.ResultModel;
 using ClinicServiceManagement.DTOs.ServiceDTOs;
-using ClinicServiceManagement.Services;
+using ClinicServiceManagementAPI.Services.ClinicServiceServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicServiceManagement.Controllers
@@ -10,6 +10,7 @@ namespace ClinicServiceManagement.Controllers
     public class ClinicServiceController : ControllerBase
     {
         private readonly IClinicServiceService _service;
+       
         public ClinicServiceController(IClinicServiceService service)
         {
             _service = service;
@@ -61,6 +62,8 @@ namespace ClinicServiceManagement.Controllers
             ResultModel result = await _service.UpdateService(token, updateDTO);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+
+       
 
     }
 }
