@@ -39,6 +39,7 @@ namespace ClinicServiceManagementAPI.Services.CategoryServices
                 {
                     Id = Guid.NewGuid(),
                     Name = newcategory.Name,
+                    Status = 1,
                 };
 
                 await _categoryRepository.AddCategory(categoryEntity);
