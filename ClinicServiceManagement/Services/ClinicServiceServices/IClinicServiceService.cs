@@ -1,7 +1,7 @@
 ﻿using ClinicServiceManagement.DTOs.ResultModel;
 using ClinicServiceManagement.DTOs.ServiceDTOs;
 
-namespace ClinicServiceManagement.Services
+namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
 {
     public interface IClinicServiceService
     {

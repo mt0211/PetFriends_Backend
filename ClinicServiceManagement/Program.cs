@@ -1,7 +1,9 @@
+using ClinicServiceManagementAPI.Repository.CategoryRepository;
+using ClinicServiceManagementAPI.Repository.ClinicServiceRepository;
+using ClinicServiceManagementAPI.Services.CategoryServices;
+using ClinicServiceManagementAPI.Services.ClinicServiceServices;
 
 
-using ClinicServiceManagement.Repository;
-using ClinicServiceManagement.Services;
 //using ClinicServiceManagementAPI.BackgroundServices;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -95,6 +97,9 @@ builder.Services.AddScoped<ClinicServiceService>();
 builder.Services.AddTransient<IClinicServiceService, ClinicServiceService>();
 builder.Services.AddTransient<IClinicServiceRepository, ClinicServiceRepository>();
 //builder.Services.AddHostedService<DiscountedPriceUpdater>();
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
 
 
 

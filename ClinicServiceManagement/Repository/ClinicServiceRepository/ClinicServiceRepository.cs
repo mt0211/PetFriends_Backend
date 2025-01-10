@@ -3,7 +3,7 @@ using DataAccess.Repositories;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClinicServiceManagement.Repository
+namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
 {
     public class ClinicServiceRepository : Repository<ClinicService>, IClinicServiceRepository
     {
@@ -17,15 +17,16 @@ namespace ClinicServiceManagement.Repository
         {
             return await _context.ClinicServices
                 .Include(c => c.CategoryNavigation)
+                .Where(c=>c.CategoryNavigation.Status == 1)
                 .Select(c => new
                 {
-                    Id = c.Id,
-                    Name = c.Name,
+                    c.Id,
+                    c.Name,
                     CategoryName = c.CategoryNavigation.Name,
-                    Price = c.Price,
-                    DiscountedPrice = c.DiscountedPrice,
-                    EstimateTime = c.EstimateTime,
-                    Image = c.Image,
+                    c.Price,
+                    c.DiscountedPrice,
+                    c.EstimateTime,
+                    c.Image,
                 }).ToListAsync();
         }
         public async Task<IEnumerable<Category>> GetAllCategory()
@@ -40,17 +41,17 @@ namespace ClinicServiceManagement.Repository
                 .Where(s => s.Id == id)
                 .Select(s => new
                 {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Description = s.Description,
+                    s.Id,
+                    s.Name,
+                    s.Description,
                     CategoryName = s.CategoryNavigation.Name,
-                    Price = s.Price,
-                    Status = s.Status,
-                    EstimateTime = s.EstimateTime,
-                    DiscountAmount = s.DiscountAmount,
-                    DiscountFrom = s.DiscountFrom,
-                    DiscountTo = s.DiscountTo,
-                    Image = s.Image,
+                    s.Price,
+                    s.Status,
+                    s.EstimateTime,
+                    s.DiscountAmount,
+                    s.DiscountFrom,
+                    s.DiscountTo,
+                    s.Image,
                 }).FirstOrDefaultAsync();
         }
 
@@ -61,7 +62,7 @@ namespace ClinicServiceManagement.Repository
                 .FirstOrDefaultAsync(); // Trả về trực tiếp model ClinicService
         }
 
-       
+
 
         public async Task UpdateStatus(ClinicService service)
         {
