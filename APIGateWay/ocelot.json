@@ -35,6 +35,30 @@
       ],
       "UpstreamPathTemplate": "/apigateway/appointment/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/clinicservice/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5006
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/clinicservice/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/category/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5007
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/category/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ]
 }
