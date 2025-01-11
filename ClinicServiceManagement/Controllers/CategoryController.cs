@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicServiceManagementAPI.Controllers
 {
+    [ApiController]
+    [Route("api/category")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _service;
