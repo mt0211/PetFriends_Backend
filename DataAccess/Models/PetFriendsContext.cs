@@ -23,6 +23,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<ClinicService> ClinicServices { get; set; }
 
+    public virtual DbSet<DailyRevenueSummary> DailyRevenueSummaries { get; set; }
+
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
     public virtual DbSet<ForumPost> ForumPosts { get; set; }
@@ -38,6 +40,8 @@ public partial class PetfriendsContext : DbContext
     public virtual DbSet<PetVaccine> PetVaccines { get; set; }
 
     public virtual DbSet<Promotion> Promotions { get; set; }
+
+    public virtual DbSet<ServiceRevenue> ServiceRevenues { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -134,6 +138,22 @@ public partial class PetfriendsContext : DbContext
                 .HasForeignKey(d => d.Category)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_ClinicService_Category");
+        });
+
+        modelBuilder.Entity<DailyRevenueSummary>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__DailyRev__3214EC07776ACFF8");
+
+            entity.ToTable("DailyRevenueSummary");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.TotalRevenue).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Feedback>(entity =>
@@ -268,6 +288,26 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.DiscountRate).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.EndDate).HasColumnType("datetime");
             entity.Property(e => e.StartDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<ServiceRevenue>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ServiceR__3214EC076C7529BB");
+
+            entity.ToTable("ServiceRevenue");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Revenue).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.ClinicService).WithMany(p => p.ServiceRevenues)
+                .HasForeignKey(d => d.ClinicServiceId)
+                .HasConstraintName("FK_ServiceRevenue_ClinicService");
         });
 
         modelBuilder.Entity<User>(entity =>

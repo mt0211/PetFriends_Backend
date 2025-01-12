@@ -22,6 +22,8 @@ namespace AppointmentManagementAPI.Repository
         Task<UserBookingSummary> GetUserBookingSummary(Guid userId);
         Task AddUserBookingSummary(UserBookingSummary userBookingSummary);
         Task UpdateUserBookingSummary(UserBookingSummary userBookingSummary);
+        Task UpdateDailyRevenue(decimal amount);
+        Task UpdateServiceRevenue(Guid serviceTypeId, decimal amount);
 
     }
 }

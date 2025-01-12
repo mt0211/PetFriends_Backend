@@ -34,4 +34,6 @@ public partial class ClinicService
     public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();
 
     public virtual Category? CategoryNavigation { get; set; }
+
+    public virtual ICollection<ServiceRevenue> ServiceRevenues { get; set; } = new List<ServiceRevenue>();
 }

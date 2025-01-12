@@ -119,6 +119,11 @@ namespace AppointmentManagementAPI.Services
                     {
                         await UpdateUserBookingSummary(appointment.UserId.Value, totalAmount);
                     }
+                    await _appointmentrepository.UpdateDailyRevenue(totalAmount);
+                    foreach (var service in services)
+                    {
+                        await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
+                    }
 
                     // Chuẩn bị dữ liệu trả về
                     Result.Data = new AppointmentUpdateResultModel
@@ -690,6 +695,11 @@ namespace AppointmentManagementAPI.Services
                     if (appointment.UserId.HasValue)
                     {
                         await UpdateUserBookingSummary(appointment.UserId.Value, totalAmount);
+                    }
+                    await _appointmentrepository.UpdateDailyRevenue(totalAmount);
+                    foreach (var service in services)
+                    {
+                        await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
                     }
 
                     // Chuẩn bị dữ liệu trả về
