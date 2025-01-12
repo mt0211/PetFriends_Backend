@@ -65,9 +65,6 @@ namespace AppointmentManagementAPI.Repository
         .Where(service => service.Status == "ACTIVE")
         .ToListAsync();
         }
-
-
-
         public async Task<User> GetUserByPhoneNumber(string phonenumber)
         {
             var userData = await _context.Users
@@ -153,6 +150,7 @@ namespace AppointmentManagementAPI.Repository
                 .Where(acs => acs.AppointmentId == appointmentId)
                 .Select(acs => new AppointmentServiceDetailModel
                 {
+                    ClinicServiceId = acs.ClinicServiceId,
                     ServiceName = acs.ClinicService.Name,
                     Price = acs.ClinicService.DiscountedPrice
                 })
@@ -174,6 +172,78 @@ namespace AppointmentManagementAPI.Repository
         {
             _context.UserBookingSummaries.Update(userBookingSummary);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateDailyRevenue(decimal amount)
+        {
+            // Lấy ngày hiện tại
+            var today = DateTime.UtcNow.Date;
+            DateOnly dateOnly = new DateOnly(today.Year, today.Month, today.Day);
+
+            // Kiểm tra xem đã có tổng doanh thu cho ngày hôm nay chưa
+            var dailyRevenue = await _context.DailyRevenueSummaries
+                .FirstOrDefaultAsync(dr => dr.Date == dateOnly);
+
+            if (dailyRevenue != null)
+            {
+                // Nếu đã có, cộng dồn doanh thu
+                dailyRevenue.TotalRevenue += amount;
+                dailyRevenue.UpdatedAt = DateTime.UtcNow;
+                _context.DailyRevenueSummaries.Update(dailyRevenue);
+            }
+            else
+            {
+                // Nếu chưa có, tạo bản ghi mới
+                var newDailyRevenue = new DailyRevenueSummary
+                {
+                    Id = Guid.NewGuid(),
+                    Date = dateOnly,
+                    TotalRevenue = amount,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _context.DailyRevenueSummaries.AddAsync(newDailyRevenue);
+            }
+
+            // Lưu thay đổi vào DB
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateServiceRevenue(Guid serviceTypeId, decimal amount)
+        {
+            // Lấy ngày hiện tại
+            var today = DateTime.UtcNow.Date;
+            DateOnly dateOnly = new DateOnly(today.Year, today.Month, today.Day);
+            // Tìm bản ghi doanh thu của loại dịch vụ trong ngày hôm nay
+            var revenueEntry = await _context.ServiceRevenues
+                .FirstOrDefaultAsync(sr => sr.ClinicServiceId == serviceTypeId && sr.Date == dateOnly);
+
+            if (revenueEntry != null)
+            {
+                // Nếu đã có, cộng dồn doanh thu
+                revenueEntry.Revenue += amount;
+                revenueEntry.UpdatedAt = DateTime.UtcNow;
+                _context.ServiceRevenues.Update(revenueEntry);
+            }
+            else
+            {
+                // Nếu chưa có, tạo bản ghi mới
+                var newRevenueEntry = new ServiceRevenue
+                {
+                    Id = Guid.NewGuid(),
+                    ClinicServiceId = serviceTypeId,
+                    Date = dateOnly,
+                    Revenue = amount,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _context.ServiceRevenues.AddAsync(newRevenueEntry);
+            }
+
+            // Lưu thay đổi vào DB
+            await   _context.SaveChangesAsync();
         }
 
     }

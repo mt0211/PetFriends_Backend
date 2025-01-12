@@ -73,6 +73,7 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
     }
     public class AppointmentServiceDetailModel
     {
+        public Guid ClinicServiceId { get; set; }
         public string? ServiceName { get; set; }
         public decimal? Price { get; set; }
     }
