@@ -280,14 +280,24 @@ public partial class PetfriendsContext : DbContext
 
         modelBuilder.Entity<Promotion>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC07A4ED8653");
+            entity.HasKey(e => e.Id).HasName("PK__Promotio__3214EC07EEA3E054");
 
             entity.ToTable("Promotion");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.DiscountRate).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.Description).HasMaxLength(100);
             entity.Property(e => e.EndDate).HasColumnType("datetime");
+            entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.StartDate).HasColumnType("datetime");
+            entity.Property(e => e.Status)
+                .HasMaxLength(9)
+                .IsUnicode(false)
+                .HasComputedColumnSql("(case when getdate()>=[StartDate] AND getdate()<=[EndDate] then 'Active' when getdate()<[StartDate] then 'Scheduled' when getdate()>[EndDate] then 'Expired' else 'Unknown' end)", false);
+            entity.Property(e => e.TargetGroup).HasMaxLength(50);
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Promotions)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_Promotion_Category");
         });
 
         modelBuilder.Entity<ServiceRevenue>(entity =>
