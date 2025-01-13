@@ -12,4 +12,6 @@ public partial class Category
     public byte? Status { get; set; }
 
     public virtual ICollection<ClinicService> ClinicServices { get; set; } = new List<ClinicService>();
+
+    public virtual ICollection<Promotion> Promotions { get; set; } = new List<Promotion>();
 }
