@@ -9,7 +9,6 @@
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
-	
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
 		<PackageReference Include="MailKit" Version="4.8.0" />
@@ -29,12 +28,10 @@
 		<PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.5" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 	</ItemGroup>
-	
 	<ItemGroup>
 	  <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="lib\" />
 	</ItemGroup>
-
 </Project>
