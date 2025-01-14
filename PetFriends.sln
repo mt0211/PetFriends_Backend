@@ -7,23 +7,25 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\Da
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserAuthenticationAPI", "UserAuthenticationAPI\UserAuthenticationAPI.csproj", "{04B47420-9159-46A6-9B21-534335C825FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetManagementAPI", "PetManagementAPI\PetManagementAPI.csproj", "{BE9251B4-0EA9-4940-8BFC-BD3D454D2F68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PetManagementAPI", "PetManagementAPI\PetManagementAPI.csproj", "{BE9251B4-0EA9-4940-8BFC-BD3D454D2F68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{D617E837-0148-49A2-8003-8D3DFB36BB52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{D617E837-0148-49A2-8003-8D3DFB36BB52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIGateWay", "APIGateWay\APIGateWay.csproj", "{CF6E3221-7312-4E0C-BB0C-9E1E7C99D905}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "APIGateWay", "APIGateWay\APIGateWay.csproj", "{CF6E3221-7312-4E0C-BB0C-9E1E7C99D905}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetFriendsUnitTest", "PetFriendsUnitTest\PetFriendsUnitTest.csproj", "{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PetFriendsUnitTest", "PetFriendsUnitTest\PetFriendsUnitTest.csproj", "{9EC443BA-D9F3-4EFF-AFA1-0D0F478FF9DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppointmentManagementAPI", "AppointmentManagementAPI\AppointmentManagementAPI.csproj", "{EAAD0DA6-FE73-43F2-8C8F-4114271E1DE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppointmentManagementAPI", "AppointmentManagementAPI\AppointmentManagementAPI.csproj", "{EAAD0DA6-FE73-43F2-8C8F-4114271E1DE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{A6291B32-D88F-4CFB-B7A3-E10E6AC7C8EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{A6291B32-D88F-4CFB-B7A3-E10E6AC7C8EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClinicServiceManagementAPI", "ClinicServiceManagement\ClinicServiceManagementAPI.csproj", "{6591DCBF-FFB2-4505-978A-9C7AF084378B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClinicServiceManagementAPI", "ClinicServiceManagement\ClinicServiceManagementAPI.csproj", "{6591DCBF-FFB2-4505-978A-9C7AF084378B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevenueReportAPI", "RevenueReportAPI\RevenueReportAPI.csproj", "{E7FD2DFB-3C1F-4035-A8BC-A2DFFDE6790C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevenueReportAPI", "RevenueReportAPI\RevenueReportAPI.csproj", "{E7FD2DFB-3C1F-4035-A8BC-A2DFFDE6790C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PromotionManagementAPI", "PromotionManagementAPI\PromotionManagementAPI.csproj", "{F7AD5CD3-7B5A-49AB-A92A-DDE781DD7083}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromotionManagementAPI", "PromotionManagementAPI\PromotionManagementAPI.csproj", "{F7AD5CD3-7B5A-49AB-A92A-DDE781DD7083}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminAuthenticationAPI", "AdminAuthenticationAPI\AdminAuthenticationAPI.csproj", "{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{F7AD5CD3-7B5A-49AB-A92A-DDE781DD7083}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7AD5CD3-7B5A-49AB-A92A-DDE781DD7083}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7AD5CD3-7B5A-49AB-A92A-DDE781DD7083}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
