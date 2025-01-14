@@ -51,5 +51,12 @@ namespace PromotionManagementAPI.Controllers
             ResultModel result = await _service.UpdatePromotion(token, promotionUpdateModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("promotion-detail")]
+        public async Task<IActionResult> GetPromotionDetail(Guid id)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.GetPromotionDetail(token, id);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }
