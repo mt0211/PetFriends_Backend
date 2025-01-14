@@ -39,9 +39,5 @@
   <ItemGroup>
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
   </ItemGroup>
-	<ItemGroup>
-		<Reference Include="DataAccess">
-			<HintPath>..\lib\DataAccess.dll</HintPath>
-		</Reference>
-	</ItemGroup>
+	
 </Project>

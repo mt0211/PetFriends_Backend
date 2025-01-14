@@ -20,4 +20,45 @@
 
         public string Status { get; set; } = null!;
     }
+
+    public class PromotionAddModel
+    {
+        public string? Name { get; set; }
+
+        public byte? Type { get; set; }
+        public decimal? DiscountDetail { get; set; }
+
+        public DateTime? StartDate { get; set; }
+
+        public DateTime? EndDate { get; set; }
+
+        public string? TargetGroup { get; set; }
+
+        public Guid? CategoryId { get; set; }
+
+        public int UsageLimit { get; set; }
+
+        public string? Description { get; set; }
+    }
+
+    public class PromotionUpdateModel
+    {
+        public Guid Id { get; set; }
+        public string? Name { get; set; }
+
+        public byte? Type { get; set; }
+        public decimal? DiscountDetail { get; set; }
+
+        public DateTime? StartDate { get; set; }
+
+        public DateTime? EndDate { get; set; }
+
+        public string? TargetGroup { get; set; }
+
+        public Guid? CategoryId { get; set; }
+
+        public int UsageLimit { get; set; }
+
+        public string? Description { get; set; }
+    }
 }

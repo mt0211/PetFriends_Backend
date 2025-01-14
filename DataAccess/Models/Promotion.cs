@@ -25,5 +25,7 @@ public partial class Promotion
 
     public string? Description { get; set; }
 
+    public decimal? DiscountDetail { get; set; }
+
     public virtual Category? Category { get; set; }
 }
