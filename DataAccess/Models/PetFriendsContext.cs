@@ -286,6 +286,7 @@ public partial class PetfriendsContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Description).HasMaxLength(100);
+            entity.Property(e => e.DiscountDetail).HasColumnType("decimal(14, 2)");
             entity.Property(e => e.EndDate).HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.StartDate).HasColumnType("datetime");

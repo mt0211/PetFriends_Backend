@@ -17,7 +17,7 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         {
             return await _context.ClinicServices
                 .Include(c => c.CategoryNavigation)
-                .Where(c=>c.CategoryNavigation.Status == 1)
+                .Where(c => c.CategoryNavigation.Status == 1)
                 .Select(c => new
                 {
                     c.Id,
