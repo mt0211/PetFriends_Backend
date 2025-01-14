@@ -10,5 +10,6 @@ namespace PromotionManagementAPI.Services
         Task<ResultModel> DeletePromotion(string token, Guid pid);
         Task<ResultModel> AddPromotion(string token, PromotionAddModel promotionAddDTO);
         Task<ResultModel> UpdatePromotion(string token, PromotionUpdateModel promotionAddDTO);
+        Task<ResultModel> GetPromotionDetail(string token, Guid promotionId);
     }
 }

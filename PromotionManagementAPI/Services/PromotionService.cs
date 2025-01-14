@@ -243,5 +243,46 @@ namespace PromotionManagementAPI.Services
 
             return result;
         }
+
+        public async Task<ResultModel> GetPromotionDetail(string token, Guid promotionId)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+
+            try
+            {
+              var promotionDetail = await _promotionRepository.Get(promotionId);
+
+                var promotionDetails = new PromotionDetailModel
+                {
+                    Name =  promotionDetail.Name,
+                    Type = promotionDetail.Type,
+                    DiscountDetail = promotionDetail.DiscountDetail,
+                    StartDate = promotionDetail.StartDate,
+                    EndDate = promotionDetail.EndDate,
+                    Description = promotionDetail.Description,
+                };
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = promotionDetails;
+                result.Message = "Successfully add new appointment";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+
+            return result;
+        }
     }
 }
