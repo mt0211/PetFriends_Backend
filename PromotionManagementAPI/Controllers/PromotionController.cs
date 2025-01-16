@@ -36,7 +36,6 @@ namespace PromotionManagementAPI.Controllers
             ResultModel result = await _service.DeletePromotion(token, PromotionID);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-
         [HttpPost("add-promotion")]
         public async Task<IActionResult> AddPromotion([FromBody] PromotionAddModel promotionAddModel)
         {

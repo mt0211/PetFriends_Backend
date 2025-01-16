@@ -21,7 +21,7 @@ namespace PromotionManagementAPI.Repositories
                 {
                     c.Id,
                     c.Name,
-                    Type = c.Type == 0 ? "Percentage" : "Amount",
+                    Type = c.Type == 0 ? "Percentage" : c.Type == 1 ? "Amount" : "Free Service",
                     c.StartDate,
                     c.EndDate,
                     c.TargetGroup,
