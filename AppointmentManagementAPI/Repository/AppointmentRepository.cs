@@ -62,7 +62,7 @@ namespace AppointmentManagementAPI.Repository
         public async Task<IEnumerable<ClinicService>> GetListClinicservices()
         {
             return await _context.ClinicServices
-        .Where(service => service.Status == "ACTIVE")
+        .Where(service => service.Status == "ACTIVE" && service.CategoryNavigation.Status == 1)
         .ToListAsync();
         }
         public async Task<User> GetUserByPhoneNumber(string phonenumber)
