@@ -1,14 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>8bd85f30-957e-4683-8ef3-11e0da997757</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
+  
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
 		<PackageReference Include="MailKit" Version="4.8.0" />
@@ -33,5 +33,10 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="lib\" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="DataAccess">
+			<HintPath>..\lib\DataAccess.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 </Project>

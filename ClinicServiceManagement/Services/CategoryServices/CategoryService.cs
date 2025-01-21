@@ -15,7 +15,7 @@ namespace ClinicServiceManagementAPI.Services.CategoryServices
         {
             _categoryRepository = categoryRepository;
         }
-        public async Task<ResultModel> AddNewService(string token, CategoryAddModel newcategory)
+        public async Task<ResultModel> AddNewCategory(string token, CategoryAddModel newcategory)
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
