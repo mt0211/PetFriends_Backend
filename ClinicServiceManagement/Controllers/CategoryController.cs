@@ -19,7 +19,7 @@ namespace ClinicServiceManagementAPI.Controllers
         public async Task<IActionResult> AddNewCategory([FromBody] CategoryAddModel categoryAddModel )
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            ResultModel result = await _service.AddNewService(token, categoryAddModel);
+            ResultModel result = await _service.AddNewCategory(token, categoryAddModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpPut("update-category")]
