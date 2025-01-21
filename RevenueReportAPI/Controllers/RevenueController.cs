@@ -5,7 +5,7 @@ using RevenueReportAPI.Services;
 namespace RevenueReportAPI.Controllers
 {
     [ApiController]
-    [Route("api/userbookingsummary")]
+    [Route("api/revenue")]
     public class RevenueController : ControllerBase
     {
         private readonly IRevenueService _service;
