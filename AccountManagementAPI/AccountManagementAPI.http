@@ -1,0 +1,6 @@
+@AccountManagementAPI_HostAddress = http://localhost:5213
+
+GET {{AccountManagementAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
