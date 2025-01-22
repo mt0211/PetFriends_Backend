@@ -27,6 +27,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromotionManagementAPI", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminAuthenticationAPI", "AdminAuthenticationAPI\AdminAuthenticationAPI.csproj", "{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashboardAPI", "DashboardAPI\DashboardAPI.csproj", "{C1759ABC-CD43-42E5-8B3E-F85010B4A4A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountManagementAPI", "AccountManagementAPI\AccountManagementAPI.csproj", "{201DB9C1-1ABE-4772-9C63-042027FFC29B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,14 @@ Global
 		{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1759ABC-CD43-42E5-8B3E-F85010B4A4A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1759ABC-CD43-42E5-8B3E-F85010B4A4A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1759ABC-CD43-42E5-8B3E-F85010B4A4A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1759ABC-CD43-42E5-8B3E-F85010B4A4A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{201DB9C1-1ABE-4772-9C63-042027FFC29B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{201DB9C1-1ABE-4772-9C63-042027FFC29B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{201DB9C1-1ABE-4772-9C63-042027FFC29B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{201DB9C1-1ABE-4772-9C63-042027FFC29B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
