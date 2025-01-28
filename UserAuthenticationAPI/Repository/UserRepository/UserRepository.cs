@@ -6,9 +6,9 @@ namespace UserAuthenticationAPI.Repository.UserRepository
 {
     public class UserRepository : Repository<User>, IUserRepository
     {
-        private readonly PetFriendsContext _context;
+        private readonly PetfriendsContext _context;
 
-        public UserRepository(PetFriendsContext context) : base(context)
+        public UserRepository(PetfriendsContext context) : base(context)
         {
             _context = context;
         }

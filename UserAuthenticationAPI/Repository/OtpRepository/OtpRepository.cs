@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace UserAuthenticationAPI.Repository.OtpRepository;
 public class OtpRepository : Repository<OtpVerify>, IOtpRepository
 {
-    private readonly PetFriendsContext _context;
+    private readonly PetfriendsContext _context;
 
-    public OtpRepository(PetFriendsContext context) : base(context)
+    public OtpRepository(PetfriendsContext context) : base(context)
     {
         _context = context;
 
