@@ -61,7 +61,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddDbContext<PetFriendsContext>(option =>
+builder.Services.AddDbContext<PetfriendsContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking),
     ServiceLifetime.Transient);
@@ -78,11 +78,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key is not configured.")))
         };
     });
-//builder.WebHost.ConfigureKestrel(serverOptions =>
-//{
-//    serverOptions.ListenAnyIP(80);
-//    serverOptions.ListenAnyIP(3000);
-//});
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(80);
+    serverOptions.ListenAnyIP(3000);
+});
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<VerifyService>();
