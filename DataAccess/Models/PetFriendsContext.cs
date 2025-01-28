@@ -129,7 +129,6 @@ public partial class PetfriendsContext : DbContext
                 .HasComputedColumnSql("(case when getutcdate()>=[DiscountFrom] AND getutcdate()<=[DiscountTo] then [Price]-isnull([DiscountAmount],(0)) else [Price] end)", false)
                 .HasColumnType("decimal(13, 2)");
             entity.Property(e => e.EstimateTime).HasMaxLength(50);
-            entity.Property(e => e.Image).HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(255);
             entity.Property(e => e.Price).HasColumnType("decimal(12, 2)");
             entity.Property(e => e.Status).HasMaxLength(50);
@@ -329,7 +328,6 @@ public partial class PetfriendsContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(255);
-            entity.Property(e => e.AvatarUrl).HasMaxLength(255);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Dob).HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(255);
