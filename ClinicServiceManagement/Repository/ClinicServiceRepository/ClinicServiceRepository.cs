@@ -22,8 +22,10 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
                 {
                     c.Id,
                     c.Name,
+                    c.CreateAt,
                     CategoryName = c.CategoryNavigation.Name,
                     c.Price,
+                    c.Status,
                     c.DiscountedPrice,
                     c.EstimateTime,
                     c.Image,

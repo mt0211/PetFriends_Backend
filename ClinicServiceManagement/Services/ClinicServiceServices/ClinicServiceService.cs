@@ -43,8 +43,10 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     Id = c.Id,
                     Name = c.Name,
                     CategoryName = c.CategoryName,
+                    CreateAt = c.CreateAt,
                     EstimateTime = c.EstimateTime,
                     Price = c.Price,
+                    Status = c.Status,
                     DiscountedPrice = c.DiscountedPrice,
                     Image = c.Image,
                 }).ToList();
