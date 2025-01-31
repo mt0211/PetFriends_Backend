@@ -4,11 +4,14 @@
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public DateTime? CreateAt { get; set; }
         public string CategoryName { get; set; }
         public string EstimateTime { get; set; }
         public decimal Price { get; set; }
+        public string? Status { get; set; }
         public decimal? DiscountedPrice { get; set; }
         public string Image { get; set; }
+
     }
 
     public class ServiceAddDTO
