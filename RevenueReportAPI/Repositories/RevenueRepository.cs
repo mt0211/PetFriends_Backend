@@ -24,6 +24,27 @@ namespace RevenueReportAPI.Repositories
                     u.Amount,
                 }).ToListAsync();
         }
+        public async Task<IEnumerable<dynamic>> GetDetailServiceRevenue(DateTime? startDate, DateTime? endDate)
+        {
+            DateOnly? start = startDate.HasValue ? DateOnly.FromDateTime(startDate.Value) : null;
+            DateOnly? end = endDate.HasValue ? DateOnly.FromDateTime(endDate.Value) : null;
+            var query = _context.ServiceRevenues
+                .Where(r => (!startDate.HasValue || r.Date >= start) &&
+                           (!endDate.HasValue || r.Date <= end))
+                .Select(r => new
+                {
+                    r.Id,
+                    r.ClinicServiceId,
+                    r.Date,
+                    r.Revenue,
+                    r.CreatedAt,
+                    r.UpdatedAt,
+                    ServiceType = r.ClinicService.Name // Điều chỉnh theo model thực tế
+                });
+
+            return await query.ToListAsync();
+        }
+
         public async Task<IEnumerable<dynamic>> GetServiceRevenue(DateTime? startDate, DateTime? endDate)
         {
             DateOnly? start = startDate.HasValue ? DateOnly.FromDateTime(startDate.Value) : null;
@@ -39,30 +60,27 @@ namespace RevenueReportAPI.Repositories
                     r.Revenue,
                     r.CreatedAt,
                     r.UpdatedAt,
-                    // Assuming there's a navigation property to get service type
-                    ServiceType = r.ClinicService.Name // You might need to adjust this based on your actual model
+                    ServiceType = r.ClinicService.Name // Điều chỉnh theo model thực tế
                 });
 
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<dynamic>> GetTotalRevenue(DateTime? startDate, DateTime? endDate)
+        public async Task<IEnumerable<dynamic>> GetTotalRevenue(int year, int? month)
         {
-            DateOnly? start = startDate.HasValue ? DateOnly.FromDateTime(startDate.Value) : null;
-            DateOnly? end = endDate.HasValue ? DateOnly.FromDateTime(endDate.Value) : null;
             var query = _context.DailyRevenueSummaries
-                .Where(r => (!startDate.HasValue || r.Date >= start) &&
-                           (!endDate.HasValue || r.Date <= end))
-                .Select(r => new
-                {
-                    r.Id,
-                    r.Date,
-                    Revenue = r.TotalRevenue,
-                    r.CreatedAt,
-                    r.UpdatedAt
-                });
+                .Where(r => r.Date.Year == year);
 
-            return await query.ToListAsync();
+            if (month.HasValue)
+            {
+                query = query.Where(r => r.Date.Month == month.Value);
+            }
+
+            return await query.Select(r => new
+            {
+                r.Date,
+                Revenue = r.TotalRevenue
+            }).ToListAsync();
         }
     }
 }
