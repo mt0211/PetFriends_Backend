@@ -8,9 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
+  
 	
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="13.0.1" />

@@ -60,71 +60,49 @@ namespace RevenueReportAPI.Services
             return result;
         }
 
-        //Helper method
-        private void SetDefaultDates(RevenueRequestModel request)
-        {
-            var today = DateTime.Now;
 
-            switch (request.TimeFrame.ToLower())
-            {
-                case "day":
-                    request.StartDate ??= today.Date;
-                    request.EndDate ??= today.Date.AddDays(1).AddSeconds(-1);
-                    break;
 
-                case "month":
-                    request.StartDate ??= new DateTime(today.Year, today.Month, 1);
-                    request.EndDate ??= request.StartDate.Value.AddMonths(1).AddSeconds(-1);
-                    break;
-
-                case "year":
-                    request.StartDate ??= new DateTime(today.Year, 1, 1);
-                    request.EndDate ??= request.StartDate.Value.AddYears(1).AddSeconds(-1);
-                    break;
-
-                default:
-                    throw new ArgumentException("TimeFrame không hợp lệ. Chỉ chấp nhận: day, month, year");
-            }
-        }
-
-        private List<ServiceRevenueDetailDTO> FormatServiceRevenue(IEnumerable<dynamic> rawData, string timeFrame)
+        private List<ServiceRevenueDetailDTO> FormatDetailServiceRevenue(IEnumerable<dynamic> rawData, string timeFrame)
         {
             return timeFrame.ToLower() switch
             {
                 "day" => rawData
-                    .GroupBy(x => new {
-                        Date = (DateOnly)x.Date, // Sử dụng DateOnly
+                    .GroupBy(x => new
+                    {
+                        Date = (DateOnly)x.Date,
                         x.ServiceType
                     })
                     .Select(g => new ServiceRevenueDetailDTO
                     {
                         ServiceType = g.Key.ServiceType,
                         Revenue = g.Sum(x => (decimal)x.Revenue),
-                        Period = g.Key.Date.ToString("dd/MM/yyyy") // Định dạng DateOnly
+                        Period = g.Key.Date.ToString("dd/MM/yyyy")
                     })
                     .OrderBy(x => x.Period)
                     .ThenBy(x => x.ServiceType)
                     .ToList(),
 
                 "month" => rawData
-                    .GroupBy(x => new {
-                        Year = ((DateOnly)x.Date).Year, // Trích xuất Year từ DateOnly
-                        Month = ((DateOnly)x.Date).Month, // Trích xuất Month từ DateOnly
+                    .GroupBy(x => new
+                    {
+                        Year = ((DateOnly)x.Date).Year,
+                        Month = ((DateOnly)x.Date).Month,
                         x.ServiceType
                     })
                     .Select(g => new ServiceRevenueDetailDTO
                     {
                         ServiceType = g.Key.ServiceType,
                         Revenue = g.Sum(x => (decimal)x.Revenue),
-                        Period = $"{g.Key.Month:00}/{g.Key.Year}" // Định dạng tháng/năm
+                        Period = $"{g.Key.Month:00}/{g.Key.Year}"
                     })
                     .OrderBy(x => x.Period)
                     .ThenBy(x => x.ServiceType)
                     .ToList(),
 
                 "year" => rawData
-                    .GroupBy(x => new {
-                        Year = ((DateOnly)x.Date).Year, // Trích xuất Year từ DateOnly
+                    .GroupBy(x => new
+                    {
+                        Year = ((DateOnly)x.Date).Year,
                         x.ServiceType
                     })
                     .Select(g => new ServiceRevenueDetailDTO
@@ -137,48 +115,228 @@ namespace RevenueReportAPI.Services
                     .ThenBy(x => x.ServiceType)
                     .ToList(),
 
-                _ => throw new ArgumentException("TimeFrame không hợp lệ")
+                _ => throw new ArgumentException("Invalid TimeFrame")
             };
         }
 
-        private List<TotalRevenueDetailDTO> FormatTotalRevenue(IEnumerable<dynamic> rawData, string timeFrame)
+
+
+        public async Task<ResultModel> GetDetailServiceRevenue(string token, RevenueRequestModel request)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 400,
+                    Message = "Invalid user ID"
+                };
+            }
+
+            try
+            {
+                DateTime? startDate = null;
+                DateTime? endDate = null;
+                string timeFrame = "year"; // Mặc định là tính theo năm
+
+                if (request.Year.HasValue)
+                {
+                    if (request.Month.HasValue)
+                    {
+                        // Nếu có cả Year và Month → Lấy dữ liệu từng ngày trong tháng
+                        startDate = new DateTime(request.Year.Value, request.Month.Value, 1);
+                        endDate = startDate.Value.AddMonths(1).AddSeconds(-1);
+                        timeFrame = "day"; // Lấy theo ngày
+                    }
+                    else
+                    {
+                        // Nếu chỉ có Year → Lấy dữ liệu từng tháng trong năm
+                        startDate = new DateTime(request.Year.Value, 1, 1);
+                        endDate = startDate.Value.AddYears(1).AddSeconds(-1);
+                        timeFrame = "month"; // Lấy theo tháng
+                    }
+                }
+                else
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 400,
+                        Message = "Year is required"
+                    };
+                }
+
+                // Lấy dữ liệu từ database
+                var rawData = await _revenueRepository.GetDetailServiceRevenue(startDate, endDate);
+                var serviceRevenue = FormatDetailServiceRevenue(rawData, timeFrame);
+
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = 200,
+                    Data = new
+                    {
+                        Year = request.Year,
+                        Month = request.Month,
+                        Services = serviceRevenue
+                    },
+                    Message = "Successfully get data"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 500,
+                    ResponseFailed = ex.Message
+                };
+            }
+        }
+
+        private List<TotalRevenueDetailDTO> GenerateMonthlyTotalRevenue(IEnumerable<dynamic> rawData, int year)
+        {
+            var months = Enumerable.Range(1, 12).ToList();
+
+            var groupedData = rawData
+                .GroupBy(x => ((DateOnly)x.Date).Month)
+                .ToDictionary(g => g.Key, g => g.Sum(x => (decimal)x.Revenue));
+
+            return months.Select(m => new TotalRevenueDetailDTO
+            {
+                Time = m.ToString(),
+                Revenue = groupedData.ContainsKey(m) ? groupedData[m] : 0
+            }).ToList();
+        }
+
+        private List<TotalRevenueDetailDTO> GenerateDailyTotalRevenue(IEnumerable<dynamic> rawData, int year, int month)
+        {
+            var daysInMonth = Enumerable.Range(1, DateTime.DaysInMonth(year, month)).ToList();
+
+            var groupedData = rawData
+                .GroupBy(x => ((DateOnly)x.Date).Day)
+                .ToDictionary(g => g.Key, g => g.Sum(x => (decimal)x.Revenue));
+
+            return daysInMonth.Select(d => new TotalRevenueDetailDTO
+            {
+                Time = d.ToString(),
+                Revenue = groupedData.ContainsKey(d) ? groupedData[d] : 0
+            }).ToList();
+        }
+        public async Task<ResultModel> GetTotalRevenue(string token, RevenueRequestModel request)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 400,
+                    Message = "Invalid user ID"
+                };
+            }
+
+            try
+            {
+                if (!request.Year.HasValue)
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 400,
+                        Message = "Year is required"
+                    };
+                }
+
+                var year = request.Year.Value;
+                int? month = request.Month;
+
+                // Lấy dữ liệu doanh thu từ repository
+                var rawData = await _revenueRepository.GetTotalRevenue(year, month);
+
+                List<TotalRevenueDetailDTO> totalRevenue;
+
+                if (month.HasValue)
+                {
+                    // Nếu có tháng, lấy dữ liệu theo từng ngày
+                    totalRevenue = GenerateDailyTotalRevenue(rawData, year, month.Value);
+                }
+                else
+                {
+                    // Nếu không có tháng, lấy dữ liệu theo từng tháng
+                    totalRevenue = GenerateMonthlyTotalRevenue(rawData, year);
+                }
+
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = 200,
+                    Data = new
+                    {
+                        Year = request.Year,
+                        Month = request.Month,
+                        Data = totalRevenue
+                    },
+                    Message = "Successfully get data"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 500,
+                    ResponseFailed = ex.Message
+                };
+            }
+        }
+        private List<ServiceRevenueDTO> FormatServiceRevenue(IEnumerable<dynamic> rawData, string timeFrame)
         {
             return timeFrame.ToLower() switch
             {
-                "day" => rawData
-                    .GroupBy(x => (DateOnly)x.Date) // Sử dụng DateOnly
-                    .Select(g => new TotalRevenueDetailDTO
-                    {
-                        TotalAmount = g.Sum(x => (decimal)x.Revenue),
-                        Period = g.Key.ToString("dd/MM/yyyy") // Định dạng DateOnly
-                    })
-                    .OrderBy(x => x.Period)
-                    .ToList(),
-
+                "day" => rawData  // Thêm case xử lý cho "day"
+                       .GroupBy(x => new
+                       {
+                           x.ServiceType
+                       })
+                       .Select(g => new ServiceRevenueDTO
+                       {
+                           ServiceType = g.Key.ServiceType,
+                           Revenue = g.Sum(x => (decimal)x.Revenue)
+                       })
+                       .OrderBy(x => x.ServiceType)
+                       .ToList(),
                 "month" => rawData
-                    .GroupBy(x => new {
-                        Year = ((DateOnly)x.Date).Year, // Trích xuất Year từ DateOnly
-                        Month = ((DateOnly)x.Date).Month // Trích xuất Month từ DateOnly
-                    })
-                    .Select(g => new TotalRevenueDetailDTO
+                    .GroupBy(x => new
                     {
-                        TotalAmount = g.Sum(x => (decimal)x.Revenue),
-                        Period = $"{g.Key.Month:00}/{g.Key.Year}" // Định dạng tháng/năm
+                        Year = ((DateOnly)x.Date).Year,
+                        Month = ((DateOnly)x.Date).Month,
+                        x.ServiceType
                     })
-                    .OrderBy(x => x.Period)
+                    .Select(g => new ServiceRevenueDTO
+                    {
+                        ServiceType = g.Key.ServiceType,
+                        Revenue = g.Sum(x => (decimal)x.Revenue)
+                    })
+                    .OrderBy(x => x.ServiceType)
                     .ToList(),
-
                 "year" => rawData
-                    .GroupBy(x => ((DateOnly)x.Date).Year) // Trích xuất Year từ DateOnly
-                    .Select(g => new TotalRevenueDetailDTO
+                    .GroupBy(x => new
                     {
-                        TotalAmount = g.Sum(x => (decimal)x.Revenue),
-                        Period = g.Key.ToString()
+                        Year = ((DateOnly)x.Date).Year,
+                        x.ServiceType
                     })
-                    .OrderBy(x => x.Period)
+                    .Select(g => new ServiceRevenueDTO
+                    {
+                        ServiceType = g.Key.ServiceType,
+                        Revenue = g.Sum(x => (decimal)x.Revenue)
+                    })
+                    .OrderBy(x => x.ServiceType)
                     .ToList(),
-
-                _ => throw new ArgumentException("TimeFrame không hợp lệ")
+                _ => throw new ArgumentException("Invalid TimeFrame")
             };
         }
 
@@ -188,89 +346,73 @@ namespace RevenueReportAPI.Services
             var userId = Encoder.DecodeToken(token, "userid");
             if (!Guid.TryParse(userId, out Guid id))
             {
-                result.IsSuccess = false;
-                result.Code = 400; // Bad request
-                result.Message = "Invalid user ID";
-                return result;
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 400,
+                    Message = "Invalid user ID"
+                };
             }
-            if (userId == null)
-            {
-                result.IsSuccess = false;
-                result.Code = 400; // Bad request
-                result.Message = "Please authorize";
-                return result;
-            }
+
             try
             {
-                // Thiết lập thời gian mặc định nếu không được chọn
-                SetDefaultDates(request);
+                DateTime? startDate = null;
+                DateTime? endDate = null;
+                string timeFrame = "year"; // Mặc định là tính theo năm
 
-                var rawData = await _revenueRepository.GetServiceRevenue(request.StartDate, request.EndDate);
-                var serviceRevenue = FormatServiceRevenue(rawData, request.TimeFrame);
-
-                result.IsSuccess = true;
-                result.Code = 200;
-                result.Data = new
+                if (request.Year.HasValue)
                 {
-                    TimeFrame = request.TimeFrame,
-                    StartDate = request.StartDate,
-                    EndDate = request.EndDate,
-                    Services = serviceRevenue
+                    if (request.Month.HasValue)
+                    {
+                        // Nếu có cả Year và Month → Lấy dữ liệu từng ngày trong tháng
+                        startDate = new DateTime(request.Year.Value, request.Month.Value, 1);
+                        endDate = startDate.Value.AddMonths(1).AddSeconds(-1);
+                        timeFrame = "day"; // Lấy theo ngày
+                    }
+                    else
+                    {
+                        // Nếu chỉ có Year → Lấy dữ liệu từng tháng trong năm
+                        startDate = new DateTime(request.Year.Value, 1, 1);
+                        endDate = startDate.Value.AddYears(1).AddSeconds(-1);
+                        timeFrame = "month"; // Lấy theo tháng
+                    }
+                }
+                else
+                {
+                    return new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = 400,
+                        Message = "Year is required"
+                    };
+                }
+
+                // Lấy dữ liệu từ database
+                var rawData = await _revenueRepository.GetServiceRevenue(startDate, endDate);
+                var serviceRevenue = FormatServiceRevenue(rawData, timeFrame);
+
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = 200,
+                    Data = new
+                    {
+                        Year = request.Year,
+                        Month = request.Month,
+                        Services = serviceRevenue
+                    },
+                    Message = "Successfully get data"
                 };
-                result.Message = "Successfully get data";
             }
             catch (Exception ex)
             {
-                result.IsSuccess = false;
-                result.Code = 500;
-                result.ResponseFailed = ex.Message;
-            }
-            return result;
-        }
-        public async Task<ResultModel> GetTotalRevenue(string token, RevenueRequestModel request)
-        {
-            var result = new ResultModel();
-            var userId = Encoder.DecodeToken(token, "userid");
-            if (!Guid.TryParse(userId, out Guid id))
-            {
-                result.IsSuccess = false;
-                result.Code = 400; // Bad request
-                result.Message = "Invalid user ID";
-                return result;
-            }
-            if (userId == null)
-            {
-                result.IsSuccess = false;
-                result.Code = 400; // Bad request
-                result.Message = "Please authorize";
-                return result;
-            }
-            try
-            {
-                // Thiết lập thời gian mặc định nếu không được chọn
-                SetDefaultDates(request);
-
-                var rawData = await _revenueRepository.GetTotalRevenue(request.StartDate, request.EndDate);
-                var totalRevenue = FormatTotalRevenue(rawData, request.TimeFrame);
-
-                result.IsSuccess = true;
-                result.Code = 200;
-                result.Data = new
+                return new ResultModel
                 {
-                    TimeFrame = request.TimeFrame,
-                    StartDate = request.StartDate,
-                    EndDate = request.EndDate,
-                    Revenue = totalRevenue
+                    IsSuccess = false,
+                    Code = 500,
+                    ResponseFailed = ex.Message
                 };
-                result.Message = "Successfully get data";
             }
-            catch (Exception ex)
-            {
-                result.IsSuccess = false;
-                result.Code = 500;
-                result.ResponseFailed = ex.Message;
-            }
-            return result;
         }
     }
 }
