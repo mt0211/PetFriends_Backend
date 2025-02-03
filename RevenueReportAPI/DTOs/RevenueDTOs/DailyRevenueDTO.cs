@@ -7,7 +7,7 @@
     }
     public class TotalRevenueDetailDTO
     {
-        public decimal TotalAmount { get; set; }
-        public string Period { get; set; }  // Để hiển thị ngày/tháng/năm
+        public string Time { get; set; }  // "1" → Tháng 1 hoặc Ngày 1
+        public decimal Revenue { get; set; }
     }
 }

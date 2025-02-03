@@ -1,4 +1,6 @@
-﻿namespace RevenueReportAPI.DTOs.ResultModel
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace RevenueReportAPI.DTOs.ResultModel
 {
     public class ResultModel
     {
@@ -10,8 +12,10 @@
     }
     public class RevenueRequestModel
     {
-        public string TimeFrame { get; set; } = "day"; 
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+       // [FromHeader(Name = "Year")] // Binding từ header
+        public int? Year { get; set; } 
+
+        //[FromHeader(Name = "Month")] // Binding từ header
+        public int? Month { get; set; }
     }
 }

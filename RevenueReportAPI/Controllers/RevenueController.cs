@@ -20,19 +20,81 @@ namespace RevenueReportAPI.Controllers
             ResultModel result = await _service.GetUserBookingSummary(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-        [HttpGet("service-revenue")]
-        public async Task<IActionResult> GetServiceRevenue([FromQuery] RevenueRequestModel request)
+        [HttpGet("detail-service-revenue")]
+        public async Task<IActionResult> GetDetailServiceRevenue([FromHeader] int? year, [FromHeader] string? month)
         {
+            int? monthValue = null;
+            if (!string.IsNullOrEmpty(month))
+            {
+                if (int.TryParse(month, out int parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12)
+                {
+                    monthValue = parsedMonth;
+                }
+                else
+                {
+                    return BadRequest(new { isSuccess = false, code = 400, message = "Month must be between 1 and 12" });
+                }
+            }
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            ResultModel result = await _service.GetServiceRevenue(token, request);
+            var requestModel = new RevenueRequestModel
+            {
+                Year = year,
+                Month = monthValue
+            };
+
+            ResultModel result = await _service.GetDetailServiceRevenue(token, requestModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("total-revenue")]
-        public async Task<IActionResult> GetTotalRevenue([FromQuery] RevenueRequestModel request)
+        public async Task<IActionResult> GetTotalRevenue([FromHeader] int? year, [FromHeader] string? month)
         {
+            int? monthValue = null;
+            if (!string.IsNullOrEmpty(month))
+            {
+                if (int.TryParse(month, out int parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12)
+                {
+                    monthValue = parsedMonth;
+                }
+                else
+                {
+                    return BadRequest(new { isSuccess = false, code = 400, message = "Month must be between 1 and 12" });
+                }
+            }
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            ResultModel result = await _service.GetTotalRevenue(token, request);
+            var requestModel = new RevenueRequestModel
+            {
+                Year = year,
+                Month = monthValue
+            };
+            
+            ResultModel result = await _service.GetTotalRevenue(token, requestModel);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpGet("service-revenue")]
+        public async Task<IActionResult> GetServiceRevenue([FromHeader] int? year, [FromHeader] string? month)
+        {
+            int? monthValue = null;
+            if (!string.IsNullOrEmpty(month))
+            {
+                if (int.TryParse(month, out int parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12)
+                {
+                    monthValue = parsedMonth;
+                }
+                else
+                {
+                    return BadRequest(new { isSuccess = false, code = 400, message = "Month must be between 1 and 12" });
+                }
+            }
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var requestModel = new RevenueRequestModel
+            {
+                Year = year,
+                Month = monthValue
+            };
+
+            ResultModel result = await _service.GetServiceRevenue(token, requestModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }
