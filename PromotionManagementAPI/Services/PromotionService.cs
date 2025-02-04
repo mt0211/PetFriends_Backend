@@ -231,7 +231,7 @@ namespace PromotionManagementAPI.Services
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = newPromotion;
-                result.Message = "Successfully add new appointment";
+                result.Message = "Successfully update appointment";
             }
             catch (Exception ex)
             {
@@ -262,17 +262,22 @@ namespace PromotionManagementAPI.Services
 
                 var promotionDetails = new PromotionDetailModel
                 {
+                    Id = promotionDetail.Id,
                     Name =  promotionDetail.Name,
                     Type = promotionDetail.Type,
                     DiscountDetail = promotionDetail.DiscountDetail,
                     StartDate = promotionDetail.StartDate,
                     EndDate = promotionDetail.EndDate,
+                    TargetGroup = promotionDetail.TargetGroup,
+                    CategoryId = promotionDetail.CategoryId,
+                    UsageLimit = promotionDetail.UsageLimit,
+                    Status = promotionDetail.Status,
                     Description = promotionDetail.Description,
                 };
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = promotionDetails;
-                result.Message = "Successfully add new appointment";
+                result.Message = "Successfully get appointment detail";
             }
             catch (Exception ex)
             {

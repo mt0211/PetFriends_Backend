@@ -64,11 +64,27 @@
 
     public class PromotionDetailModel
     {
+        public Guid Id { get; set; }
         public string? Name { get; set; }
         public byte? Type { get; set; }
+        public string TypeName => GetTypeName(Type);
         public decimal? DiscountDetail { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public string? TargetGroup { get; set; }
+        public Guid? CategoryId { get; set; }
+        public int UsageLimit { get; set; }
+        public string Status { get; set; }
         public string? Description { get; set; }
+        private string GetTypeName(byte? type)
+        {
+            return type switch
+            {
+                0 => "Percentage",
+                1 => "Amount",
+                2 => "Free Service",
+                _ => "Unknown"
+            };
+        }
     }
 }
