@@ -31,6 +31,17 @@ namespace DashboardAPI.Services
                 result.Message = "Please authorize";
                 return result;
             }
+            var user = await _dashboardRepository.GetUserByID(id);
+            if (user.Role != "ADMIN")
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Permission denied!";
+                return result;
+            }
+            {
+                
+            }
             try
             {
                 var (userCount, petCount, totalRevenue, totalPost, totalService) = await _dashboardRepository.GetDataCount();
@@ -84,7 +95,14 @@ namespace DashboardAPI.Services
                     Message = "Please authorize"
                 };
             }
-
+            var user = await _dashboardRepository.GetUserByID(id);
+            if (user.Role != "ADMIN")
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Permission denied!";
+                return result;
+            }
             try
             {
                 

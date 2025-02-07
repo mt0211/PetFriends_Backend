@@ -21,6 +21,7 @@ namespace AccountManagementAPI.Services
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
+            
             if (!Guid.TryParse(userId, out Guid id))
             {
                 result.IsSuccess = false;
@@ -33,6 +34,14 @@ namespace AccountManagementAPI.Services
                 result.IsSuccess = false;
                 result.Code = 400; // Bad request
                 result.Message = "Please authorize";
+                return result;
+            }
+            var user = await _repository.Get(id);
+            if(user.Role != "ADMIN")
+            {
+                result.IsSuccess = false;
+                result.Code = 401;
+                result.Message = "Permission Denied";
                 return result;
             }
             try
