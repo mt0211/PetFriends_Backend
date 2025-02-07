@@ -27,6 +27,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
+    public virtual DbSet<ForumComment> ForumComments { get; set; }
+
     public virtual DbSet<ForumPost> ForumPosts { get; set; }
 
     public virtual DbSet<GuestPet> GuestPets { get; set; }
@@ -170,20 +172,50 @@ public partial class PetfriendsContext : DbContext
                 .HasConstraintName("FK__Feedback__UserId__6FE99F9F");
         });
 
+        modelBuilder.Entity<ForumComment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ForumCom__3214EC07B5CF1C8C");
+
+            entity.ToTable("ForumComment");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.ForumComments)
+                .HasForeignKey(d => d.PostId)
+                .HasConstraintName("FK__ForumComm__PostI__59C55456");
+
+            entity.HasOne(d => d.User).WithMany(p => p.ForumComments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ForumComm__UserI__5AB9788F");
+        });
+
         modelBuilder.Entity<ForumPost>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ForumPos__3214EC07B9E4C70C");
+            entity.HasKey(e => e.Id).HasName("PK__ForumPos__3214EC07D541B015");
 
             entity.ToTable("ForumPost");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
-            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.DislikeCount).HasDefaultValue(0);
+            entity.Property(e => e.LikeCount).HasDefaultValue(0);
+            entity.Property(e => e.PostTitle).HasMaxLength(255);
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
 
             entity.HasOne(d => d.User).WithMany(p => p.ForumPosts)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ForumPost__UserI__70DDC3D8");
+                .HasConstraintName("FK__ForumPost__UserI__5224328E");
         });
 
         modelBuilder.Entity<GuestPet>(entity =>

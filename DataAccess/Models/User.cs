@@ -39,6 +39,8 @@ public partial class User
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
+    public virtual ICollection<ForumComment> ForumComments { get; set; } = new List<ForumComment>();
+
     public virtual ICollection<ForumPost> ForumPosts { get; set; } = new List<ForumPost>();
 
     public virtual ICollection<OtpVerify> OtpVerifies { get; set; } = new List<OtpVerify>();

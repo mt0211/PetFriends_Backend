@@ -3,5 +3,6 @@
     public interface IDashboardRepository
     {
         Task<(int userCount, int petCount, decimal totalRevenue, int postCount, int serviceCount)> GetDataCount();
+        Task<(int pending, int approved, int rejected)> GetForumPostStatistic(DateTime? date = null);
     }
 }

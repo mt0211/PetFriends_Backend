@@ -98,6 +98,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
 
                 result.IsSuccess = true;
                 result.Code = 200;
+                result.Data = newService;
                 result.Message = "Successfully added new service";
             }
             catch (Exception ex)
@@ -269,7 +270,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
             try
             {
                 // Lấy thông tin service từ database
-                var service = await _clinicServiceRepository.GetServiceStatusByID(serviceUpdateDTO.Id ?? Guid.Empty);
+                var service = await _clinicServiceRepository.GetServiceStatusByID(serviceUpdateDTO.Id);
                 if (service == null)
                 {
                     result.IsSuccess = false;
@@ -286,8 +287,8 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                 service.Category = serviceUpdateDTO.Category ?? service.Category;
                 service.EstimateTime = serviceUpdateDTO.EstimateTime ?? service.EstimateTime;
                 service.DiscountAmount = serviceUpdateDTO.DiscountAmount ?? service.DiscountAmount;
-                service.DiscountFrom = serviceUpdateDTO.DiscountFrom ?? service.DiscountFrom;
-                service.DiscountTo = serviceUpdateDTO.DiscountTo ?? service.DiscountTo;
+                service.DiscountFrom = serviceUpdateDTO.DiscountFrom;
+                service.DiscountTo = serviceUpdateDTO.DiscountTo;
                 service.Image = serviceUpdateDTO.Image ?? service.Image;
 
                 // Gọi repository để cập nhật service

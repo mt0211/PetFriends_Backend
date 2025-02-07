@@ -5,5 +5,6 @@ namespace DashboardAPI.Services
     public interface IDashboardService
     {
         Task<ResultModel> GetData(string token);
+        Task<ResultModel> GetForumPostStatistic(string token, DateTime? date = null);
     }
 }

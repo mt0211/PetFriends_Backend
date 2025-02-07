@@ -40,6 +40,7 @@ namespace RevenueReportAPI.Services
                 {
                     Id = u.Id,
                     FullName = u.UserName,
+                    AvatarUrl = u.UserAvatar,
                     NumOfBook = u.NumOfBook,
                     Amount = u.Amount,
                 }).ToList();
