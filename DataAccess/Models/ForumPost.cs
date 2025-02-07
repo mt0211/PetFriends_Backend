@@ -7,13 +7,25 @@ public partial class ForumPost
 {
     public Guid Id { get; set; }
 
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
-    public string Content { get; set; } = null!;
+    public string? PostTitle { get; set; }
+
+    public string? PostContent { get; set; }
+
+    public byte? Status { get; set; }
+
+    public int? LikeCount { get; set; }
+
+    public int? DislikeCount { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
-    public string Status { get; set; } = null!;
+    public DateTime? UpdatedAt { get; set; }
 
-    public virtual User User { get; set; } = null!;
+    public string? ImageUrl { get; set; }
+
+    public virtual ICollection<ForumComment> ForumComments { get; set; } = new List<ForumComment>();
+
+    public virtual User? User { get; set; }
 }

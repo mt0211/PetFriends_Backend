@@ -632,7 +632,6 @@ namespace AppointmentManagementAPI.Services
 
                 try
                 {
-                    // Lấy thông tin cuộc hẹn
                     var appointment = await _appointmentrepository.GetAppointmentByID(appointmentUpdate.Id);
                     var appointments = await _appointmentrepository.GetAppointmentAndUserEmail(appointmentUpdate.Id);
                     if (appointment == null)
@@ -642,17 +641,11 @@ namespace AppointmentManagementAPI.Services
                         result.Message = "Appointment not found.";
                         return result;
                     }
-
-                    // Cập nhật thông tin cơ bản của cuộc hẹn
                     appointment.Status = appointmentUpdate.Status;
                     appointment.StartAt = appointmentUpdate.StartAt;
                     appointment.Note = appointmentUpdate.Note;
-
-                    // Xử lý danh sách dịch vụ
-                    var existingServices = appointment.AppointmentClinicServices.ToList(); // Lấy danh sách dịch vụ hiện tại
-                    var updatedServiceIds = appointmentUpdate.ServiceIds; // Danh sách dịch vụ được cập nhật
-
-                    // Xóa các dịch vụ không còn trong danh sách mới
+                    var existingServices = appointment.AppointmentClinicServices.ToList();
+                    var updatedServiceIds = appointmentUpdate.ServiceIds; 
                     var servicesToRemove = existingServices
                         .Where(service => !updatedServiceIds.Contains(service.ClinicServiceId))
                         .ToList();
@@ -661,12 +654,9 @@ namespace AppointmentManagementAPI.Services
                     {
                         await _appointmentrepository.RemoveAppointmentClinicService(service);
                     }
-
-                    // Thêm các dịch vụ mới
                     var newServiceIds = updatedServiceIds
                         .Where(serviceId => !existingServices.Any(existing => existing.ClinicServiceId == serviceId))
                         .ToList();
-
                     foreach (var serviceId in newServiceIds)
                     {
                         var newService = new AppointmentClinicService
@@ -682,15 +672,10 @@ namespace AppointmentManagementAPI.Services
 
                     if (appointmentUpdate.Status == "Completed")
                     {
-                        // Cập nhật trạng thái và thời gian hoàn thành
                         appointment.Status = appointmentUpdate.Status;
                         appointment.EndAt = DateTimeOffset.Now.DateTime;
-
-                        // Lấy danh sách dịch vụ và tính tổng tiền
                         var services = await _appointmentrepository.GetAppointmentServices(appointment.Id);
                         var totalAmount = services.Sum(s => s.Price ?? 0);
-
-                        // Cập nhật bảng UserBookingSummary
                         if (appointment.UserId.HasValue)
                         {
                             await UpdateUserBookingSummary(appointment.UserId.Value, totalAmount);
@@ -700,8 +685,6 @@ namespace AppointmentManagementAPI.Services
                         {
                             await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
                         }
-
-                        // Chuẩn bị dữ liệu trả về
                         result.Data = new AppointmentStatusResultModel
                         {
                             Status = appointment.Status,
@@ -744,8 +727,6 @@ namespace AppointmentManagementAPI.Services
                             Console.WriteLine("Email does not exist. Skipping email notification.");
                         }
                     }
-
-                    // Cập nhật vào database
                     await _appointmentrepository.Update(appointment);
 
                     result.IsSuccess = true;

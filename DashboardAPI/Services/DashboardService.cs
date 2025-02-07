@@ -1,4 +1,5 @@
 ﻿using DashboardAPI.DTOs.DataDTOs;
+using DashboardAPI.DTOs.ForumPostDTOs;
 using DashboardAPI.DTOs.ResultModel;
 using DashboardAPI.Repositories;
 using DashboardAPI.Utilities;
@@ -35,6 +36,7 @@ namespace DashboardAPI.Services
                 var (userCount, petCount, totalRevenue, totalPost, totalService) = await _dashboardRepository.GetDataCount();
                 var getDataCount = new DataDTO
                 {
+                    
                     totalUser = userCount,
                     totalPet = petCount,
                     monthlyRevenue = totalRevenue,
@@ -57,5 +59,65 @@ namespace DashboardAPI.Services
             }
             return result;
         }
+
+        public async Task<ResultModel> GetForumPostStatistic(string token, DateTime? date)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 400, // Bad request
+                    Message = "Invalid user ID"
+                };
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 400, // Bad request
+                    Message = "Please authorize"
+                };
+            }
+
+            try
+            {
+                
+                var (pendingCount, approvedCount, rejectCount ) = await _dashboardRepository.GetForumPostStatistic(date);
+                var getDataCount = new ForumPostStatisticDTO
+                {
+                    //Date = date,
+                    Pending = pendingCount,
+                    Approved = approvedCount,
+                    Rejected = rejectCount
+                };
+               
+
+                return new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = 200,
+                    Data = getDataCount, // Gán DTO vào ResultModel.Data
+                    Message = "Successfully retrieved forum post statistics"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = 500,
+                    ResponseFailed = ex.InnerException != null
+                        ? ex.InnerException.Message + "\n" + ex.StackTrace
+                        : ex.Message + "\n" + ex.StackTrace
+                };
+            }
+        }
+
     }
 }
