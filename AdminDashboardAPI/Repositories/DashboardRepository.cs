@@ -40,6 +40,15 @@ namespace DashboardAPI.Repositories
             counts.TryGetValue(2, out rejectedCount);
             return (pendingCount, approvedCount, rejectedCount);
         }
+        public async Task<User> GetUserByID(Guid id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u=> u.Id == id);
+            if (user == null)
+            {
+                return null;
+            }
+            return user;
+        }
 
     }
 }
