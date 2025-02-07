@@ -20,6 +20,7 @@ namespace RevenueReportAPI.Repositories
                 {
                     u.Id,
                     UserName = u.User.FullName,
+                    UserAvatar = u.User.AvatarUrl,
                     u.NumOfBook,
                     u.Amount,
                 }).ToListAsync();

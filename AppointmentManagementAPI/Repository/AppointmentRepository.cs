@@ -176,24 +176,19 @@ namespace AppointmentManagementAPI.Repository
 
         public async Task UpdateDailyRevenue(decimal amount)
         {
-            // Lấy ngày hiện tại
             var today = DateTime.UtcNow.Date;
             DateOnly dateOnly = new DateOnly(today.Year, today.Month, today.Day);
-
-            // Kiểm tra xem đã có tổng doanh thu cho ngày hôm nay chưa
             var dailyRevenue = await _context.DailyRevenueSummaries
                 .FirstOrDefaultAsync(dr => dr.Date == dateOnly);
 
             if (dailyRevenue != null)
             {
-                // Nếu đã có, cộng dồn doanh thu
                 dailyRevenue.TotalRevenue += amount;
                 dailyRevenue.UpdatedAt = DateTime.UtcNow;
                 _context.DailyRevenueSummaries.Update(dailyRevenue);
             }
             else
             {
-                // Nếu chưa có, tạo bản ghi mới
                 var newDailyRevenue = new DailyRevenueSummary
                 {
                     Id = Guid.NewGuid(),
@@ -205,30 +200,24 @@ namespace AppointmentManagementAPI.Repository
 
                 await _context.DailyRevenueSummaries.AddAsync(newDailyRevenue);
             }
-
-            // Lưu thay đổi vào DB
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateServiceRevenue(Guid serviceTypeId, decimal amount)
         {
-            // Lấy ngày hiện tại
             var today = DateTime.UtcNow.Date;
             DateOnly dateOnly = new DateOnly(today.Year, today.Month, today.Day);
-            // Tìm bản ghi doanh thu của loại dịch vụ trong ngày hôm nay
             var revenueEntry = await _context.ServiceRevenues
                 .FirstOrDefaultAsync(sr => sr.ClinicServiceId == serviceTypeId && sr.Date == dateOnly);
 
             if (revenueEntry != null)
             {
-                // Nếu đã có, cộng dồn doanh thu
                 revenueEntry.Revenue += amount;
                 revenueEntry.UpdatedAt = DateTime.UtcNow;
                 _context.ServiceRevenues.Update(revenueEntry);
             }
             else
             {
-                // Nếu chưa có, tạo bản ghi mới
                 var newRevenueEntry = new ServiceRevenue
                 {
                     Id = Guid.NewGuid(),
@@ -241,8 +230,6 @@ namespace AppointmentManagementAPI.Repository
 
                 await _context.ServiceRevenues.AddAsync(newRevenueEntry);
             }
-
-            // Lưu thay đổi vào DB
             await   _context.SaveChangesAsync();
         }
 

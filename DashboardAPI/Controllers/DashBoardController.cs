@@ -20,6 +20,12 @@ namespace DashboardAPI.Controllers
             ResultModel result = await _service.GetData(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-
+        [HttpGet("forum-post-statistic")]
+        public async Task<IActionResult> GetForumPostStatistic([FromQuery] DateTime? date)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.GetForumPostStatistic(token,date);
+            return Ok(result);
+        }
     }
 }

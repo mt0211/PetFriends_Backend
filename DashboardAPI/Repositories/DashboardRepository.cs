@@ -24,5 +24,22 @@ namespace DashboardAPI.Repositories
                 .SumAsync(r => r.TotalRevenue);
             return (userCount, petCount, totalRevenue, postCount, serviceCount);
         }
+
+        public async Task<(int pending, int approved, int rejected)> GetForumPostStatistic(DateTime? date )
+        {
+                DateTime selectedDate = (date ?? DateTime.UtcNow).Date;
+                date = selectedDate.Date;
+            var counts = await _context.ForumPosts
+                .Where(p => p.CreatedAt.HasValue && p.CreatedAt.Value.Date == date)
+                .GroupBy(p => p.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Status, x => x.Count);
+            int pendingCount = 0, approvedCount = 0, rejectedCount = 0;
+            counts.TryGetValue(0, out pendingCount);
+            counts.TryGetValue(1, out approvedCount);
+            counts.TryGetValue(2, out rejectedCount);
+            return (pendingCount, approvedCount, rejectedCount);
+        }
+
     }
 }
