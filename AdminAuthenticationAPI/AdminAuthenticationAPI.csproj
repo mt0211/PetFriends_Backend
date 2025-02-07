@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>917f03c9-6ffe-400c-a7d2-b86875bb4d4b</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   
@@ -28,6 +30,11 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="lib\" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="DataAccess">
+			<HintPath>..\lib\DataAccess.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
