@@ -30,4 +30,9 @@
 	<ItemGroup>
 	  <Folder Include="lib\" />
 	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="DataAccess">
+			<HintPath>..\lib\DataAccess.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 </Project>
