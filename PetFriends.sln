@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminDashboardAPI", "Dashbo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClinicDasboardAPI", "ClinicDasboardAPI\ClinicDasboardAPI.csproj", "{8622D782-A7CD-43B8-BB29-F582C8B808C2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForumManagementAPI", "ForumManagementAPI\ForumManagementAPI.csproj", "{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{8622D782-A7CD-43B8-BB29-F582C8B808C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8622D782-A7CD-43B8-BB29-F582C8B808C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8622D782-A7CD-43B8-BB29-F582C8B808C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

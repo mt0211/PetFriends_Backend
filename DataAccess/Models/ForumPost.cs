@@ -9,8 +9,6 @@ public partial class ForumPost
 
     public Guid? UserId { get; set; }
 
-    public string? PostTitle { get; set; }
-
     public string? PostContent { get; set; }
 
     public byte? Status { get; set; }
