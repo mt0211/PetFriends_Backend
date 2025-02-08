@@ -107,6 +107,30 @@
       ],
       "UpstreamPathTemplate": "/apigateway/admin/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/admindashboard/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5016
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/admindashboard/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/clinicdashboard/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5018
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/clinicdashboard/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ]
 }

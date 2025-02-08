@@ -1,9 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>6b0f7b48-c342-4527-a78e-dddac343a46e</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -26,4 +28,15 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="lib\" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="DataAccess">
+			<HintPath>..\lib\DataAccess.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 </Project>
