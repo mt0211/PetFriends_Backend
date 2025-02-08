@@ -1,17 +1,18 @@
-﻿using DashboardAPI.DTOs.DataDTOs;
-using DashboardAPI.DTOs.ForumPostDTOs;
-using DashboardAPI.DTOs.ResultModel;
-using DashboardAPI.Repositories;
-using DashboardAPI.Utilities;
+﻿using ClinicDasboardAPI.DTOs.AppointmentDTOs;
+using ClinicDasboardAPI.DTOs.DataDTOs;
+using ClinicDasboardAPI.DTOs.ResultModel;
+using ClinicDasboardAPI.Repositories;
+using ClinicDasboardAPI.Utilities;
 
-namespace DashboardAPI.Services
+
+namespace ClinicDasboardAPI.Services
 {
-    public class DashboardService : IDashboardService
+    public class ClinicDashboardService : IClinicDashboardService
     {
-        private readonly IDashboardRepository _dashboardRepository;
-        public DashboardService(IDashboardRepository dashboardRepository)
+        private readonly IClinicDashboardRepository _repository;
+        public ClinicDashboardService(IClinicDashboardRepository repository)
         {
-            _dashboardRepository = dashboardRepository;
+            _repository = repository;
         }
         public async Task<ResultModel> GetData(string token)
         {
@@ -31,8 +32,8 @@ namespace DashboardAPI.Services
                 result.Message = "Please authorize";
                 return result;
             }
-            var user = await _dashboardRepository.GetUserByID(id);
-            if (user.Role != "ADMIN")
+            var user = await _repository.GetUserByID(id);
+            if (user.Role != "PARTNER")
             {
                 result.IsSuccess = false;
                 result.Code = 400; // Bad request
@@ -41,13 +42,13 @@ namespace DashboardAPI.Services
             }
             try
             {
-                var (userCount, totalPost, totalService) = await _dashboardRepository.GetDataCount();
+                var (userCount, petCount, totalRevenue, avgRating) = await _repository.GetDataCount();
                 var getDataCount = new DataDTO
                 {
                     totalUser = userCount,
-                    totalPost = totalPost,
-                    totalService = totalService
-                    
+                    totalPet = petCount,
+                    monthlyRevenue = totalRevenue,
+                    avgRating = avgRating
                 };
                 // success 
                 result.IsSuccess = true;
@@ -65,7 +66,7 @@ namespace DashboardAPI.Services
             return result;
         }
 
-        public async Task<ResultModel> GetForumPostStatistic(string token, DateTime? date)
+        public async Task<ResultModel> GetAppointmentStatistic(string token, DateTime? date)
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
@@ -89,8 +90,8 @@ namespace DashboardAPI.Services
                     Message = "Please authorize"
                 };
             }
-            var user = await _dashboardRepository.GetUserByID(id);
-            if (user.Role != "ADMIN")
+            var user = await _repository.GetUserByID(id);
+            if (user.Role != "PARTNER")
             {
                 result.IsSuccess = false;
                 result.Code = 400; // Bad request
@@ -99,23 +100,21 @@ namespace DashboardAPI.Services
             }
             try
             {
-                
-                var (pendingCount, approvedCount, rejectCount ) = await _dashboardRepository.GetForumPostStatistic(date);
-                var getDataCount = new ForumPostStatisticDTO
+                var (pendingCount, confirmedCount, completedCount, canceledCount) = await _repository.GetAppointmentStatistic(date);
+                var getDataCount = new AppointmentDTO
                 {
                     //Date = date,
                     Pending = pendingCount,
-                    Approved = approvedCount,
-                    Rejected = rejectCount
+                    Confirmed = confirmedCount,
+                    Completed = completedCount,
+                    Canceled = canceledCount
                 };
-               
-
                 return new ResultModel
                 {
                     IsSuccess = true,
                     Code = 200,
                     Data = getDataCount, // Gán DTO vào ResultModel.Data
-                    Message = "Successfully retrieved forum post statistics"
+                    Message = "Successfully retrieved appointment statistics"
                 };
             }
             catch (Exception ex)
@@ -130,6 +129,5 @@ namespace DashboardAPI.Services
                 };
             }
         }
-
     }
 }
