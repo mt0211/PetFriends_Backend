@@ -208,7 +208,6 @@ public partial class PetfriendsContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.DislikeCount).HasDefaultValue(0);
             entity.Property(e => e.LikeCount).HasDefaultValue(0);
-            entity.Property(e => e.PostTitle).HasMaxLength(255);
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
