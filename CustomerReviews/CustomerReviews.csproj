@@ -32,10 +32,6 @@
 
 <ItemGroup>
   <Folder Include="lib\" />
-  <Folder Include="DTOs\" />
-  <Folder Include="Utilities\" />
-  <Folder Include="Services\" />
-  <Folder Include="Repositories\" />
 </ItemGroup>
 	<ItemGroup>
 		<Reference Include="DataAccess">
