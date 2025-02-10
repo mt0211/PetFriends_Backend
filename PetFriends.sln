@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClinicDasboardAPI", "Clinic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForumManagementAPI", "ForumManagementAPI\ForumManagementAPI.csproj", "{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerReviews", "CustomerReviews\CustomerReviews.csproj", "{F5FA3810-BF56-48B1-941F-38A98FE2D7BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,10 @@ Global
 		{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5FA3810-BF56-48B1-941F-38A98FE2D7BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5FA3810-BF56-48B1-941F-38A98FE2D7BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5FA3810-BF56-48B1-941F-38A98FE2D7BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5FA3810-BF56-48B1-941F-38A98FE2D7BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

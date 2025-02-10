@@ -1,14 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>04aa38a2-d09e-4f0f-9e81-1eec41fcc9f9</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
-	<ItemGroup>
+<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
 		<PackageReference Include="MailKit" Version="4.8.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
@@ -28,20 +26,20 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="lib\" />
-	</ItemGroup>
+<ItemGroup>
+  <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+</ItemGroup>
+
+<ItemGroup>
+  <Folder Include="lib\" />
+  <Folder Include="DTOs\" />
+  <Folder Include="Utilities\" />
+  <Folder Include="Services\" />
+  <Folder Include="Repositories\" />
+</ItemGroup>
 	<ItemGroup>
 		<Reference Include="DataAccess">
 			<HintPath>..\lib\DataAccess.dll</HintPath>
 		</Reference>
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <None Update="TemplateEmail\Notification.html">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
 	</ItemGroup>
 </Project>
