@@ -143,6 +143,18 @@
       ],
       "UpstreamPathTemplate": "/apigateway/forum/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/customeroverview/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5022
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/customeroverview/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ]
 }
