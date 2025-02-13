@@ -26,6 +26,7 @@
         public DateTime? DiscountFrom { get; set; }
         public DateTime? DiscountTo { get; set; }
         public string? Image { get; set; }
+     //   public byte? IsBlocked { get; set; }
     }
     public class ServiceDetailDTO
     {

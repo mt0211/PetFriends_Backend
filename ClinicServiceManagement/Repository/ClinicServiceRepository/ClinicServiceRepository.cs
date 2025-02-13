@@ -17,7 +17,7 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         {
             return await _context.ClinicServices
                 .Include(c => c.CategoryNavigation)
-                .Where(c => c.CategoryNavigation.Status == 1)
+                .Where(c => c.CategoryNavigation.Status == 1 && c.IsBlocked == 1)
                 .Select(c => new
                 {
                     c.Id,
@@ -94,10 +94,9 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         public async Task AddService(ClinicService service)
         {
             var sql = @"INSERT INTO ClinicService (Id, Name, Description, CreateAt, Category, Price, Status, 
-                EstimateTime, DiscountAmount, DiscountFrom, DiscountTo, Image) 
+                EstimateTime, DiscountAmount, DiscountFrom, DiscountTo, Image, IsBlocked) 
                 VALUES (@Id, @Name, @Description, @CreateAt, @Category, @Price, @Status,
-                @EstimateTime, @DiscountAmount, @DiscountFrom, @DiscountTo, @Image)";
-
+                @EstimateTime, @DiscountAmount, @DiscountFrom, @DiscountTo, @Image, @IsBlocked)";
             var parameters = new[] {
         new SqlParameter("@Id", service.Id),
         new SqlParameter("@Name", service.Name),
@@ -110,7 +109,8 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         new SqlParameter("@DiscountAmount", service.DiscountAmount ?? (object)DBNull.Value),
         new SqlParameter("@DiscountFrom", service.DiscountFrom ?? (object)DBNull.Value),
         new SqlParameter("@DiscountTo", service.DiscountTo ?? (object)DBNull.Value),
-        new SqlParameter("@Image", service.Image ?? (object)DBNull.Value)
+        new SqlParameter("@Image", service.Image ?? (object)DBNull.Value),
+         new SqlParameter("@IsBlocked", 1)
     };
 
             await _context.Database.ExecuteSqlRawAsync(sql, parameters);
