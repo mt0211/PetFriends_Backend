@@ -91,6 +91,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     DiscountFrom = serviceAddDTO.DiscountFrom,
                     DiscountTo = serviceAddDTO.DiscountTo,
                     Image = serviceAddDTO.Image,
+                 //   IsBlocked = 1,
                 };
                 await _clinicServiceRepository.AddService(newService);
                 //  await _clinicServiceRepository.UpdateDiscountedPrice(newService);

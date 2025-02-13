@@ -155,6 +155,18 @@
       ],
       "UpstreamPathTemplate": "/apigateway/customeroverview/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/adminservice/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5024
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/adminservice/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ]
 }
