@@ -188,7 +188,7 @@ public partial class PetfriendsContext : DbContext
 
             entity.HasOne(d => d.Post).WithMany(p => p.ForumComments)
                 .HasForeignKey(d => d.PostId)
-                .HasConstraintName("FK__ForumComm__PostI__59C55456");
+                .HasConstraintName("FK_ForumComment_PostId");
 
             entity.HasOne(d => d.User).WithMany(p => p.ForumComments)
                 .HasForeignKey(d => d.UserId)

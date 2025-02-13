@@ -99,8 +99,6 @@ namespace ForumManagementAPI.Services
             try
             {
                var post = await _repository.GetPostByID(pid);
-
-
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = post;
