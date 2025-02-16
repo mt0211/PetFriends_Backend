@@ -1,0 +1,6 @@
+@AdminReport_HostAddress = http://localhost:5105
+
+GET {{AdminReport_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
