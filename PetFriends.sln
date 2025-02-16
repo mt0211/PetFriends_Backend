@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerReviews", "Customer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminServiceManagement", "AdminServiceManagement\AdminServiceManagement.csproj", "{177F123F-C6B2-425D-BB8F-4360415939B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminReport", "AdminReport\AdminReport.csproj", "{F23D908B-2A7D-49A4-9675-3A13D0125BF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +119,10 @@ Global
 		{177F123F-C6B2-425D-BB8F-4360415939B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{177F123F-C6B2-425D-BB8F-4360415939B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{177F123F-C6B2-425D-BB8F-4360415939B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F23D908B-2A7D-49A4-9675-3A13D0125BF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F23D908B-2A7D-49A4-9675-3A13D0125BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F23D908B-2A7D-49A4-9675-3A13D0125BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F23D908B-2A7D-49A4-9675-3A13D0125BF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
