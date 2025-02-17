@@ -25,21 +25,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevenueReportAPI", "Revenue
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromotionManagementAPI", "PromotionManagementAPI\PromotionManagementAPI.csproj", "{F7AD5CD3-7B5A-49AB-A92A-DDE781DD7083}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminAuthenticationAPI", "AdminAuthenticationAPI\AdminAuthenticationAPI.csproj", "{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminAuthenticationAPI", "AdminAuthenticationAPI\AdminAuthenticationAPI.csproj", "{B1EF51A3-AE2E-44AD-B51F-7E448A6B4EFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountManagementAPI", "AccountManagementAPI\AccountManagementAPI.csproj", "{201DB9C1-1ABE-4772-9C63-042027FFC29B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccountManagementAPI", "AccountManagementAPI\AccountManagementAPI.csproj", "{201DB9C1-1ABE-4772-9C63-042027FFC29B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminDashboardAPI", "DashboardAPI\AdminDashboardAPI.csproj", "{71B5347D-A8F8-44D9-B8D9-72996DF1F90B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminDashboardAPI", "DashboardAPI\AdminDashboardAPI.csproj", "{71B5347D-A8F8-44D9-B8D9-72996DF1F90B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClinicDasboardAPI", "ClinicDasboardAPI\ClinicDasboardAPI.csproj", "{8622D782-A7CD-43B8-BB29-F582C8B808C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClinicDasboardAPI", "ClinicDasboardAPI\ClinicDasboardAPI.csproj", "{8622D782-A7CD-43B8-BB29-F582C8B808C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForumManagementAPI", "ForumManagementAPI\ForumManagementAPI.csproj", "{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForumManagementAPI", "ForumManagementAPI\ForumManagementAPI.csproj", "{8C1D89C9-E516-4E6F-AB78-37E10DB0ADC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerReviews", "CustomerReviews\CustomerReviews.csproj", "{F5FA3810-BF56-48B1-941F-38A98FE2D7BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomerReviews", "CustomerReviews\CustomerReviews.csproj", "{F5FA3810-BF56-48B1-941F-38A98FE2D7BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminServiceManagement", "AdminServiceManagement\AdminServiceManagement.csproj", "{177F123F-C6B2-425D-BB8F-4360415939B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminServiceManagement", "AdminServiceManagement\AdminServiceManagement.csproj", "{177F123F-C6B2-425D-BB8F-4360415939B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminReport", "AdminReport\AdminReport.csproj", "{F23D908B-2A7D-49A4-9675-3A13D0125BF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminReport", "AdminReport\AdminReport.csproj", "{F23D908B-2A7D-49A4-9675-3A13D0125BF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppAppointmentManagementAPI", "ProfileManagementAppAPI\AppAppointmentManagementAPI.csproj", "{9279B18A-DBFF-4EB2-A7B2-6FAFAB906764}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,6 +125,10 @@ Global
 		{F23D908B-2A7D-49A4-9675-3A13D0125BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F23D908B-2A7D-49A4-9675-3A13D0125BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F23D908B-2A7D-49A4-9675-3A13D0125BF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9279B18A-DBFF-4EB2-A7B2-6FAFAB906764}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9279B18A-DBFF-4EB2-A7B2-6FAFAB906764}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9279B18A-DBFF-4EB2-A7B2-6FAFAB906764}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9279B18A-DBFF-4EB2-A7B2-6FAFAB906764}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
