@@ -1,0 +1,6 @@
+@ProfileManagementAppAPI_HostAddress = http://localhost:5104
+
+GET {{ProfileManagementAppAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
