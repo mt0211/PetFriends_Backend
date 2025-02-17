@@ -5,7 +5,7 @@ using DataAccess.Repositories;
 
 namespace ProfileManagementAppAPI.Repositories
 {
-    public interface IProfileManagementRepository : IRepository<User>
+    public interface IAppointmentRepository : IRepository<User>
     {
     }
 }

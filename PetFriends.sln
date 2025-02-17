@@ -41,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminServiceManagement", "A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminReport", "AdminReport\AdminReport.csproj", "{F23D908B-2A7D-49A4-9675-3A13D0125BF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfileManagementAppAPI", "ProfileManagementAppAPI\ProfileManagementAppAPI.csproj", "{9279B18A-DBFF-4EB2-A7B2-6FAFAB906764}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppAppointmentManagementAPI", "ProfileManagementAppAPI\AppAppointmentManagementAPI.csproj", "{9279B18A-DBFF-4EB2-A7B2-6FAFAB906764}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

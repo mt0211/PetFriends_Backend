@@ -33,7 +33,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="lib\" />
-		<Folder Include="lib\" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="DataAccess">
