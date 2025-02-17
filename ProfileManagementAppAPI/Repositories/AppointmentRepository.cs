@@ -4,15 +4,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ProfileManagementAppAPI.Repositories
 {
-    public class ProfileManagementRepository : Repository<User>, IProfileManagementRepository
+    public class AppointmentRepository : Repository<User>, IAppointmentRepository
     {
         private readonly PetfriendsContext _context;
 
-        public ProfileManagementRepository(PetfriendsContext context) : base(context)
+        public AppointmentRepository(PetfriendsContext context) : base(context)
         {
             _context = context;
 
         }
+
 
 
     }

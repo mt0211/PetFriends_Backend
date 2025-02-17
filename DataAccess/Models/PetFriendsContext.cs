@@ -25,6 +25,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<DailyRevenueSummary> DailyRevenueSummaries { get; set; }
 
+    public virtual DbSet<Diagnosis> Diagnoses { get; set; }
+
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
     public virtual DbSet<ForumComment> ForumComments { get; set; }
@@ -155,6 +157,31 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<Diagnosis>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Diagnose__3213E83FD25F3E66");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Confidence).HasColumnName("confidence");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.FileName)
+                .HasMaxLength(255)
+                .HasColumnName("file_name");
+            entity.Property(e => e.FilePath)
+                .HasMaxLength(255)
+                .HasColumnName("file_path");
+            entity.Property(e => e.Label)
+                .HasMaxLength(255)
+                .HasColumnName("label");
+            entity.Property(e => e.ResultImagePath)
+                .HasMaxLength(255)
+                .HasColumnName("result_image_path");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
         });
 
         modelBuilder.Entity<Feedback>(entity =>

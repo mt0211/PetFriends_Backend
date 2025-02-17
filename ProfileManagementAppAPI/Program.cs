@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ProfileManagementAppAPI.Repositories;
+using ProfileManagementAppAPI.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -88,9 +90,9 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 ////Register Dependency Injection here:
 /////////////////////////
-//builder.Services.AddScoped<PromotionService>();
-//builder.Services.AddTransient<IPromotionService, PromotionService>();
-//builder.Services.AddTransient<IPromotionRepository, PromotionRepository>();
+builder.Services.AddScoped<AppointmentService>();
+builder.Services.AddTransient<IAppointmentService, AppointmentService>();
+builder.Services.AddTransient<IAppointmentRepository, AppointmentRepository>();
 
 
 
