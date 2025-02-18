@@ -1,6 +1,7 @@
 ﻿using AppUserAuthenticationAPI.DTOs.AppUserDTOs;
 using AppUserAuthenticationAPI.DTOs.ResultModel;
 using AppUserAuthenticationAPI.Repositories;
+using AppUserAuthenticationAPI.Repository.OtpRepository;
 using AppUserAuthenticationAPI.Utilities;
 using AutoMapper;
 using DataAccess.Models;
@@ -12,9 +13,13 @@ namespace AppUserAuthenticationAPI.Services
     {
 
         private readonly IAppUserAuthenticationRepository _appUserAuthenticationRepository;
-        public AppUserAuthenticationService(IAppUserAuthenticationRepository appUserAuthenticationRepository)
+        private readonly IOtpRepository _otpRepository;
+
+        public AppUserAuthenticationService(IAppUserAuthenticationRepository appUserAuthenticationRepository, IOtpRepository otpRepository)
         {
             _appUserAuthenticationRepository = appUserAuthenticationRepository;
+            _otpRepository = otpRepository;
+
         }
         public async Task<ResultModel> Login(UserLoginReqModel userLoginReqModel)
         {
@@ -99,5 +104,104 @@ namespace AppUserAuthenticationAPI.Services
             }
             return Result;
         }
+
+        public async Task<ResultModel> CreateAccount(UserReqModel RegisterForm)
+        {
+            ResultModel Result = new();
+            try
+            {
+
+                var User = await _appUserAuthenticationRepository.GetUserByEmail(RegisterForm.Email);
+                var UserPhoneNumber = await _appUserAuthenticationRepository.GetUserByPhoneNumber(RegisterForm.PhoneNumber);
+                if (User != null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Email is already registered!";
+                }
+                else if (UserPhoneNumber != null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Phone number is already registered!";
+                }
+                else
+                {
+                    string OTP = GenerateOTP();
+                    DateTime expirationTime = DateTime.Now.AddMinutes(10);
+                    var config = new MapperConfiguration(cfg =>
+                    {
+                        cfg.CreateMap<UserReqModel, User>().ForMember(dest => dest.Password, opt => opt.Ignore());
+                    });
+                    IMapper mapper = config.CreateMapper();
+                    User NewUser = mapper.Map<UserReqModel, User>(RegisterForm);
+                    if (RegisterForm.Password == null)
+                    {
+                        RegisterForm.Password = Encoder.GenerateRandomPassword();
+                    }
+                    string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "CreateAccount.html");
+
+                    string Html = File.ReadAllText(FilePath);
+                    Html = Html.Replace("{{Email}}", RegisterForm.Email);
+                    Html = Html.Replace("{{OTP}}", $"{OTP}");
+
+                    bool emailSent = await Email.SendEmail(RegisterForm.Email, "Email Verification", Html);
+
+                    if (emailSent)
+                    {
+
+                        NewUser.Id = Guid.NewGuid();
+                        NewUser.Status = "INACTIVE";
+                        NewUser.CreatedAt = DateTime.Now;
+                        NewUser.Role = "USER";
+                        var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
+                        NewUser.Password = HashedPasswordModel.HashedPassword;
+                        NewUser.Salt = HashedPasswordModel.Salt;
+
+                        _ = await _appUserAuthenticationRepository.Insert(NewUser);
+
+                        OtpVerify otpVerify = new OtpVerify
+                        {
+                            Id = Guid.NewGuid(),
+                            CreatedAt = DateTime.Now,
+                            OtpCode = OTP,
+                            ExpiredAt = expirationTime,
+                            IsUsed = 0,
+                            UserId = NewUser.Id,
+                        };
+                        _ = await _otpRepository.Insert(otpVerify);
+
+
+                        Result.IsSuccess = true;
+                        Result.Code = 200;
+                        Result.Message = "Verification email sent successfully!";
+                    }
+                    else
+                    {
+                        // Handle email sending failure
+                        Result.IsSuccess = false;
+                        Result.Code = 500;
+                        Result.Message = "Failed to send verification email. Please try again later.";
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return Result;
+        }
+
+        private string GenerateOTP()
+        {
+            Random rnd = new Random();
+            int otp = rnd.Next(100000, 999999);
+            return otp.ToString();
+        }
+
+
+
     }
 }
