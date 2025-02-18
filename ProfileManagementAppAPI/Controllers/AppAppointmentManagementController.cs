@@ -11,7 +11,7 @@ namespace ProfileManagementAppAPI.Controllers
 
 
     [ApiController]
-    [Route("api/profilemanagement")]
+    [Route("api/appappointmentmanagement")]
 
     public class AppAppointmentManagementController : ControllerBase
     {
@@ -22,7 +22,14 @@ namespace ProfileManagementAppAPI.Controllers
             _profileManagementService = profileManagementService;
         }
 
-        
+        [HttpGet("view-category")]
+        public async Task<IActionResult> GetCategory()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetCategory(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+           
+        }
 
 
     }
