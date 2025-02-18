@@ -11,8 +11,8 @@ namespace AppUserAuthenticationAPI.Services
     public class AppUserAuthenticationService : IAppUserAuthenticationService
     {
 
-        private readonly AppUserAuthenticationRepository _appUserAuthenticationRepository;
-        public AppUserAuthenticationService(AppUserAuthenticationRepository appUserAuthenticationRepository)
+        private readonly IAppUserAuthenticationRepository _appUserAuthenticationRepository;
+        public AppUserAuthenticationService(IAppUserAuthenticationRepository appUserAuthenticationRepository)
         {
             _appUserAuthenticationRepository = appUserAuthenticationRepository;
         }
@@ -36,7 +36,7 @@ namespace AppUserAuthenticationAPI.Services
                     Result.Message = "Please verify your account";
                     return Result;
                 }
-                else if (User.Role != "PARTNER")
+                else if (User.Role != "USER")
                 {
                     Result.IsSuccess = false;
                     Result.Code = 401;
