@@ -53,6 +53,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<Vaccine> Vaccines { get; set; }
 
+    public virtual DbSet<VaccineDose> VaccineDoses { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=103.75.180.192,1433;Database=petfriends;User Id=sa;Password=Admin@123;Encrypt=False;TrustServerCertificate=True;");
@@ -419,6 +421,20 @@ public partial class PetfriendsContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.NumberOfDoses).HasColumnName("Number_of_Doses");
+        });
+
+        modelBuilder.Entity<VaccineDose>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__VaccineD__3214EC07609FEAE2");
+
+            entity.ToTable("VaccineDose");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.HasOne(d => d.Vaccine).WithMany(p => p.VaccineDoses)
+                .HasForeignKey(d => d.VaccineId)
+                .HasConstraintName("FK__VaccineDo__Vacci__0880433F");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -1,0 +1,6 @@
+@AdminVaccineManagement_HostAddress = http://localhost:5226
+
+GET {{AdminVaccineManagement_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
