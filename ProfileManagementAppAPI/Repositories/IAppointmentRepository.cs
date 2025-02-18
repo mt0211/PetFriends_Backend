@@ -5,7 +5,8 @@ using DataAccess.Repositories;
 
 namespace ProfileManagementAppAPI.Repositories
 {
-    public interface IAppointmentRepository : IRepository<User>
+    public interface IAppointmentRepository : IRepository<Category>
     {
+        Task<IEnumerable<Category>> GetCategory();
     }
 }

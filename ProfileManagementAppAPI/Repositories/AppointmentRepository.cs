@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ProfileManagementAppAPI.Repositories
 {
-    public class AppointmentRepository : Repository<User>, IAppointmentRepository
+    public class AppointmentRepository : Repository<Category>, IAppointmentRepository
     {
         private readonly PetfriendsContext _context;
 
@@ -14,7 +14,13 @@ namespace ProfileManagementAppAPI.Repositories
 
         }
 
+        
 
+        public async Task<IEnumerable<Category>> GetCategory()
+        {
+            return await _context.Categories.ToListAsync();
+        }
 
+        
     }
 }

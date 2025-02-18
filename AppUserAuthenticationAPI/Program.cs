@@ -1,12 +1,11 @@
-
-
+using AppUserAuthenticationAPI.Repositories;
+using AppUserAuthenticationAPI.Services;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using ProfileManagementAppAPI.Repositories;
-using ProfileManagementAppAPI.Services;
+
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -88,11 +87,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //});
 
 
-////Register Dependency Injection here:
-/////////////////////////
-builder.Services.AddScoped<AppointmentService>();
-builder.Services.AddTransient<IAppointmentService, AppointmentService>();
-builder.Services.AddTransient<IAppointmentRepository, AppointmentRepository>();
+//Register Dependency Injection here:
+///////////////////////
+builder.Services.AddScoped<AppUserAuthenticationService>();
+builder.Services.AddScoped<IAppUserAuthenticationService, AppUserAuthenticationService>();
+builder.Services.AddTransient<IAppUserAuthenticationRepository, AppUserAuthenticationRepository>();
+
+
 
 
 
