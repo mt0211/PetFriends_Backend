@@ -8,5 +8,8 @@ namespace AdminVaccineManagement.Services
         Task<ResultModel> GetListVaccines(string token, int page);
         Task<ResultModel> GetVaccineDetail(string token, Guid VaccineID);
         Task<ResultModel> UpdateVaccineStatus(string token, VaccineUpdateStatusReqModel UpdateModel);
+        Task<ResultModel> DeleteVaccine(string token, Guid VaccineID);
+        Task<ResultModel> AddNewVaccine(string token, VaccineAddReqModel AddModel);
+        Task<ResultModel> EditVaccine(string token, VaccineUpdateReqModel EditModel);
     }
 }

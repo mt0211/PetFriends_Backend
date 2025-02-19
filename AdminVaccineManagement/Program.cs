@@ -1,4 +1,4 @@
-using AdminVaccineManagement.Repositories;
+﻿using AdminVaccineManagement.Repositories;
 using AdminVaccineManagement.Services;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -96,6 +96,11 @@ builder.Services.AddTransient<IVaccineRepository, VaccineRepository>();
 
 //////////////////////
 // Configure the HTTP request pipeline.
+//builder.Services.AddControllers().AddJsonOptions(options =>
+//{
+//    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+//    options.JsonSerializerOptions.WriteIndented = true;
+//});
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
