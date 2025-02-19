@@ -59,6 +59,38 @@ namespace AdminVaccineManagement.Repositories
             }
             return user;
         }
-       
+
+        public async Task AddVaccineDoses(VaccineDose vaccineDose)
+        {
+             await _context.VaccineDoses.AddAsync(vaccineDose);
+                await _context.SaveChangesAsync();
+        }
+        public async Task<List<VaccineDose>> GetVaccineDosesByVaccineId(Guid vaccineId)
+        {
+            return await _context.VaccineDoses
+                .Where(d => d.VaccineId == vaccineId)
+                .OrderBy(d => d.DoseNumber) // Sắp xếp theo thứ tự tiêm
+                .ToListAsync();
+        }
+        public async Task DeleteVaccineDoses(List<VaccineDose> doses)
+        {
+            if (doses == null || doses.Count == 0)
+                return; // Không có gì để xóa
+
+            _context.VaccineDoses.RemoveRange(doses);
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateVaccineDose(VaccineDose vaccineDose)
+        {
+            var existingDose = await _context.VaccineDoses.FindAsync(vaccineDose.Id);
+
+            if (existingDose != null)
+            {
+                _context.VaccineDoses.Attach(vaccineDose);
+                _context.Entry(vaccineDose).State = EntityState.Modified;
+                await _context.SaveChangesAsync(); // Lưu vào database
+            }
+        }
+
     }
 }
