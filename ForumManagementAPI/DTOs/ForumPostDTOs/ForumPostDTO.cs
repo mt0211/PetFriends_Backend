@@ -9,4 +9,9 @@
         public int TotalComment {  get; set; }
         public string Status { get; set; }
     }
+    public class ForumUpdateStatusRequestModel
+    {
+        public Guid Id { get; set; }
+        public byte Status { get; set; }
+    }
 }

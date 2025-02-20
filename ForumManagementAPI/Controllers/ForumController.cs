@@ -1,4 +1,5 @@
-﻿using ForumManagementAPI.DTOs.ResultModel;
+﻿using ForumManagementAPI.DTOs.ForumPostDTOs;
+using ForumManagementAPI.DTOs.ResultModel;
 using ForumManagementAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,6 +56,17 @@ namespace ForumManagementAPI.Controllers
                 return BadRequest("Unable to retrieve user ID");
             }
             ResultModel result = await _forumService.DeleteComment(token, id);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPut("update-post-status")]
+        public async Task<IActionResult> UpdatePostStatus(ForumUpdateStatusRequestModel updateStatusRequestModel)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            ResultModel result = await _forumService.UpdatePostStatus(token, updateStatusRequestModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }

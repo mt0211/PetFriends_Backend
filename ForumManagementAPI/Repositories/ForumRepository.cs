@@ -48,16 +48,20 @@ namespace ForumManagementAPI.Repositories
                 {
                     Id = p.Id,
                     UserName = p.User.FullName,
+                    UserAvatarUrl = p.User.AvatarUrl,
                     PostContent = p.PostContent,
+                    ImageUrl = p.ImageUrl,
                    CreatedAt = p.CreatedAt,
                    LikeCount = p.LikeCount,
                    DisLikeCount = p.DislikeCount,
+                   TotalComment = p.ForumComments.Count(),
                     Status = p.Status == 2 ? "Approved" : p.Status == 1 ? "Pending" : p.Status == 0 ? "Rejected" : "Unknow",
                     Comments = p.ForumComments.Select(c => new
                     {
                         CommentId = c.Id,
                         CommentContent = c.CommentContent,
                         ComentedBy = c.User.FullName,
+                        UserCommentAvatarUrl = c.User.AvatarUrl,
                         CommentCreatedAt = c.CreatedAt,
                     }).ToList()
                 }).FirstOrDefaultAsync();
