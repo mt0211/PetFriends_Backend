@@ -179,12 +179,14 @@ namespace AccountManagementAPI.Services
                     IMapper mapper = config.CreateMapper();
                     User NewAccount = mapper.Map<UserAddModel, User>(userAddModel);
                     NewAccount.Id = Guid.NewGuid();
+                    NewAccount.FullName = userAddModel.FullName;
                     NewAccount.PhoneNumber = userAddModel.PhoneNumber;
                     NewAccount.Dob = userAddModel.Dob;
                     NewAccount.Status = userAddModel.Status;
                     NewAccount.Email = userAddModel.Email;
                     NewAccount.Address = userAddModel.Address;
                     NewAccount.Role = userAddModel.Role;
+                    NewAccount.AvatarUrl = userAddModel.AvartarURL;
                     var HashedPasswordModel = Encoder.CreateHashPassword(userAddModel.Password);
                     NewAccount.Password = HashedPasswordModel.HashedPassword;
                     NewAccount.Salt = HashedPasswordModel.Salt;
