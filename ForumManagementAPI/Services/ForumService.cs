@@ -2,6 +2,8 @@
 using ForumManagementAPI.DTOs.ResultModel;
 using ForumManagementAPI.Repositories;
 using ForumManagementAPI.Utilities;
+using MySqlX.XDevAPI.Common;
+using System.Security.Cryptography;
 
 namespace ForumManagementAPI.Services
 {
@@ -155,7 +157,6 @@ namespace ForumManagementAPI.Services
             }
             return result;
         }
-
         public async Task<ResultModel> DeleteComment(string token, Guid cid)
         {
             var result = new ResultModel();
@@ -201,6 +202,51 @@ namespace ForumManagementAPI.Services
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Message = "Delete comment successfully";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
+        public async Task<ResultModel> UpdatePostStatus (string token, ForumUpdateStatusRequestModel updateStatusRequestModel)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            if (userId == null)
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Please authorize";
+                return result;
+            }
+            var user = await _repository.GetUserByID(id);
+            if (user.Role != "ADMIN")
+            {
+                result.IsSuccess = false;
+                result.Code = 401;
+                result.Message = "Permission Denied";
+                return result;
+            }
+            try
+            {
+                var post = await _repository.Get(updateStatusRequestModel.Id);
+                post.Status = updateStatusRequestModel.Status;
+                await _repository.Update(post);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Message = "Post updated status successfully";
             }
             catch (Exception ex)
             {

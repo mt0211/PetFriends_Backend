@@ -1,4 +1,5 @@
-﻿using ForumManagementAPI.DTOs.ResultModel;
+﻿using ForumManagementAPI.DTOs.ForumPostDTOs;
+using ForumManagementAPI.DTOs.ResultModel;
 
 namespace ForumManagementAPI.Services
 {
@@ -8,5 +9,6 @@ namespace ForumManagementAPI.Services
         Task<ResultModel> GetPostDetail(string token, Guid pid);
         Task<ResultModel> DeletePost(string token, Guid pid);
         Task<ResultModel> DeleteComment(string token, Guid cid);
+        Task<ResultModel> UpdatePostStatus(string token, ForumUpdateStatusRequestModel updateStatusRequestModel);
     }
 }
