@@ -23,7 +23,7 @@ namespace ProfileManagementAppAPI.Repositories
 
         public async Task<IEnumerable<Category>> GetCategory()
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories.Where(c => c.Status == 1).ToListAsync();
         }
 
         public async Task<IEnumerable<Feedback>> GetReview()

@@ -47,11 +47,11 @@ namespace ProfileManagementAppAPI.Services
                     UserId = id,
                     CreatedAt = DateTime.UtcNow
                 };
-                if (reviewModel.Rating > 5)
+                if (reviewModel.Rating > 5 || reviewModel.Rating < 0)
                 {
                     result.IsSuccess = false;
-                    result.Code = 403; // Forbidden
-                    result.Message = "Rating less than 5";
+                    result.Code = 403; 
+                    result.Message = "Rating less than 5 and more than 0";
                     return result;
                 }
                 await _profileManagementRepository.AddReview(reviewEntity);
@@ -179,11 +179,11 @@ namespace ProfileManagementAppAPI.Services
                     return result;
                 }
 
-                if (reviewUpdateModel.Rating > 5)
+                if (reviewUpdateModel.Rating > 5 || reviewUpdateModel.Rating < 0)
                 {
                     result.IsSuccess = false;
                     result.Code = 403; // Forbidden
-                    result.Message = "Rating less than 5";
+                    result.Message = "Rating less than 5 and more than 1";
                     return result;
                 }
 
