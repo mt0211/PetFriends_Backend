@@ -201,7 +201,9 @@ namespace AppUserAuthenticationAPI.Services
             return otp.ToString();
         }
 
-
-
+        public Task<object?> GetUserProfile(Guid userId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
