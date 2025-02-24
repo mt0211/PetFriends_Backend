@@ -1,11 +1,12 @@
-﻿using AdminVaccineManagement.Repositories;
-using AdminVaccineManagement.Services;
+
+
+using AppPetManagementAPI.Repositories;
+using AppPetManagementAPI.Services;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,20 +88,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //});
 
 
-//Register Dependency Injection here:
-//////////////////////////
-builder.Services.AddScoped<VaccineService>();
-builder.Services.AddScoped<IVaccineService, VaccineService>();
-builder.Services.AddTransient<IVaccineRepository, VaccineRepository>();
+////Register Dependency Injection here:
+/////////////////////////
+builder.Services.AddScoped<PetService>();
+builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddTransient<IPetRepository, PetRepository>();
 
 
 //////////////////////
 // Configure the HTTP request pipeline.
-//builder.Services.AddControllers().AddJsonOptions(options =>
-//{
-//    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-//    options.JsonSerializerOptions.WriteIndented = true;
-//});
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

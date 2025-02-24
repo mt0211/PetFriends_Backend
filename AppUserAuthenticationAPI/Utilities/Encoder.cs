@@ -87,7 +87,9 @@ public class Encoder
             new Claim(ClaimTypes.Role, user.Role ?? string.Empty),
             new Claim("userid", user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-            new Claim("fullname", user.FullName ?? string.Empty)
+            new Claim("fullname", user.FullName ?? string.Empty),
+            new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty),
+            new Claim("phonenumber", user.PhoneNumber ?? string.Empty)
         };
 
         var token = new JwtSecurityToken(

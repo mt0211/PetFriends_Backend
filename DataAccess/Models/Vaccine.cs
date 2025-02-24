@@ -17,5 +17,7 @@ public partial class Vaccine
 
     public virtual ICollection<PetVaccine> PetVaccines { get; set; } = new List<PetVaccine>();
 
+    public virtual ICollection<UserPetVaccine> UserPetVaccines { get; set; } = new List<UserPetVaccine>();
+
     public virtual ICollection<VaccineDose> VaccineDoses { get; set; } = new List<VaccineDose>();
 }
