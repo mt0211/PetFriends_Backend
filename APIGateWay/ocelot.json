@@ -191,6 +191,18 @@
       ],
       "UpstreamPathTemplate": "/apigateway/vaccine/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/userpetmanagement/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5030
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/userpetmanagement/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ]
 }
