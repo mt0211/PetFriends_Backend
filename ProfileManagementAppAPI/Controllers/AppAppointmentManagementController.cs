@@ -12,7 +12,7 @@ namespace ProfileManagementAppAPI.Controllers
 
 
     [ApiController]
-    [Route("api/appappointmentmanagement")]
+    [Route("api/userappointment")]
 
     public class AppAppointmentManagementController : ControllerBase
     {

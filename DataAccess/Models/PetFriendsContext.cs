@@ -51,13 +51,17 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<UserBookingSummary> UserBookingSummaries { get; set; }
 
+    public virtual DbSet<UserPetVaccine> UserPetVaccines { get; set; }
+
+    public virtual DbSet<UserPetVaccineDose> UserPetVaccineDoses { get; set; }
+
     public virtual DbSet<Vaccine> Vaccines { get; set; }
 
     public virtual DbSet<VaccineDose> VaccineDoses { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=103.75.180.192,1433;Database=petfriends;User Id=sa;Password=Admin@123;Encrypt=False;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=103.75.180.192,1433;Database=petfriends;User Id=sa;Password=Admin@123;Encrypt=False;TrustServerCertificate=True;Connection Timeout=120;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -328,7 +332,6 @@ public partial class PetfriendsContext : DbContext
 
             entity.HasOne(d => d.Pet).WithMany(p => p.PetVaccines)
                 .HasForeignKey(d => d.PetId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__PetVaccin__PetId__74AE54BC");
 
             entity.HasOne(d => d.Vaccine).WithMany(p => p.PetVaccines)
@@ -411,6 +414,39 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserBookingSummaries)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_UserBookingSummary_User");
+        });
+
+        modelBuilder.Entity<UserPetVaccine>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserPetV__3214EC0722618450");
+
+            entity.ToTable("UserPetVaccine");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.NumberOfDoses).HasColumnName("Number_of_Doses");
+
+            entity.HasOne(d => d.Pet).WithMany(p => p.UserPetVaccines)
+                .HasForeignKey(d => d.PetId)
+                .HasConstraintName("FK__UserPetVa__PetId__2EA5EC27");
+
+            entity.HasOne(d => d.Vaccine).WithMany(p => p.UserPetVaccines)
+                .HasForeignKey(d => d.VaccineId)
+                .HasConstraintName("FK__UserPetVa__Vacci__2F9A1060");
+        });
+
+        modelBuilder.Entity<UserPetVaccineDose>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserPetV__3214EC077AF9E4A0");
+
+            entity.ToTable("UserPetVaccineDose");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.DateGiven).HasColumnType("datetime");
+
+            entity.HasOne(d => d.UserPetVaccine).WithMany(p => p.UserPetVaccineDoses)
+                .HasForeignKey(d => d.UserPetVaccineId)
+                .HasConstraintName("FK__UserPetVa__UserP__32767D0B");
         });
 
         modelBuilder.Entity<Vaccine>(entity =>
