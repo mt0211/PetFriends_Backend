@@ -33,6 +33,7 @@ namespace AppPetManagementAPI.Repositories
                 Weight = p.Weight ?? 0,
                 p.Gender,
                 p.Breed,
+                p.Species,
                 p.Description,
                 Vaccinations = p.PetVaccines
                     .Select(v => new

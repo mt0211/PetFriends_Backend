@@ -183,7 +183,7 @@ namespace AppPetManagementAPI.Services
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Message = "Successfully delete pet.";
-            }
+            }  
             catch (Exception ex)
             {
                 result.Code = 500;
