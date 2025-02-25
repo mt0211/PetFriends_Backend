@@ -1,14 +1,13 @@
-using AppUserAuthenticationAPI.Repositories;
-using AppUserAuthenticationAPI.Repository.OtpRepository;
-using AppUserAuthenticationAPI.Services;
+
+
+using AppForumManamgement.Repositories;
+using AppForumManamgement.Services;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using System.Text;
-using UserAuthenticationAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,16 +88,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //});
 
 
-//Register Dependency Injection here:
-///////////////////////
-builder.Services.AddScoped<AppUserAuthenticationService>();
-builder.Services.AddScoped<IAppUserAuthenticationService, AppUserAuthenticationService>();
-builder.Services.AddTransient<IAppUserAuthenticationRepository, AppUserAuthenticationRepository>();
-
-
-builder.Services.AddScoped<VerifyService>();
-builder.Services.AddScoped<IVerifyService, VerifyService>();
-builder.Services.AddTransient<IOtpRepository, OtpRepository>();
+////Register Dependency Injection here:
+/////////////////////////
+builder.Services.AddScoped<PostService>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddTransient<IPostRepository, PostRepository>();
 
 
 //////////////////////
