@@ -12,5 +12,6 @@ namespace AdminVaccineManagement.Repositories
         Task<List<VaccineDose>> GetVaccineDosesByVaccineId(Guid vaccineId);
         Task DeleteVaccineDoses(List<VaccineDose> doses);
         Task UpdateVaccineDose(VaccineDose vaccineDose);
+        Task AddVaccine(Vaccine vaccine);
     }
 }

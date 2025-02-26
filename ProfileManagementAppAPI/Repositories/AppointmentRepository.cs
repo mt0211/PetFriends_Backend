@@ -44,6 +44,35 @@ namespace ProfileManagementAppAPI.Repositories
             _context.Entry(reviewUpdateModel).Property(c => c.Rating).IsModified = true;
             await _context.SaveChangesAsync();
         }
+        public async Task<dynamic> GetClinicInformation()
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(email => email.Email == "petfriends.contacts@gmail.com");
+            var reviewcount = await _context.Feedbacks.CountAsync();
+            var rating = await _context.Feedbacks.AverageAsync(r => r.Rating);
+            return new {user, reviewcount, rating};
+        }
+        public async Task<dynamic> GetAppointmentByUserID(Guid userID)
+        {
+            return await _context.Appointments
+            .Include(a=>a.User)
+            .Include(a=>a.Pet)
+            .Include(a=>a.AppointmentClinicServices)
+            .ThenInclude(acs=>acs.ClinicService)
+            .Where(a => a.Id == userID)
+            .Select(appointment => new{
+                    Id = appointment.Id,
+           CreatedAt = appointment.CreatedAt,
+           StartAt = appointment.StartAt,
+           EndAt = appointment.EndAt,
+           Status = appointment.Status,
+           Note = appointment.Note,
+           UserName = appointment.User.FullName,
+           PetName = appointment.Pet.Name,
+           ServiceNames = appointment.AppointmentClinicServices
+               .Select(service => service.ClinicService.Name)
+               .ToList()
+            }).ToListAsync();
+        }
 
     }
 }

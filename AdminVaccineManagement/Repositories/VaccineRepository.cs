@@ -91,6 +91,11 @@ namespace AdminVaccineManagement.Repositories
                 await _context.SaveChangesAsync(); // Lưu vào database
             }
         }
+        public async Task AddVaccine(Vaccine vaccine)
+        {
+            await _context.Vaccines.AddAsync(vaccine);
+            await _context.SaveChangesAsync();
+        }
 
     }
 }

@@ -253,8 +253,6 @@ namespace AdminVaccineManagement.Services
             }
             try
             {
-               
-                
                     var newvaccine = new Vaccine
                     {
                         Id = Guid.NewGuid(),
@@ -263,7 +261,7 @@ namespace AdminVaccineManagement.Services
                         Recommendation = AddModel.Recommendation,
                         Status = 0,
                     };
-                    await _repository.Insert(newvaccine);
+                    await _repository.AddVaccine(newvaccine);
 
                     for (int i = 0; i < AddModel.NumberOfDoses; i++)
                     {
@@ -276,11 +274,25 @@ namespace AdminVaccineManagement.Services
                         };
                         await _repository.AddVaccineDoses(vaccineDose); // Sử dụng repository method
                     }
-
+                    var responseDTO = new VaccineResponseDTO
+                {
+                    Id = newvaccine.Id,
+                    Name = newvaccine.Name,
+                    NumberOfDoses = newvaccine.NumberOfDoses,
+                    Recommendation = newvaccine.Recommendation,
+                    Status = newvaccine.Status,
+                    VaccineDoses = (await _repository.GetVaccineDosesByVaccineId(newvaccine.Id))
+                        .Select(d => new VaccineDoseDTO 
+                        {
+                            Id = d.Id,
+                            DoseNumber = d.DoseNumber,
+                            DaysAfterPrevious = d.DaysAfterPrevious
+                        }).ToList()
+                };
 
                     result.IsSuccess = true;
                     result.Code = 200;
-                    result.Data = newvaccine;
+                    result.Data = responseDTO;
                     result.Message = "Successfully add data";
                 
             }
@@ -406,12 +418,30 @@ namespace AdminVaccineManagement.Services
                             // Cập nhật thông tin khoảng cách ngày của liều tiêm trong database
                             await _repository.UpdateVaccineDose(existingDoses[i]);
                         }
+                         var responseDTO = new VaccineResponseDTO
+                            {
+                                Id = existingVaccine.Id,
+                                Name = existingVaccine.Name,
+                                NumberOfDoses = existingVaccine.NumberOfDoses,
+                                Recommendation = existingVaccine.Recommendation,
+                                Status = existingVaccine.Status,
+                                VaccineDoses = (await _repository.GetVaccineDosesByVaccineId(existingVaccine.Id))
+                                    .Select(d => new VaccineDoseDTO 
+                                    {
+                                        Id = d.Id,
+                                        DoseNumber = d.DoseNumber,
+                                        DaysAfterPrevious = d.DaysAfterPrevious
+                                    })
+                                    .OrderBy(d => d.DoseNumber)
+                                    .ToList()
+                            };
+
                         return new ResultModel
                         {
                             IsSuccess = true,
                             Code = 200,
                             Message = "Vaccine updated successfully",
-                            Data = existingVaccine
+                            Data = responseDTO
                         };
                     }
                     catch (Exception ex)
