@@ -54,6 +54,13 @@ namespace ProfileManagementAppAPI.Controllers
             ResultModel result = await _profileManagementService.UpdateReview(token, reviewUpdateModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("clinic-information")]
+        public async Task<IActionResult> GetClinicInformation()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetClinicInformation(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
 
     }
 }

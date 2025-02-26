@@ -222,5 +222,45 @@ namespace ProfileManagementAppAPI.Services
             }
             return result;
         }
+        public async Task<ResultModel> GetClinicInformation(string token)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            if (userId == null)
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Please authorize";
+                return result;
+            }
+                try
+            {
+
+                var clinicInformation = await _profileManagementRepository.GetClinicInformation();
+                //Success response
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = clinicInformation;
+                result.Message = "Successfully get all review";
+
+
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+
+            }
+            return result;
+        }
     }
 }
