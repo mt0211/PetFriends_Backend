@@ -30,6 +30,7 @@ namespace AppPetManagementAPI.Repositories
                       + ((DateTime.UtcNow - p.DateOfBirth.Value).Days % 365) / 30 + "m "
                       + ((DateTime.UtcNow - p.DateOfBirth.Value).Days % 30) + "d"
                     : "Unknown",
+                    DateOfBirth = p.DateOfBirth,
                 Weight = p.Weight ?? 0,
                 p.Gender,
                 p.Breed,

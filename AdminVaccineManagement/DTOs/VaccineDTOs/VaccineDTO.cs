@@ -6,7 +6,7 @@
         public string Name { get; set; }
         public int NumberOfDoses { get; set; }
         public int FirstInject { get; set; }
-        public string Recommendation {  get; set; }
+        public string Recommendation { get; set; }
         public byte Status { get; set; }
     }
 
@@ -17,12 +17,12 @@
     }
     public class VaccineAddReqModel
     {
-        
+
         public string Name { get; set; }
         public int NumberOfDoses { get; set; }
         public List<int> Injecttions { get; set; }
         public string Recommendation { get; set; }
-        
+
     }
     public class VaccineUpdateReqModel
     {
@@ -31,7 +31,22 @@
         public int NumberOfDoses { get; set; }
         public List<int> Injecttions { get; set; }
         public string Recommendation { get; set; }
-
     }
-   
+    public class VaccineResponseDTO
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public int? NumberOfDoses { get; set; }
+        public string Recommendation { get; set; }
+        public byte? Status { get; set; }
+        public List<VaccineDoseDTO> VaccineDoses { get; set; }
+    }
+
+    public class VaccineDoseDTO
+    {
+        public Guid Id { get; set; }
+        public int? DoseNumber { get; set; }
+        public int? DaysAfterPrevious { get; set; }
+    }
+
 }

@@ -10,5 +10,6 @@ namespace ProfileManagementAppAPI.Services
         Task<ResultModel> GetCategory( string token);
         Task<ResultModel> GetListReview(string token);
         Task<ResultModel> UpdateReview(string token, ReviewUpdateModel reviewUpdateModel);
+        Task<ResultModel> GetClinicInformation(string token);
     }
 }

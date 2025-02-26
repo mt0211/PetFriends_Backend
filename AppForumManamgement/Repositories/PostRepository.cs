@@ -100,5 +100,6 @@ namespace AppForumManamgement.Repositories
             _context.Entry(post).Property(p => p.UpdatedAt).IsModified = true;
             await _context.SaveChangesAsync();
         }
+        
     }
 }
