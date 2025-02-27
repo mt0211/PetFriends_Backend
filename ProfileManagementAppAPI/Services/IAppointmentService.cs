@@ -1,5 +1,4 @@
 ﻿using AppAppointmentManagementAPI.DTOs.ReviewModel;
-using ProfileManagementAppAPI.DTOs.ClinicProfileModel;
 using ProfileManagementAppAPI.DTOs.ResultModel;
 
 namespace ProfileManagementAppAPI.Services
@@ -11,5 +10,9 @@ namespace ProfileManagementAppAPI.Services
         Task<ResultModel> GetListReview(string token);
         Task<ResultModel> UpdateReview(string token, ReviewUpdateModel reviewUpdateModel);
         Task<ResultModel> GetClinicInformation(string token);
+        ///Note: Phòng ngừa khi get category call api không được.
+      //  Task<ResultModel> GetServiceByCategoryID(string token, Guid categoryID);
+
+      Task<ResultModel> GetPetListByUserId(string token);
     }
 }

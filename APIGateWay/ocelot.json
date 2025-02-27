@@ -203,6 +203,18 @@
       ],
       "UpstreamPathTemplate": "/apigateway/userpetmanagement/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/userappointment/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5032
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/userappointment/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ]
 }

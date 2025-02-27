@@ -110,7 +110,13 @@ namespace AppUserAuthenticationAPI.Services
             ResultModel Result = new();
             try
             {
-
+                if(RegisterForm.Password != RegisterForm.ConfirmPassword)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Password and Confirm Password do not match!";
+                    return Result;
+                }
                 var User = await _appUserAuthenticationRepository.GetUserByEmail(RegisterForm.Email);
                 var UserPhoneNumber = await _appUserAuthenticationRepository.GetUserByPhoneNumber(RegisterForm.PhoneNumber);
                 if (User != null)
