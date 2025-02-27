@@ -14,6 +14,10 @@ namespace ProfileManagementAppAPI.Repositories
         Task<Feedback> GetReviewById(Guid reviewId);
         Task UpdateReview(Feedback reviewEntity);
         Task<dynamic> GetClinicInformation();
-        Task<dynamic> GetAppointmentByUserID(Guid userID);
+
+        ///Note: Phòng ngừa khi get category call api không được.
+       // Task<dynamic> GetServiceByCategoryID(Guid categoryID);
+
+       Task<IEnumerable<Pet>> GetPetListByUserId(Guid userId);
     }
 }

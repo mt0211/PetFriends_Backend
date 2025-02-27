@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProfileManagementAppAPI.Services;
 using ProfileManagementAppAPI.DTOs;
-using ProfileManagementAppAPI.DTOs.ClinicProfileModel;
 
 using DataAccess.Models;
 using ProfileManagementAppAPI.DTOs.ResultModel;
@@ -62,5 +61,20 @@ namespace ProfileManagementAppAPI.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
+        ///Note: Phòng ngừa khi get category call api không được.
+        // [HttpGet("service-by-category-id")]
+        // public async Task<IActionResult> GetServiceByCategoryID([FromQuery] Guid categoryID)
+        // {
+        //     string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+        //     ResultModel result = await _profileManagementService.GetServiceByCategoryID(token, categoryID);
+        //     return result.IsSuccess ? Ok(result) : BadRequest(result);
+        // }
+        [HttpGet("get-pet-list-by-user-id")]
+        public async Task<IActionResult> GetPetListByUserId()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetPetListByUserId(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }
