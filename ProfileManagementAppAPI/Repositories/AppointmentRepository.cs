@@ -23,7 +23,9 @@ namespace ProfileManagementAppAPI.Repositories
 
         public async Task<IEnumerable<Category>> GetCategory()
         {
-            return await _context.Categories.Where(c => c.Status == 1).ToListAsync();
+            return await _context.Categories
+            .Include(c=>c.ClinicServices)
+            .Where(c => c.Status == 1).ToListAsync();
         }
 
         public async Task<IEnumerable<Feedback>> GetReview()
@@ -51,27 +53,18 @@ namespace ProfileManagementAppAPI.Repositories
             var rating = await _context.Feedbacks.AverageAsync(r => r.Rating);
             return new {user, reviewcount, rating};
         }
-        public async Task<dynamic> GetAppointmentByUserID(Guid userID)
+
+        ///Note: Phòng ngừa khi get category call api không được.
+        // public async Task<dynamic> GetServiceByCategoryID(Guid categoryID)
+        // {
+        //     return await _context.ClinicServices
+        //     .Where(s=>s.Category == categoryID)
+        //     .ToListAsync();
+        // }
+
+        public async Task<IEnumerable<Pet>> GetPetListByUserId(Guid userId)
         {
-            return await _context.Appointments
-            .Include(a=>a.User)
-            .Include(a=>a.Pet)
-            .Include(a=>a.AppointmentClinicServices)
-            .ThenInclude(acs=>acs.ClinicService)
-            .Where(a => a.Id == userID)
-            .Select(appointment => new{
-                    Id = appointment.Id,
-           CreatedAt = appointment.CreatedAt,
-           StartAt = appointment.StartAt,
-           EndAt = appointment.EndAt,
-           Status = appointment.Status,
-           Note = appointment.Note,
-           UserName = appointment.User.FullName,
-           PetName = appointment.Pet.Name,
-           ServiceNames = appointment.AppointmentClinicServices
-               .Select(service => service.ClinicService.Name)
-               .ToList()
-            }).ToListAsync();
+            return await _context.Pets.Where(p => p.UserId == userId).ToListAsync();
         }
 
     }

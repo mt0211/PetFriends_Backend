@@ -4,18 +4,18 @@ using ProfileManagementAppAPI.DTOs;
 
 using ProfileManagementAppAPI.Repositories;
 using ProfileManagementAppAPI.Utilities;
-using ProfileManagementAppAPI.DTOs.ClinicProfileModel;
 using MySqlX.XDevAPI.Common;
 using AppAppointmentManagementAPI.DTOs.ReviewModel;
+using ProfileManagementAppAPI.DTOs.CategoryClinicServiceDTO;
 
 namespace ProfileManagementAppAPI.Services
 {
     public class AppointmentService : IAppointmentService
     {
-        private readonly IAppointmentRepository _profileManagementRepository;
-        public AppointmentService(IAppointmentRepository profileManagementRepository)
+        private readonly IAppointmentRepository _repository;
+        public AppointmentService(IAppointmentRepository repository)
         {
-            _profileManagementRepository = profileManagementRepository;
+            _repository = repository;
         }
 
         public async Task<ResultModel> AddReview(string token, ReviewModel reviewModel)
@@ -38,7 +38,7 @@ namespace ProfileManagementAppAPI.Services
             }
             try
             {
-                
+
                 var reviewEntity = new Feedback
                 {
                     Id = Guid.NewGuid(),
@@ -50,11 +50,11 @@ namespace ProfileManagementAppAPI.Services
                 if (reviewModel.Rating > 5 || reviewModel.Rating < 0)
                 {
                     result.IsSuccess = false;
-                    result.Code = 403; 
+                    result.Code = 403;
                     result.Message = "Rating less than 5 and more than 0";
                     return result;
                 }
-                await _profileManagementRepository.AddReview(reviewEntity);
+                await _repository.AddReview(reviewEntity);
 
                 // success 
                 result.IsSuccess = true;
@@ -79,7 +79,7 @@ namespace ProfileManagementAppAPI.Services
             try
             {
 
-                var category = await _profileManagementRepository.GetCategory();
+                var category = await _repository.GetCategory();
                 if (category == null || !category.Any())
                 {
                     result.IsSuccess = false;
@@ -87,12 +87,33 @@ namespace ProfileManagementAppAPI.Services
                     result.Message = "Not found category";
                     return result;
                 }
-                //Success response
+                var categoriesDto = category.Select(c => new CategoryListReqModel
+                {
+                    CategoryId = c.Id,
+                    CategoryName = c.Name,
+                    CategoryStatus = c.Status,
+                    ClinicServices = c.ClinicServices.Select(s => new ServiceListReqModel
+                    {
+                        ServiceId = s.Id,
+                        ServiceName = s.Name,
+                        ServiceDescription = s.Description,
+                        ServiceCreateAt = s.CreateAt,
+                        ServicePrice = s.Price,
+                        ServiceStatus = s.Status,
+                        ServiceEstimateTime = s.EstimateTime,
+                        ServiceDiscountAmount = s.DiscountAmount,
+                        ServiceDiscountFrom = s.DiscountFrom,
+                        ServiceDiscountTo = s.DiscountTo,
+                        ServiceImage = s.Image,
+                        ServiceDiscountedPrice = s.DiscountedPrice,
+                        ServiceIsBlocked = s.IsBlocked
+                    }).ToList()
+                }).ToList();
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = category;
+                result.Data = categoriesDto;
                 result.Message = "Successfully get all category";
-            
+
 
             }
             catch (Exception ex)
@@ -104,7 +125,6 @@ namespace ProfileManagementAppAPI.Services
 
             }
             return result;
-
         }
 
         public async Task<ResultModel> GetListReview(string token)
@@ -125,10 +145,10 @@ namespace ProfileManagementAppAPI.Services
                 result.Message = "Please authorize";
                 return result;
             }
-                try
+            try
             {
 
-                var review  = await _profileManagementRepository.GetReview();
+                var review = await _repository.GetReview();
                 if (review == null || !review.Any())
                 {
                     result.IsSuccess = false;
@@ -175,7 +195,7 @@ namespace ProfileManagementAppAPI.Services
             }
             try
             {
-                var existingReview = await _profileManagementRepository.GetReviewById(reviewUpdateModel.Id);
+                var existingReview = await _repository.GetReviewById(reviewUpdateModel.Id);
 
                 if (existingReview == null)
                 {
@@ -201,13 +221,13 @@ namespace ProfileManagementAppAPI.Services
                     return result;
                 }
 
-                    existingReview.Content = reviewUpdateModel.Content;
-                    existingReview.Rating = reviewUpdateModel.Rating;
-                    //CreatedAt = DateTime.UtcNow
+                existingReview.Content = reviewUpdateModel.Content;
+                existingReview.Rating = reviewUpdateModel.Rating;
+                //CreatedAt = DateTime.UtcNow
 
-                await _profileManagementRepository.UpdateReview(existingReview);
+                await _repository.UpdateReview(existingReview);
 
-                
+
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = reviewUpdateModel;
@@ -240,10 +260,10 @@ namespace ProfileManagementAppAPI.Services
                 result.Message = "Please authorize";
                 return result;
             }
-                try
+            try
             {
 
-                var clinicInformation = await _profileManagementRepository.GetClinicInformation();
+                var clinicInformation = await _repository.GetClinicInformation();
                 //Success response
                 result.IsSuccess = true;
                 result.Code = 200;
@@ -251,6 +271,83 @@ namespace ProfileManagementAppAPI.Services
                 result.Message = "Successfully get all review";
 
 
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+
+            }
+            return result;
+        }
+///Note: Phòng ngừa khi get category call api không được.
+        // public async Task<ResultModel> GetServiceByCategoryID(string token, Guid categoryID)
+        // {
+        //     var result = new ResultModel();
+        //     var userId = Encoder.DecodeToken(token, "userid");
+        //     if (!Guid.TryParse(userId, out Guid id))
+        //     {
+        //         result.IsSuccess = false;
+        //         result.Code = 400; // Bad request
+        //         result.Message = "Invalid user ID";
+        //         return result;
+        //     }
+        //     if (userId == null)
+        //     {
+        //         result.IsSuccess = false;
+        //         result.Code = 400; // Bad request
+        //         result.Message = "Please authorize";
+        //         return result;
+        //     }
+        //     try
+        //     {
+        //         var services = await _repository.GetServiceByCategoryID(categoryID);
+        //         //Success response
+        //         result.IsSuccess = true;
+        //         result.Code = 200;
+        //         result.Data = services;
+        //         result.Message = "Successfully get all review";
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         result.Code = 500;
+        //         result.ResponseFailed = ex.InnerException != null
+        //             ? ex.InnerException.Message + "\n" + ex.StackTrace
+        //             : ex.Message + "\n" + ex.StackTrace;
+
+        //     }
+        //     return result;
+
+        // }
+
+        public async Task<ResultModel> GetPetListByUserId(string token)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            if (userId == null)
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Please authorize";
+                return result;
+            }
+            try
+            {
+                var pets = await _repository.GetPetListByUserId(id);
+                //Success response
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = pets;
+                result.Message = "Successfully get all review";
             }
             catch (Exception ex)
             {
