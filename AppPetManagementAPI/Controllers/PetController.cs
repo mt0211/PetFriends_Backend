@@ -71,5 +71,12 @@ namespace AppPetManagementAPI.Controllers
             var result = await _service.RemovePetVaccine(token, vaccineId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("list-vaccines")]
+        public async Task<IActionResult> GetListVaccines()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.GetListVaccines(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }
