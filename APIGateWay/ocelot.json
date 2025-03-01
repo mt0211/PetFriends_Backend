@@ -227,6 +227,18 @@
       ],
       "UpstreamPathTemplate": "/apigateway/report/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/userforumpost/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "103.75.180.192",
+          "Port": 5036
+        }
+      ],
+      "UpstreamPathTemplate": "/apigateway/userforumpost/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ]
 }

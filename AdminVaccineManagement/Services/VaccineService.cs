@@ -15,7 +15,7 @@ namespace AdminVaccineManagement.Services
         {
             _repository = repository;
         }
-        public async Task<ResultModel> GetListVaccines(string token, int page)
+        public async Task<ResultModel> GetListVaccines(string token)
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
@@ -44,10 +44,6 @@ namespace AdminVaccineManagement.Services
             try
             {
                 var vaccine = await _repository.GetListVaccines();
-                if (page == 0)
-                {
-                    page = 1;
-                }
                 var vaccines = vaccine.Select(v => new VaccineListResModel
                 {
                     Id = v.Id,
@@ -57,10 +53,9 @@ namespace AdminVaccineManagement.Services
                     Recommendation = v.Recommendation,
                     Status = v.Status,
                 }).ToList();
-                var paginatedResult = await Pagination.GetPagination(vaccines, page, 10);
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = paginatedResult;
+                result.Data = vaccines;
                 result.Message = "Successfully get data";
             }
             catch (Exception ex)
