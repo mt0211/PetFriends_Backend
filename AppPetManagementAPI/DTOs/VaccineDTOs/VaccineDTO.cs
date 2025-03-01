@@ -3,7 +3,7 @@
     public class AddUserPetVaccineReqModel
     {
         public Guid PetID { get; set; }  
-        public string Name { get; set; }  
+        public string VaccineName { get; set; }  
         public int NumberOfDoses { get; set; }  
         public List<InjectionDetail> Injections { get; set; }  
     }
@@ -14,9 +14,9 @@
     }
     public class UserPetVaccineDTO
     {
-        public Guid Id { get; set; }
+        public Guid VaccineId { get; set; }
         public Guid? PetID { get; set; }
-        public string Name { get; set; }
+        public string VaccineName { get; set; }
         public int? NumberOfDoses { get; set; }
         public List<UserPetVaccineDoseDTO> Injections { get; set; } = new List<UserPetVaccineDoseDTO>();
     }
@@ -29,8 +29,8 @@
 
     public class UpdateVaccineDoseReqModel
     {
-        public Guid Id { get; set; }  
-        public string Name { get; set; } 
+        public Guid VaccineId { get; set; }  
+        public string VaccineName { get; set; } 
         public int NumberOfDoses { get; set; } 
         public List<InjectionDetail> Injections { get; set; } 
     }

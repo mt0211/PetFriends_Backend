@@ -9,7 +9,7 @@ namespace ProfileManagementAppAPI.Repositories
     {
         private readonly PetfriendsContext _context;
 
-        public AppointmentRepository(PetfriendsContext context) 
+        public AppointmentRepository(PetfriendsContext context)
         {
             _context = context;
 
@@ -24,8 +24,9 @@ namespace ProfileManagementAppAPI.Repositories
         public async Task<IEnumerable<Category>> GetCategory()
         {
             return await _context.Categories
-            .Include(c=>c.ClinicServices)
-            .Where(c => c.Status == 1).ToListAsync();
+            .Include(c => c.ClinicServices)
+            .Where(c => c.Status == 1 && c.ClinicServices.Any(cs => cs.IsBlocked == 1))
+            .ToListAsync();
         }
 
         public async Task<IEnumerable<Feedback>> GetReview()
@@ -51,7 +52,7 @@ namespace ProfileManagementAppAPI.Repositories
             var user = await _context.Users.FirstOrDefaultAsync(email => email.Email == "petfriends.contacts@gmail.com");
             var reviewcount = await _context.Feedbacks.CountAsync();
             var rating = await _context.Feedbacks.AverageAsync(r => r.Rating);
-            return new {user, reviewcount, rating};
+            return new { user, reviewcount, rating };
         }
 
         ///Note: Phòng ngừa khi get category call api không được.

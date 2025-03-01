@@ -196,19 +196,25 @@ namespace AppPetManagementAPI.Services
         public async Task<ResultModel> AddUserPetVaccine(string token, AddUserPetVaccineReqModel model)
         {
             var result = new ResultModel();
-
             try
             {
-                var existingVaccine = await _repository.GetVaccineByName(model.Name);
+                var existingVaccine = await _repository.GetVaccineByName(model.VaccineName);
                 Guid? vaccineId = existingVaccine?.Id;
                 var newPetVaccine = new UserPetVaccine
                 {
                     Id = Guid.NewGuid(),
                     PetId = model.PetID,
                     VaccineId = vaccineId,
-                    Name = model.Name,
+                    Name = model.VaccineName,
                     NumberOfDoses = model.NumberOfDoses
                 };
+                var checkVaccineName = await _repository.CheckVaccineName(model.PetID);
+                if(checkVaccineName != null){
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = $"Can't add vaccine name {model.VaccineName} because it already exists";
+                    return result;
+                }
 
                 await _repository.AddUserPetVaccine(newPetVaccine);
                 var injectionsDTO = new List<UserPetVaccineDoseDTO>();
@@ -232,9 +238,9 @@ namespace AppPetManagementAPI.Services
 
                 var petVaccineDTO = new UserPetVaccineDTO
                 {
-                    Id = newPetVaccine.Id,
+                    VaccineId = newPetVaccine.Id,
                     PetID = newPetVaccine.PetId,
-                    Name = newPetVaccine.Name,
+                    VaccineName = newPetVaccine.Name,
                     NumberOfDoses = newPetVaccine.NumberOfDoses,
                     Injections = injectionsDTO
                 };
@@ -268,7 +274,9 @@ namespace AppPetManagementAPI.Services
                     result.Message = "Invalid user ID";
                     return result;
                 }
-                var userPetVaccine = await _repository.GetUserPetVaccineById(model.Id);
+                var userPetVaccine = await _repository.GetUserPetVaccineById(model.VaccineId);
+                var checkVaccineSystem = await _repository.CheckVaccineSystem(model.VaccineId);
+               
                 if (userPetVaccine == null)
                 {
                     result.IsSuccess = false;
@@ -276,7 +284,7 @@ namespace AppPetManagementAPI.Services
                     result.Message = "UserPetVaccine not found";
                     return result;
                 }
-                userPetVaccine.Name = model.Name;
+                userPetVaccine.Name = model.VaccineName;
                 int oldNumberOfDoses = userPetVaccine.NumberOfDoses ?? 0;
                 int newNumberOfDoses = model.NumberOfDoses;
                 userPetVaccine.NumberOfDoses = newNumberOfDoses;
@@ -328,18 +336,24 @@ namespace AppPetManagementAPI.Services
                     if (existingDose != null)
                     {
                         existingDose.DateGiven = injection.DateGiven;
+                        await _repository.UpdateUserPetVaccineDose(existingDose);
                         // SaveChange sau khi cập nhật
                     }
                 }
-
+                 if(checkVaccineSystem.VaccineId != null){
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Can't update vaccine system's name";
+                    return result;
+                }
                 // 6️⃣ Lưu thay đổi UserPetVaccine
                 await _repository.UpdateUserPetVaccine(userPetVaccine);
 
                 var updatedDto = new UserPetVaccineDTO
                 {
-                    Id = userPetVaccine.Id,
+                    VaccineId = userPetVaccine.Id,
                     PetID = userPetVaccine.PetId, // hoặc null, tuỳ DB
-                    Name = userPetVaccine.Name,
+                    VaccineName = userPetVaccine.Name,
                     NumberOfDoses = userPetVaccine.NumberOfDoses,
                     Injections = userPetVaccine.UserPetVaccineDoses
                     .Select(d => new UserPetVaccineDoseDTO
@@ -390,9 +404,9 @@ namespace AppPetManagementAPI.Services
                 var userPetVaccine = await _repository.GetVaccineDetailByID(VaccineID);
                 var vaccineDTO = new UserPetVaccineDTO
                 {
-                    Id = userPetVaccine.Id,
+                    VaccineId = userPetVaccine.Id,
                     PetID = userPetVaccine.PetId,  // tuỳ cột
-                    Name = userPetVaccine.Name,
+                    VaccineName = userPetVaccine.Name,
                     NumberOfDoses = userPetVaccine.NumberOfDoses,
                     Injections = userPetVaccine.UserPetVaccineDoses
                         .Select(d => new UserPetVaccineDoseDTO
@@ -464,6 +478,50 @@ namespace AppPetManagementAPI.Services
                 result.IsSuccess = false;
                 result.Code = 404;
                 result.Message = "Vaccine not found.";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
+        public async Task<ResultModel> GetListVaccines(string token)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            if (userId == null)
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Please authorize";
+                return result;
+            }
+            try
+            {
+                var vaccines = await _repository.GetListVaccines();
+                if (vaccines == null || !vaccines.Any())
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "Not found pet";
+                    return result;
+                }
+
+                //Success response
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = vaccines;
+                result.Message = "Successfully get all vaccine";
             }
             catch (Exception ex)
             {

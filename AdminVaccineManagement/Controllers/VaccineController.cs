@@ -15,14 +15,14 @@ namespace AdminVaccineManagement.Controllers
             _service = service;
         }
         [HttpGet("vaccine-list")]
-        public async Task<IActionResult> GetListVaccine(int page)
+        public async Task<IActionResult> GetListVaccine()
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             if (string.IsNullOrEmpty(token))
             {
                 return BadRequest("Unable to retrieve user ID");
             }
-            ResultModel result = await _service.GetListVaccines(token, page);
+            ResultModel result = await _service.GetListVaccines(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpGet("vaccine-detail")]
