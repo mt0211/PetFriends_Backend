@@ -37,6 +37,7 @@ namespace AdminVaccineManagement.Repositories
                 {
                     Id = v.Id,
                     Name = v.Name,
+                    Status = v.Status,
                     NumberOfDoses = v.NumberOfDoses,
                     Injections = v.VaccineDoses
                         .OrderBy(vd => vd.DoseNumber)

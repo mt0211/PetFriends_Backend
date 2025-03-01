@@ -122,7 +122,11 @@ namespace AppPetManagementAPI.Repositories
             return await _context.UserPetVaccines.Include(v=>v.UserPetVaccineDoses)
                 .Where(uv => uv.Id == id).FirstOrDefaultAsync();
         }
-
+        public async Task UpdateUserPetVaccineDose(UserPetVaccineDose dose)
+        {
+            _context.UserPetVaccineDoses.Update(dose);
+            await _context.SaveChangesAsync();
+        }
         //DELETE VACCINE
         public async Task RemoveUserPetVaccine(UserPetVaccine userPetVaccine)
         {
@@ -147,6 +151,8 @@ namespace AppPetManagementAPI.Repositories
             _context.PetVaccines.Remove(petVaccine);
             await _context.SaveChangesAsync();
         }
+
+        
 
         //DELETE ONE PET
         public async Task RemoveUserPetVaccinesByPetId(Guid petId)
@@ -175,5 +181,29 @@ namespace AppPetManagementAPI.Repositories
             _context.PetVaccines.RemoveRange(petVaccines);
             await _context.SaveChangesAsync();
         }
+
+        //RECOMMEND VACCINE
+        public async Task<List<Vaccine>> GetListVaccines()
+        {
+            return await _context.Vaccines
+            .Where(v => v.Status == 0)
+            .ToListAsync();
+        }
+
+        //CHECK VACCINE SYSTEM
+        public async Task<UserPetVaccine> CheckVaccineSystem(Guid vaccineId)
+        {
+            return await _context.UserPetVaccines
+            .Where(uv => uv.Id == vaccineId)
+            .FirstOrDefaultAsync();
+        }
+
+        public async Task<UserPetVaccine> CheckVaccineName(Guid petId)
+        {
+            return await _context.UserPetVaccines
+            .Where(uv => uv.PetId == petId)
+            .FirstOrDefaultAsync();
+        }
+        
     }
 }

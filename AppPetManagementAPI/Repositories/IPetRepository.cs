@@ -19,5 +19,9 @@ namespace AppPetManagementAPI.Repositories
         Task RemovePetVaccine(PetVaccine petVaccine);
         Task RemoveUserPetVaccinesByPetId(Guid petId);
         Task RemovePetVaccinesByPetId(Guid petId);
+        Task UpdateUserPetVaccineDose(UserPetVaccineDose dose);
+        Task<List<Vaccine>> GetListVaccines();
+        Task<UserPetVaccine> CheckVaccineSystem(Guid vaccineId);
+        Task<UserPetVaccine> CheckVaccineName(Guid petId);
     }
 }

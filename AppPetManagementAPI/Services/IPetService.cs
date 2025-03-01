@@ -14,5 +14,6 @@ namespace AppPetManagementAPI.Services
         Task<ResultModel> UpdateUserPetVaccine(string token, UpdateVaccineDoseReqModel model);
         Task<ResultModel> GetVaccineDetailByID(string token, Guid VaccineID);
         Task<ResultModel> RemovePetVaccine(string token, Guid vaccineId);
+        Task<ResultModel> GetListVaccines(string token);
     }
 }
