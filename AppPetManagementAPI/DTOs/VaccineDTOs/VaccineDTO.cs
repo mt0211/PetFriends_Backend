@@ -34,4 +34,12 @@
         public int NumberOfDoses { get; set; } 
         public List<InjectionDetail> Injections { get; set; } 
     }
+    public class VaccineListReqModel
+    {
+        public Guid VaccineId { get; set; }
+        public string VaccineName { get; set; }
+        public int? VaccineNumberOfDoses { get; set; }
+        public string VaccineRecommendation { get; set; }
+        public byte? VaccineStatus { get; set; }
+    }
 }

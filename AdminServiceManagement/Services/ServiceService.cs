@@ -64,7 +64,7 @@ namespace AdminServiceManagement.Services
                     DiscountedPrice = s.DiscountedPrice,
                     IsBlocked = s.IsBlocked
                 }).ToList();
-                var paginatedResult = await Pagination.GetPagination(serviceList, page, 10);
+                var paginatedResult = await Pagination.GetPagination(serviceList, page, 1000);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = paginatedResult;

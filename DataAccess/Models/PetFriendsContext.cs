@@ -51,6 +51,10 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<UserBookingSummary> UserBookingSummaries { get; set; }
 
+    public virtual DbSet<UserCart> UserCarts { get; set; }
+
+    public virtual DbSet<UserCartItem> UserCartItems { get; set; }
+
     public virtual DbSet<UserPetVaccine> UserPetVaccines { get; set; }
 
     public virtual DbSet<UserPetVaccineDose> UserPetVaccineDoses { get; set; }
@@ -61,7 +65,7 @@ public partial class PetfriendsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=103.75.180.192,1433;Database=petfriends;User Id=sa;Password=Admin@123;Encrypt=False;TrustServerCertificate=True;Connection Timeout=120;");
+        => optionsBuilder.UseSqlServer("Server=160.30.137.29,1433;Database=petfriends;User Id=sa;Password=Admin@123;Encrypt=False;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -414,6 +418,30 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserBookingSummaries)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_UserBookingSummary_User");
+        });
+
+        modelBuilder.Entity<UserCart>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserCart__3214EC07B8BCC9C2");
+
+            entity.ToTable("UserCart");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Datebook).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<UserCartItem>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserCart__3214EC078D7833F7");
+
+            entity.ToTable("UserCartItem");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.Cart).WithMany(p => p.UserCartItems)
+                .HasForeignKey(d => d.CartId)
+                .HasConstraintName("FK__UserCartI__CartI__43A1090D");
         });
 
         modelBuilder.Entity<UserPetVaccine>(entity =>
