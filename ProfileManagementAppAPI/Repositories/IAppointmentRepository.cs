@@ -10,7 +10,7 @@ namespace ProfileManagementAppAPI.Repositories
     {
         Task AddReview(Feedback reviewEntity);
         Task<IEnumerable<Category>> GetCategory();
-        Task<IEnumerable<Feedback>> GetReview();
+        Task<IEnumerable<dynamic>> GetReview();
         Task<Feedback> GetReviewById(Guid reviewId);
         Task UpdateReview(Feedback reviewEntity);
         Task<dynamic> GetClinicInformation();

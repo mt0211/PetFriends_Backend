@@ -7,8 +7,8 @@ namespace PetManagementAPI.Repository.PetRepository
 {
     public class PetRepository : Repository<Pet>, IPetRepository
     {
-        private readonly PetFriendsContext _context;
-        public PetRepository(PetFriendsContext context) : base(context)
+        private readonly PetfriendsContext _context;
+        public PetRepository(PetfriendsContext context) : base(context)
         {
             _context = context;
         }
@@ -124,7 +124,7 @@ namespace PetManagementAPI.Repository.PetRepository
         {
 
             // Tạo một DbContext mới để cô lập việc xóa
-            using (var context = new PetFriendsContext())
+            using (var context = new PetfriendsContext())
             {
 
                 // Truy xuất các vaccine liên quan đến petId

@@ -98,5 +98,10 @@ namespace AdminVaccineManagement.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<Vaccine> GetVaccineByName(string name) 
+        {
+            return await _context.Vaccines.FirstOrDefaultAsync(v => v.Name == name);
+        }
+
     }
 }

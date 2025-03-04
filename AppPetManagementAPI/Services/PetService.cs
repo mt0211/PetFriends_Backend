@@ -183,7 +183,7 @@ namespace AppPetManagementAPI.Services
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Message = "Successfully delete pet.";
-            }  
+            }
             catch (Exception ex)
             {
                 result.Code = 500;
@@ -198,6 +198,20 @@ namespace AppPetManagementAPI.Services
             var result = new ResultModel();
             try
             {
+                var sortedInjections = model.Injections.OrderBy(i => i.DoseNumber).ToList();
+                for (int i = 1; i < sortedInjections.Count; i++)
+                {
+                    var previousDose = sortedInjections[i - 1];
+                    var currentDose = sortedInjections[i];
+
+                    if (currentDose.DateGiven <= previousDose.DateGiven)
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 400;
+                        result.Message = $"Dose {currentDose.DoseNumber} date must be after dose {previousDose.DoseNumber} date";
+                        return result;
+                    }
+                }
                 var existingVaccine = await _repository.GetVaccineByName(model.VaccineName);
                 Guid? vaccineId = existingVaccine?.Id;
                 var newPetVaccine = new UserPetVaccine
@@ -209,7 +223,8 @@ namespace AppPetManagementAPI.Services
                     NumberOfDoses = model.NumberOfDoses
                 };
                 var checkVaccineName = await _repository.CheckVaccineName(model.PetID);
-                if(checkVaccineName != null){
+                if (checkVaccineName != null)
+                {
                     result.IsSuccess = false;
                     result.Code = 400;
                     result.Message = $"Can't add vaccine name {model.VaccineName} because it already exists";
@@ -265,6 +280,20 @@ namespace AppPetManagementAPI.Services
             var result = new ResultModel();
             try
             {
+                var sortedInjections = model.Injections.OrderBy(i => i.DoseNumber).ToList();
+                for (int i = 1; i < sortedInjections.Count; i++)
+                {
+                    var previousDose = sortedInjections[i - 1];
+                    var currentDose = sortedInjections[i];
+
+                    if (currentDose.DateGiven <= previousDose.DateGiven)
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 400;
+                        result.Message = $"Dose {currentDose.DoseNumber} date must be after dose {previousDose.DoseNumber} date";
+                        return result;
+                    }
+                }
                 // 1️⃣ Kiểm tra user
                 var userId = Encoder.DecodeToken(token, "userid");
                 if (!Guid.TryParse(userId, out Guid userGuid))
@@ -276,7 +305,7 @@ namespace AppPetManagementAPI.Services
                 }
                 var userPetVaccine = await _repository.GetUserPetVaccineById(model.VaccineId);
                 var checkVaccineSystem = await _repository.CheckVaccineSystem(model.VaccineId);
-               
+
                 if (userPetVaccine == null)
                 {
                     result.IsSuccess = false;
@@ -340,7 +369,8 @@ namespace AppPetManagementAPI.Services
                         // SaveChange sau khi cập nhật
                     }
                 }
-                 if(checkVaccineSystem.VaccineId != null){
+                if (checkVaccineSystem.VaccineId != null)
+                {
                     result.IsSuccess = false;
                     result.Code = 400;
                     result.Message = "Can't update vaccine system's name";
@@ -516,11 +546,18 @@ namespace AppPetManagementAPI.Services
                     result.Message = "Not found pet";
                     return result;
                 }
+                var vaccineList = vaccines.Select(v => new VaccineListReqModel{
+                    VaccineId = v.Id,
+                    VaccineName = v.Name,
+                    VaccineNumberOfDoses = v.NumberOfDoses,
+                    VaccineRecommendation = v.Recommendation,
+                    VaccineStatus = v.Status
+                }).ToList();
 
                 //Success response
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = vaccines;
+                result.Data = vaccineList;
                 result.Message = "Successfully get all vaccine";
             }
             catch (Exception ex)

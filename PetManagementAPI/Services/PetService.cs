@@ -52,7 +52,7 @@ namespace PetManagementAPI.Services
                     VaccineNames = p.VaccineNames
                 }).ToList();
                 //Paging
-                var pageinatedResult = await Pagination.GetPagination(petList, page, 10);
+                var pageinatedResult = await Pagination.GetPagination(petList, page, 1000);
 
                 //Success response
                 result.IsSuccess = true;

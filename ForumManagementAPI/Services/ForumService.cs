@@ -57,7 +57,7 @@ namespace ForumManagementAPI.Services
                     TotalComment = p.TotalComment,
                     Status = p.Status,
                 }).ToList();
-                var paginatedResult = await Pagination.GetPagination(postsList, page, 10);
+                var paginatedResult = await Pagination.GetPagination(postsList, page, 1000);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = paginatedResult;

@@ -54,7 +54,7 @@ namespace CustomerReviews.Services
                     CreatedAt = f.CreatedAt,
                     Rating = f.Rating,
                 }).ToList();
-                var paginatedResult = await Pagination.GetPagination(feedbackList, page, 10);
+                var paginatedResult = await Pagination.GetPagination(feedbackList, page, 1000);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = paginatedResult;

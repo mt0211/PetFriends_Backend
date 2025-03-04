@@ -13,5 +13,6 @@ namespace AdminVaccineManagement.Repositories
         Task DeleteVaccineDoses(List<VaccineDose> doses);
         Task UpdateVaccineDose(VaccineDose vaccineDose);
         Task AddVaccine(Vaccine vaccine);
+        Task<Vaccine> GetVaccineByName(string name);
     }
 }
