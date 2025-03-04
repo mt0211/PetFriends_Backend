@@ -61,7 +61,7 @@ namespace AccountManagementAPI.Services
                     AvatarUrl = a.AvatarUrl,
                     Status = a.Status,
                 }).ToList();
-                var paginatedResult = await Pagination.GetPagination(accountList, page, 10);
+                var paginatedResult = await Pagination.GetPagination(accountList, page, 1000);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = accounts;

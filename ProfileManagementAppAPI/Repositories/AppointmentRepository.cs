@@ -29,9 +29,19 @@ namespace ProfileManagementAppAPI.Repositories
             .ToListAsync();
         }
 
-        public async Task<IEnumerable<Feedback>> GetReview()
+        public async Task<IEnumerable<dynamic>> GetReview()
         {
-            return await _context.Feedbacks.ToListAsync();
+            return await _context.Feedbacks
+            .Include(r=>r.User)
+            .Select(r=> new{
+                r.Id,
+                r.Content,
+                r.Rating,
+                r.CreatedAt,
+                UserName = r.User.FullName,
+                UserAvatar = r.User.AvatarUrl,
+                UserEmail = r.User.Email,
+            }).ToListAsync();
         }
 
         public async Task<Feedback> GetReviewById(Guid reviewId)
