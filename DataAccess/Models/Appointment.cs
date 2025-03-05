@@ -25,7 +25,15 @@ public partial class Appointment
 
     public Guid? GuestPetId { get; set; }
 
+    public decimal? TotalAmount { get; set; }
+
+    public decimal? DiscountAmount { get; set; }
+
+    public decimal? FinalAmount { get; set; }
+
     public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();
+
+    public virtual ICollection<AppointmentPromotion> AppointmentPromotions { get; set; } = new List<AppointmentPromotion>();
 
     public virtual GuestPet? GuestPet { get; set; }
 

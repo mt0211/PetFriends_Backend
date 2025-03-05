@@ -109,10 +109,8 @@ namespace AppointmentManagementAPI.Services
                     appointment.Status = appointmentstatusmodel.Status;
                     appointment.EndAt = DateTimeOffset.Now.DateTime;
 
-                    // Lấy danh sách dịch vụ và tính tổng tiền
-                    var services = await _appointmentrepository.GetAppointmentServices(appointment.Id);
-               
-                    var totalAmount = services.Sum(s => s.Price ?? 0);
+                     // Sử dụng FinalAmount đã được tính sẵn
+                    var totalAmount = appointment.FinalAmount ?? 0;
 
                     // Cập nhật bảng UserBookingSummary
                     if (appointment.UserId.HasValue)
@@ -120,6 +118,7 @@ namespace AppointmentManagementAPI.Services
                         await UpdateUserBookingSummary(appointment.UserId.Value, totalAmount);
                     }
                     await _appointmentrepository.UpdateDailyRevenue(totalAmount);
+                    var services = await _appointmentrepository.GetAppointmentServices(appointment.Id);
                     foreach (var service in services)
                     {
                         await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
@@ -662,17 +661,20 @@ namespace AppointmentManagementAPI.Services
                     {
                         appointment.Status = appointmentUpdate.Status;
                         appointment.EndAt = DateTimeOffset.Now.DateTime;
-                        var services = await _appointmentrepository.GetAppointmentServices(appointment.Id);
-                        var totalAmount = services.Sum(s => s.Price ?? 0);
-                        if (appointment.UserId.HasValue)
-                        {
-                            await UpdateUserBookingSummary(appointment.UserId.Value, totalAmount);
-                        }
-                        await _appointmentrepository.UpdateDailyRevenue(totalAmount);
-                        foreach (var service in services)
-                        {
-                            await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
-                        }
+
+                         // Sử dụng FinalAmount đã được tính sẵn
+                          var totalAmount = appointment.FinalAmount ?? 0;
+                        // Cập nhật bảng UserBookingSummary
+                            if (appointment.UserId.HasValue)
+                            {
+                                await UpdateUserBookingSummary(appointment.UserId.Value, totalAmount);
+                            }
+                            await _appointmentrepository.UpdateDailyRevenue(totalAmount);
+                            var services = await _appointmentrepository.GetAppointmentServices(appointment.Id);
+                            foreach (var service in services)
+                            {
+                                await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
+                            }
                         result.Data = new AppointmentStatusResultModel
                         {
                             Status = appointment.Status,

@@ -15,6 +15,8 @@ public partial class AppointmentClinicService
 
     public string? Notes { get; set; }
 
+    public decimal? Price { get; set; }
+
     public virtual Appointment Appointment { get; set; } = null!;
 
     public virtual ClinicService ClinicService { get; set; } = null!;

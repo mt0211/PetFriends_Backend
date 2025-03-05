@@ -19,6 +19,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<AppointmentClinicService> AppointmentClinicServices { get; set; }
 
+    public virtual DbSet<AppointmentPromotion> AppointmentPromotions { get; set; }
+
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<ClinicService> ClinicServices { get; set; }
@@ -77,9 +79,12 @@ public partial class PetfriendsContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.EndAt).HasColumnType("datetime");
+            entity.Property(e => e.FinalAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.StartAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.GuestPet).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.GuestPetId)
@@ -106,6 +111,7 @@ public partial class PetfriendsContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.DateGiven).HasColumnType("datetime");
+            entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Appointment).WithMany(p => p.AppointmentClinicServices)
                 .HasForeignKey(d => d.AppointmentId)
@@ -116,6 +122,27 @@ public partial class PetfriendsContext : DbContext
                 .HasForeignKey(d => d.ClinicServiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Appointme__Clini__6E01572D");
+        });
+
+        modelBuilder.Entity<AppointmentPromotion>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC0764A57822");
+
+            entity.ToTable("AppointmentPromotion");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.Appointment).WithMany(p => p.AppointmentPromotions)
+                .HasForeignKey(d => d.AppointmentId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_AppointmentPromotion_Appointment");
+
+            entity.HasOne(d => d.Promotion).WithMany(p => p.AppointmentPromotions)
+                .HasForeignKey(d => d.PromotionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_AppointmentPromotion_Promotion");
         });
 
         modelBuilder.Entity<Category>(entity =>
