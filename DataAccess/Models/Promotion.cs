@@ -27,5 +27,7 @@ public partial class Promotion
 
     public decimal? DiscountDetail { get; set; }
 
+    public virtual ICollection<AppointmentPromotion> AppointmentPromotions { get; set; } = new List<AppointmentPromotion>();
+
     public virtual Category? Category { get; set; }
 }

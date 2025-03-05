@@ -1,6 +1,4 @@
-﻿
-
-using AppAppointmentManagementAPI.DTOs.ReviewModel;
+﻿using AppAppointmentManagementAPI.DTOs.ReviewModel;
 using DataAccess.Models;
 using DataAccess.Repositories;
 
@@ -37,5 +35,7 @@ namespace ProfileManagementAppAPI.Repositories
         Task<List<Promotion>> GetPromotionTypeNewMember();
         Task<List<Promotion>> GetPromotionTypeLoyaltyMember();
         Task<User> GetUserByUserId(Guid userId);
+        Task<Promotion> GetPromotionById(Guid promotionId);
+        Task AddAppointmentPromotion(AppointmentPromotion appointmentPromotion);
     }
 }
