@@ -537,6 +537,69 @@ namespace ProfileManagementAppAPI.Services
             try
             {
                 var cart = await _repository.GetCartByUserId(id);
+                
+                // Tính tổng giá trị dịch vụ
+                decimal totalAmount = cart.UserCartItems.Sum(item => item.ClinicService.DiscountedPrice ?? 0);
+                decimal discountAmount = 0;
+                
+                // Danh sách các promotion đã áp dụng
+                var appliedPromotions = new List<(Promotion Promotion, decimal DiscountAmount)>();
+                
+                // Kiểm tra và áp dụng các promotion
+                if (updateCartDTO.PromotionIds != null && updateCartDTO.PromotionIds.Any())
+                {
+                    // Giới hạn số lượng promotion tối đa là 2
+                    var promotionIds = updateCartDTO.PromotionIds.Take(2).ToList();
+                    var user = await _repository.GetUserByUserId(id);
+                    
+                    // Lấy thông tin các promotion được chọn
+                    foreach (var promotionId in promotionIds)
+                    {
+                        var promotion = await _repository.GetPromotionById(promotionId);
+                        if (promotion != null && promotion.Status == "Active")
+                        {
+                            // Kiểm tra điều kiện áp dụng promotion
+                            bool canApply = false;
+                            
+                            if (promotion.TargetGroup == "All Customers")
+                            {
+                                canApply = true;
+                            }
+                            else if (promotion.TargetGroup == "First-Time Visitors" && user.TypeGroup == "First-Time Visitors")
+                            {
+                                canApply = true;
+                            }
+                            else if (promotion.TargetGroup == "Loyalty Members" && user.TypeGroup == "Loyalty Members")
+                            {
+                                canApply = true;
+                            }
+                            if (canApply)
+                            {
+                                decimal currentDiscountAmount = 0;
+                                
+                                // Tính giảm giá dựa trên loại promotion
+                                if (promotion.Type == 0)
+                                {
+                                    currentDiscountAmount = totalAmount * ((decimal)(promotion.DiscountDetail ?? 0) / 100);                                   
+                                }
+                                else if (promotion.Type == 1)
+                                {
+                                    currentDiscountAmount = promotion.DiscountDetail??0;
+                                }
+                                
+                                // Thêm vào danh sách promotion đã áp dụng
+                                appliedPromotions.Add((promotion, currentDiscountAmount));
+                                discountAmount += currentDiscountAmount;
+                            }
+                        }
+                    }
+                    
+                    // Đảm bảo tổng giảm giá không vượt quá tổng tiền
+                    if (discountAmount > totalAmount)
+                    {
+                        discountAmount = totalAmount;
+                    }
+                }
                 var appointment = new Appointment
                 {
                     Id = Guid.NewGuid(),
@@ -545,7 +608,10 @@ namespace ProfileManagementAppAPI.Services
                     CreatedAt = DateTime.UtcNow,
                     StartAt = updateCartDTO.DateBook,
                     Status = "Pending", 
-                    Note = updateCartDTO.Notes
+                    Note = updateCartDTO.Notes,
+                    TotalAmount = totalAmount,
+                    DiscountAmount = discountAmount,
+                    FinalAmount = totalAmount - discountAmount
                 };
                  await _repository.AddAppointment(appointment);
 
@@ -558,10 +624,26 @@ namespace ProfileManagementAppAPI.Services
                         AppointmentId = appointment.Id,
                         ClinicServiceId = cartItem.ClinicServiceId.Value,
                         DateGiven = updateCartDTO.DateBook,
-                        Notes = updateCartDTO.Notes
+                        Notes = updateCartDTO.Notes,
+                        Price = cartItem.ClinicService.DiscountedPrice
                     };
 
                     await _repository.AddAppointmentClinicService(appointmentService);
+                }
+                    // Lưu thông tin các promotion đã áp dụng
+                foreach (var (promotion, promotionDiscountAmount) in appliedPromotions)
+                {
+                    var appointmentPromotion = new AppointmentPromotion
+                    {
+                        Id = Guid.NewGuid(),
+                        AppointmentId = appointment.Id,
+                        PromotionId = promotion.Id,
+                        DiscountAmount = promotionDiscountAmount,
+                        CreateAt = DateTime.UtcNow
+                    };
+                    
+                    await _repository.AddAppointmentPromotion(appointmentPromotion);
+                
                 }
                 var updateCart = new UserCart
                 {
@@ -571,9 +653,34 @@ namespace ProfileManagementAppAPI.Services
                     Status = 1
                 };
                 await _repository.UpdateCart(updateCart);
+                var bookingResult = new BookingResultDTO
+                {
+                    AppointmentId = appointment.Id,
+                    DateBook = updateCartDTO.DateBook,
+                    Notes = updateCartDTO.Notes,
+                    TotalAmount = totalAmount,
+                    DiscountAmount = discountAmount,
+                    FinalAmount = totalAmount - discountAmount,
+                    AppliedPromotions = appliedPromotions.Select(p => new AppliedPromotionDTO
+                    {
+                        PromotionId = p.Promotion.Id,
+                        PromotionName = p.Promotion.Name,
+                        DiscountType = p.Promotion.Type,
+                        DiscountAmount = p.Promotion.DiscountDetail
+                    }).ToList(),
+                    Services = cart.UserCartItems.Select(item => new CartServiceDTO
+                    {
+                        ServiceId = item.ClinicService.Id,
+                        ServiceName = item.ClinicService.Name,
+                        EstimateTime = item.ClinicService.EstimateTime,
+                        DiscountedPrice = item.ClinicService.DiscountedPrice,
+                        PetId = item.Pet.Id,
+                        PetName = item.Pet.Name
+                    }).ToList()
+                };
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = updateCartDTO;
+                result.Data = bookingResult;
                 result.Message = "Successfully book appointment";
             }
             catch (Exception ex)

@@ -176,5 +176,23 @@ namespace ProfileManagementAppAPI.Repositories
             return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
+
+        //APPLY PROMOTION
+        public async Task<Promotion> GetPromotionById(Guid promotionId)
+        {
+            return await _context.Promotions.FirstOrDefaultAsync(p => p.Id == promotionId);
+        }
+
+        public async Task AddAppointmentPromotion(AppointmentPromotion appointmentPromotion)
+        {
+            await _context.AppointmentPromotions.AddAsync(appointmentPromotion);
+            await _context.SaveChangesAsync();
+        }
+
+        //BOOKING HISTORY
+        public async Task<List<Appointment>> GetBookingHistory(Guid userId)
+        {
+            return await _context.Appointments.Where(a => a.UserId == userId).ToListAsync();
+        }
     }
 }
