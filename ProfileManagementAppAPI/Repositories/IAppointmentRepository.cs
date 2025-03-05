@@ -19,5 +19,23 @@ namespace ProfileManagementAppAPI.Repositories
        // Task<dynamic> GetServiceByCategoryID(Guid categoryID);
 
        Task<IEnumerable<Pet>> GetPetListByUserId(Guid userId);
+
+       Task<UserCart> CheckUserCart(Guid userId);
+       Task AddNewCart(UserCart userCart);
+       Task AddNewCartItem(UserCartItem userCartItem);
+       Task<UserCartItem> CheckUserCartItemByServiceId(Guid serviceId);
+       Task<UserCart> GetCartByUserId(Guid userId);
+
+       Task UpdateCart(UserCart userCart);
+       Task AddAppointment(Appointment appointment);
+         Task AddAppointmentClinicService(AppointmentClinicService appointmentService);
+         Task<List<UserCartItem>> GetCartItemsByCartId(Guid cartId);
+         Task<UserCartItem> GetCartItemByServiceId(Guid serviceId);
+        Task RemoveCartItem(UserCartItem cartItem);
+        Task RemoveCart(UserCart cart);
+        Task<List<Promotion>> GetPromotionTypeAllMember();
+        Task<List<Promotion>> GetPromotionTypeNewMember();
+        Task<List<Promotion>> GetPromotionTypeLoyaltyMember();
+        Task<User> GetUserByUserId(Guid userId);
     }
 }

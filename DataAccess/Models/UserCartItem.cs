@@ -16,4 +16,8 @@ public partial class UserCartItem
     public decimal? Price { get; set; }
 
     public virtual UserCart? Cart { get; set; }
+
+    public virtual ClinicService? ClinicService { get; set; }
+
+    public virtual Pet? Pet { get; set; }
 }

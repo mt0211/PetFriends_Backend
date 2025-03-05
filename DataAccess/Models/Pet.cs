@@ -33,5 +33,7 @@ public partial class Pet
 
     public virtual User? User { get; set; }
 
+    public virtual ICollection<UserCartItem> UserCartItems { get; set; } = new List<UserCartItem>();
+
     public virtual ICollection<UserPetVaccine> UserPetVaccines { get; set; } = new List<UserPetVaccine>();
 }
