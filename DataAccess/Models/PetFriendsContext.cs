@@ -174,24 +174,18 @@ public partial class PetfriendsContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Diagnose__3213E83FD25F3E66");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Confidence).HasColumnName("confidence");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.FileName)
-                .HasMaxLength(255)
-                .HasColumnName("file_name");
-            entity.Property(e => e.FilePath)
-                .HasMaxLength(255)
-                .HasColumnName("file_path");
+            entity.Property(e => e.Description)
+                .HasMaxLength(500)
+                .HasColumnName("description");
+            entity.Property(e => e.FirstAid)
+                .HasMaxLength(500)
+                .HasColumnName("firstAid");
             entity.Property(e => e.Label)
                 .HasMaxLength(255)
                 .HasColumnName("label");
-            entity.Property(e => e.ResultImagePath)
-                .HasMaxLength(255)
-                .HasColumnName("result_image_path");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Symptoms)
+                .HasMaxLength(500)
+                .HasColumnName("symptoms");
         });
 
         modelBuilder.Entity<Feedback>(entity =>
@@ -404,6 +398,7 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.Role).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.TypeGroup).HasMaxLength(20);
         });
 
         modelBuilder.Entity<UserBookingSummary>(entity =>
@@ -428,6 +423,11 @@ public partial class PetfriendsContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Datebook).HasColumnType("datetime");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserCarts)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_UserCart_User");
         });
 
         modelBuilder.Entity<UserCartItem>(entity =>
@@ -442,6 +442,15 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.Cart).WithMany(p => p.UserCartItems)
                 .HasForeignKey(d => d.CartId)
                 .HasConstraintName("FK__UserCartI__CartI__43A1090D");
+
+            entity.HasOne(d => d.ClinicService).WithMany(p => p.UserCartItems)
+                .HasForeignKey(d => d.ClinicServiceId)
+                .HasConstraintName("FK_UserCartItem_ClinicService");
+
+            entity.HasOne(d => d.Pet).WithMany(p => p.UserCartItems)
+                .HasForeignKey(d => d.PetId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_UserCartItem_Pet");
         });
 
         modelBuilder.Entity<UserPetVaccine>(entity =>

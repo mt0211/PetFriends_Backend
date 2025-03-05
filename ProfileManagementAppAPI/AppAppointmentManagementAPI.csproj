@@ -29,10 +29,10 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+		<Folder Include="lib\" />
 	</ItemGroup>
 	<ItemGroup>
-		<Folder Include="lib\" />
+	  <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="DataAccess">

@@ -13,5 +13,9 @@ public partial class UserCart
 
     public string? Notes { get; set; }
 
+    public byte? Status { get; set; }
+
+    public virtual User? User { get; set; }
+
     public virtual ICollection<UserCartItem> UserCartItems { get; set; } = new List<UserCartItem>();
 }
