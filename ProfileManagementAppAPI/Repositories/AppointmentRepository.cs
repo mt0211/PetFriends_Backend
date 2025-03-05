@@ -24,16 +24,25 @@ namespace ProfileManagementAppAPI.Repositories
         public async Task<IEnumerable<Category>> GetCategory()
         {
             return await _context.Categories
-            .Include(c => c.ClinicServices)
-            .Where(c => c.Status == 1 && c.ClinicServices.Any(cs => cs.IsBlocked == 1))
+            .Where(c => c.Status == 1)
+            .Select(c => new Category
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Status = c.Status,
+                ClinicServices = c.ClinicServices
+                    .Where(cs => cs.IsBlocked == 1 && cs.Status == "ACTIVE")
+                    .ToList()
+            })
             .ToListAsync();
         }
 
         public async Task<IEnumerable<dynamic>> GetReview()
         {
             return await _context.Feedbacks
-            .Include(r=>r.User)
-            .Select(r=> new{
+            .Include(r => r.User)
+            .Select(r => new
+            {
                 r.Id,
                 r.Content,
                 r.Rating,
@@ -76,6 +85,95 @@ namespace ProfileManagementAppAPI.Repositories
         public async Task<IEnumerable<Pet>> GetPetListByUserId(Guid userId)
         {
             return await _context.Pets.Where(p => p.UserId == userId).ToListAsync();
+        }
+
+
+        public async Task<UserCart> CheckUserCart(Guid userId)
+        {
+            return await _context.UserCarts.FirstOrDefaultAsync(uc => uc.UserId == userId && uc.Status == 0);
+        }
+        public async Task AddNewCart(UserCart userCart)
+        {
+            await _context.UserCarts.AddAsync(userCart);
+            await _context.SaveChangesAsync();
+        }
+        public async Task AddNewCartItem(UserCartItem userCartItem)
+        {
+            await _context.UserCartItems.AddAsync(userCartItem);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<UserCartItem> CheckUserCartItemByServiceId(Guid serviceId)
+        {
+            return await _context.UserCartItems.FirstOrDefaultAsync(uc => uc.ClinicServiceId == serviceId);
+        }
+        public async Task<UserCart> GetCartByUserId(Guid userId)
+        {
+            var cart = await _context.UserCarts
+            .Include(uc => uc.User)
+            .Include(uc => uc.UserCartItems)
+            .ThenInclude(uc => uc.ClinicService)
+            .Include(uc => uc.UserCartItems)
+            .ThenInclude(uc => uc.Pet)
+            .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.Status == 0);
+            return cart;
+        }
+        public async Task UpdateCart(UserCart userCart)
+        {
+            _context.UserCarts.Attach(userCart);
+            _context.Entry(userCart).Property(c => c.Datebook).IsModified = true;
+            _context.Entry(userCart).Property(c => c.Notes).IsModified = true;
+            _context.Entry(userCart).Property(c => c.Status).IsModified = true;
+            await _context.SaveChangesAsync();
+        }
+        public async Task AddAppointment(Appointment appointment)
+        {
+            await _context.Appointments.AddAsync(appointment);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddAppointmentClinicService(AppointmentClinicService appointmentService)
+        {
+            await _context.AppointmentClinicServices.AddAsync(appointmentService);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<List<UserCartItem>> GetCartItemsByCartId(Guid cartId)
+        {
+            return await _context.UserCartItems
+                .Where(item => item.CartId == cartId)
+                .ToListAsync();
+        }
+        public async Task<UserCartItem> GetCartItemByServiceId(Guid serviceId)
+        {
+            return await _context.UserCartItems
+                .FirstOrDefaultAsync(item => item.ClinicServiceId == serviceId);
+        }
+
+        public async Task RemoveCartItem(UserCartItem cartItem)
+        {
+            _context.UserCartItems.Remove(cartItem);
+            await _context.SaveChangesAsync();
+        }
+        public async Task RemoveCart(UserCart cart)
+        {
+            _context.UserCarts.Remove(cart);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<List<Promotion>> GetPromotionTypeAllMember()
+        {
+            return await _context.Promotions.Where(p => p.TargetGroup == "All Customers" && p.Status == "Active").ToListAsync();
+        }
+
+        public async Task<List<Promotion>> GetPromotionTypeNewMember()
+        {
+            return await _context.Promotions.Where(p => p.TargetGroup == "First-Time Visitors" && p.Status == "Active").ToListAsync();
+        }
+        public async Task<List<Promotion>> GetPromotionTypeLoyaltyMember()
+        {
+            return await _context.Promotions.Where(p => p.TargetGroup == "Loyalty Members" && p.Status == "Active").ToListAsync();
+        }
+        public async Task<User> GetUserByUserId(Guid userId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
     }

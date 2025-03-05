@@ -212,19 +212,7 @@ namespace AppointmentManagementAPI.Services
             }
         }
         //Helper method send email
-        private async Task SendEmailNotification(Appointment appointment, string templateFile, string subject)
-        {
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", templateFile);
-            string html = File.ReadAllText(filePath);
-
-            // Điền thông tin vào template
-            html = html.Replace("{{CustomerName}}", appointment.User?.FullName ?? appointment.GuestUser?.FullName ?? "Guest");
-            html = html.Replace("{{StartAt}}", appointment.StartAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A");
-            html = html.Replace("{{EndAt}}", appointment.EndAt?.ToString("HH:mm") ?? "N/A");
-
-            // Gửi email
-            await Email.SendEmail(appointment.User?.Email ?? appointment.GuestUser?.Email, subject, html);
-        }
+        
 
         public async Task<ResultModel> AddAppointment(string token, AppointmentAddModel appointment)
         {

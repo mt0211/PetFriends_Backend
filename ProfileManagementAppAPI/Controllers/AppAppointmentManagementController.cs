@@ -5,6 +5,7 @@ using ProfileManagementAppAPI.DTOs;
 using DataAccess.Models;
 using ProfileManagementAppAPI.DTOs.ResultModel;
 using AppAppointmentManagementAPI.DTOs.ReviewModel;
+using ProfileManagementAppAPI.DTOs.AppointmentDTOs;
 namespace ProfileManagementAppAPI.Controllers
 {
 
@@ -74,6 +75,41 @@ namespace ProfileManagementAppAPI.Controllers
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             ResultModel result = await _profileManagementService.GetPetListByUserId(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPost("add-to-cart")]
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartDTO addToCartDTO)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.AddToCart(token, addToCartDTO);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("get-cart-by-user-id")]
+        public async Task<IActionResult> GetCartByUserId()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetCartByUserId(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPut("book-appointment")]
+        public async Task<IActionResult> BookAppointment([FromBody] UpdateCartDTO updateCartDTO)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.BookAppointment(token, updateCartDTO);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpDelete("remove-service-from-cart")]
+        public async Task<IActionResult> RemoveServiceFromCart([FromQuery] Guid serviceId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.RemoveServiceFromCart(token, serviceId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("get-list-promotion")]
+        public async Task<IActionResult> GetListPromotion()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetListPromotion(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }

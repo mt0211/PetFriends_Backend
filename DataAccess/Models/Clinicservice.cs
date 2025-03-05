@@ -38,4 +38,6 @@ public partial class ClinicService
     public virtual Category? CategoryNavigation { get; set; }
 
     public virtual ICollection<ServiceRevenue> ServiceRevenues { get; set; } = new List<ServiceRevenue>();
+
+    public virtual ICollection<UserCartItem> UserCartItems { get; set; } = new List<UserCartItem>();
 }

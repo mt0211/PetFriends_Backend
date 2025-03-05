@@ -63,7 +63,5 @@ public class Repository<T> : IRepository<T> where T : class
         _entities.UpdateRange(entities);
         await context.SaveChangesAsync();
     }
-
-
 }
 

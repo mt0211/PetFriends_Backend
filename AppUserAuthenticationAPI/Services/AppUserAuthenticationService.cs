@@ -155,11 +155,11 @@ namespace AppUserAuthenticationAPI.Services
 
                     if (emailSent)
                     {
-
                         NewUser.Id = Guid.NewGuid();
                         NewUser.Status = "INACTIVE";
                         NewUser.CreatedAt = DateTime.Now;
                         NewUser.Role = "USER";
+                        NewUser.TypeGroup = "First-Time Visitors";
                         var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
                         NewUser.Password = HashedPasswordModel.HashedPassword;
                         NewUser.Salt = HashedPasswordModel.Salt;

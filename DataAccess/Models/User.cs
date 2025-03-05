@@ -33,7 +33,7 @@ public partial class User
 
     public DateTime? LastLoggedIn { get; set; }
 
-    public Guid? OwnerId { get; set; }
+    public string? TypeGroup { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
@@ -48,4 +48,6 @@ public partial class User
     public virtual ICollection<Pet> Pets { get; set; } = new List<Pet>();
 
     public virtual ICollection<UserBookingSummary> UserBookingSummaries { get; set; } = new List<UserBookingSummary>();
+
+    public virtual ICollection<UserCart> UserCarts { get; set; } = new List<UserCart>();
 }
