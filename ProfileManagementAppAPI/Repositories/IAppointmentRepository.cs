@@ -9,7 +9,7 @@ namespace ProfileManagementAppAPI.Repositories
         Task AddReview(Feedback reviewEntity);
         Task<IEnumerable<Category>> GetCategory();
         Task<IEnumerable<dynamic>> GetReview();
-        Task<Feedback> GetReviewById(Guid reviewId);
+        Task<Feedback> GetReviewByAppointmentId(Guid appointmentId);
         Task UpdateReview(Feedback reviewEntity);
         Task<dynamic> GetClinicInformation();
 
@@ -28,7 +28,6 @@ namespace ProfileManagementAppAPI.Repositories
        Task AddAppointment(Appointment appointment);
          Task AddAppointmentClinicService(AppointmentClinicService appointmentService);
          Task<List<UserCartItem>> GetCartItemsByCartId(Guid cartId);
-         Task<UserCartItem> GetCartItemByServiceId(Guid serviceId);
         Task RemoveCartItem(UserCartItem cartItem);
         Task RemoveCart(UserCart cart);
         Task<List<Promotion>> GetPromotionTypeAllMember();
@@ -37,5 +36,17 @@ namespace ProfileManagementAppAPI.Repositories
         Task<User> GetUserByUserId(Guid userId);
         Task<Promotion> GetPromotionById(Guid promotionId);
         Task AddAppointmentPromotion(AppointmentPromotion appointmentPromotion);
+        Task<List<Appointment>> GetBookingHistory(Guid userId);
+        Task<List<AppointmentPromotion>> GetListPromotionByAppointmentId(Guid appointmentId);
+        Task CancelAppointment(Guid appointmentId);
+        Task<Appointment> GetAppointmentById(Guid appointmentId);
+
+        //Edit Pending Appointment  
+        Task<List<AppointmentClinicService>> GetAppointmentServices(Guid appointmentId);
+        Task<List<AppointmentPromotion>> GetAppointmentPromotions(Guid appointmentId);
+        Task RemoveAppointmentService(AppointmentClinicService service);
+         Task RemoveAppointmentPromotion(AppointmentPromotion promotion);
+         Task UpdateAppointment(Appointment appointment);
+         Task<Appointment> GetAppointmentDetailById(Guid appointmentId);
     }
 }

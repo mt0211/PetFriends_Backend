@@ -53,9 +53,9 @@ namespace ProfileManagementAppAPI.Repositories
             }).ToListAsync();
         }
 
-        public async Task<Feedback> GetReviewById(Guid reviewId)
+        public async Task<Feedback> GetReviewByAppointmentId(Guid appointmentId)
         {
-            return await _context.Feedbacks.FirstOrDefaultAsync(r => r.Id == reviewId);
+            return await _context.Feedbacks.FirstOrDefaultAsync(r => r.AppointmentId == appointmentId);
 
         }
 
@@ -142,11 +142,7 @@ namespace ProfileManagementAppAPI.Repositories
                 .Where(item => item.CartId == cartId)
                 .ToListAsync();
         }
-        public async Task<UserCartItem> GetCartItemByServiceId(Guid serviceId)
-        {
-            return await _context.UserCartItems
-                .FirstOrDefaultAsync(item => item.ClinicServiceId == serviceId);
-        }
+        
 
         public async Task RemoveCartItem(UserCartItem cartItem)
         {
@@ -192,7 +188,92 @@ namespace ProfileManagementAppAPI.Repositories
         //BOOKING HISTORY
         public async Task<List<Appointment>> GetBookingHistory(Guid userId)
         {
-            return await _context.Appointments.Where(a => a.UserId == userId).ToListAsync();
+            return await _context.Appointments
+            .Include(a => a.User)
+            .Include(a => a.Pet)
+            .Include(a => a.AppointmentClinicServices)
+            .ThenInclude(a => a.ClinicService)
+            .Where(a => a.UserId == userId).ToListAsync();
         }
+        public async Task<List<AppointmentPromotion>> GetListPromotionByAppointmentId(Guid appointmentId)
+        {
+            return await _context.AppointmentPromotions
+            .Include(a => a.Promotion)
+            .Where(a => a.AppointmentId == appointmentId)
+            .ToListAsync();
+        }
+
+        public async Task CancelAppointment(Guid appointmentId)
+        {
+            var appointment = await _context.Appointments
+        .AsNoTracking()  // Không track thay đổi của entity
+        .FirstOrDefaultAsync(a => a.Id == appointmentId);
+        
+        if (appointment != null)
+        {
+            await _context.Appointments
+                .Where(a => a.Id == appointmentId)
+                .ExecuteUpdateAsync(s => 
+                    s.SetProperty(b => b.Status, b => "Canceled")
+                );
+        }
+        }
+        public async Task<Appointment> GetAppointmentById(Guid appointmentId)
+        {
+            return await _context.Appointments.FindAsync(appointmentId);
+        }
+
+
+        //Update Pending Appointment
+        public async Task<List<AppointmentClinicService>> GetAppointmentServices(Guid appointmentId)
+        {
+            return await _context.AppointmentClinicServices
+                .Include(acs => acs.ClinicService)
+                .Where(acs => acs.AppointmentId == appointmentId)
+                .ToListAsync();
+        }
+
+        public async Task<List<AppointmentPromotion>> GetAppointmentPromotions(Guid appointmentId)
+        {
+            return await _context.AppointmentPromotions
+                .Include(ap => ap.Promotion)
+                .Where(ap => ap.AppointmentId == appointmentId)
+                .ToListAsync();
+        }
+
+        public async Task RemoveAppointmentService(AppointmentClinicService service)
+        {
+            _context.AppointmentClinicServices.Remove(service);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveAppointmentPromotion(AppointmentPromotion promotion)
+        {
+            _context.AppointmentPromotions.Remove(promotion);
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateAppointment(Appointment appointment)
+        {
+            _context.Entry(appointment).Property(x => x.StartAt).IsModified = true;
+            _context.Entry(appointment).Property(x => x.Note).IsModified = true;
+            _context.Entry(appointment).Property(x => x.TotalAmount).IsModified = true;
+            _context.Entry(appointment).Property(x => x.DiscountAmount).IsModified = true;
+            _context.Entry(appointment).Property(x => x.FinalAmount).IsModified = true;
+            await _context.SaveChangesAsync();
+        }
+       
+       //BOOKING DETAIL
+        public async Task<Appointment> GetAppointmentDetailById(Guid appointmentId)
+        {
+            return await _context.Appointments
+                .Include(a => a.User)
+                .Include(a => a.Pet)
+                .Include(a => a.AppointmentClinicServices)
+                    .ThenInclude(acs => acs.ClinicService)
+                .Include(a => a.AppointmentPromotions)
+                    .ThenInclude(ap => ap.Promotion)
+                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+        }
+        
     }
 }

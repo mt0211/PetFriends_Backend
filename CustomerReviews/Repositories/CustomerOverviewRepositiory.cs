@@ -19,6 +19,7 @@ namespace CustomerReviews.Repositories
                 {
                     Id=f.Id,
                     UserName = f.User.FullName,
+                    UserImageUrl = f.User.AvatarUrl,
                     Content = f.Content,
                     CreatedAt = f.CreatedAt,
                     Rating = f.Rating,

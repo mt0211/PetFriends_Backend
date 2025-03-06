@@ -35,6 +35,8 @@ public partial class Appointment
 
     public virtual ICollection<AppointmentPromotion> AppointmentPromotions { get; set; } = new List<AppointmentPromotion>();
 
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+
     public virtual GuestPet? GuestPet { get; set; }
 
     public virtual GuestUser? GuestUser { get; set; }
