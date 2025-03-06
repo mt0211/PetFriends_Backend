@@ -15,5 +15,9 @@ public partial class Feedback
 
     public int? Rating { get; set; }
 
+    public Guid? AppointmentId { get; set; }
+
+    public virtual Appointment? Appointment { get; set; }
+
     public virtual User User { get; set; } = null!;
 }

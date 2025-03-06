@@ -224,6 +224,11 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
 
+            entity.HasOne(d => d.Appointment).WithMany(p => p.Feedbacks)
+                .HasForeignKey(d => d.AppointmentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Feedback_Appointment");
+
             entity.HasOne(d => d.User).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

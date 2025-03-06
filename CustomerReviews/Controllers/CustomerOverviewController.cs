@@ -14,14 +14,14 @@ namespace CustomerReviews.Controllers
             _service = service;
         }
         [HttpGet("review-list")]
-        public async Task<IActionResult> GetFeedbackList(int page)
+        public async Task<IActionResult> GetFeedbackList()
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             if (string.IsNullOrEmpty(token))
             {
                 return BadRequest("Unable to retrieve user ID");
             }
-            ResultModel result = await _service.GetListReviews(token, page);
+            ResultModel result = await _service.GetListReviews(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpGet("rating-overview")]
