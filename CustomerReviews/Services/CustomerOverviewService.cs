@@ -13,7 +13,7 @@ namespace CustomerReviews.Services
         {
             _repository = repository;
         }
-        public async Task<ResultModel> GetListReviews(string token, int page)
+        public async Task<ResultModel> GetListReviews(string token)
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
@@ -42,22 +42,18 @@ namespace CustomerReviews.Services
             try
             {
                 var feedbacks = await _repository.GetAllFeedback();
-                if (page == 0)
-                {
-                    page = 1;
-                }
                 var feedbackList = feedbacks.Select(f => new FeedbackListResponseModel
                 {
                     Id = f.Id,
                     UserName = f.UserName,
+                    UserImageUrl = f.UserImageUrl,
                     Content = f.Content,
                     CreatedAt = f.CreatedAt,
                     Rating = f.Rating,
                 }).ToList();
-                var paginatedResult = await Pagination.GetPagination(feedbackList, page, 1000);
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = paginatedResult;
+                result.Data = feedbackList;
                 result.Message = "Successfully get data";
             }
             catch (Exception ex)

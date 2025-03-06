@@ -112,5 +112,47 @@ namespace ProfileManagementAppAPI.Controllers
             ResultModel result = await _profileManagementService.GetListPromotion(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("get-promotion-by-id")]
+        public async Task<IActionResult> GetPromotionByID([FromQuery] Guid promotionId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetPromotionByID(token, promotionId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("get-booking-history")]
+        public async Task<IActionResult> GetBookingHistory()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetBookingHistory(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("get-list-promotion-by-appointment-id")]
+        public async Task<IActionResult> GetListPromotionByAppointmentId([FromQuery] Guid appointmentId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetListPromotionByAppointmentId(token, appointmentId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPut("cancel-appointment")]
+        public async Task<IActionResult> CancelAppointment([FromQuery] Guid appointmentId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.CancelAppointment(token, appointmentId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPut("update-appointment")]
+        public async Task<IActionResult> UpdateAppointment([FromBody] UpdateAppointmentDTO updateDTO)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.UpdateAppointment(token, updateDTO);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpGet("get-appointment-detail")]
+        public async Task<IActionResult> GetAppointmentDetail([FromQuery] Guid appointmentId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.GetAppointmentDetail(token, appointmentId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }
