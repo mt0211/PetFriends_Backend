@@ -30,5 +30,8 @@ namespace ProfileManagementAppAPI.Services
 
       //BOOKING DETAIL
       Task<ResultModel> GetAppointmentDetail(string token, Guid appointmentId);
+
+      //CHECK REVIEW
+      Task<ResultModel> CheckReview(string token, Guid appointmentId);
     }
 }

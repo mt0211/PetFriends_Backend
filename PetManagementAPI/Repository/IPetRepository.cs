@@ -9,7 +9,7 @@ namespace PetManagementAPI.Repository
         Task<User> GetUserByPhoneNumber(string phoneNumber);
 
         Task<IEnumerable<Vaccine>> GetAllVaccine();
-        Task AddPetVaccineAsync(PetVaccine petVaccine);
+        Task AddUserPetVaccineAsync(UserPetVaccine petVaccine);
         Task<dynamic> GetPetById(Guid petId);
         Task DeletePetWithVaccinesAsync(Guid petId);
         Task UpdatePetAsync(Pet pet);
@@ -17,5 +17,6 @@ namespace PetManagementAPI.Repository
         Task<Pet> GetPetByUpdate(Guid petId);
         Task RemoveAllPetVaccinesAsync(Guid petId);
         Task AddPetVaccinesAsync(Guid petId, List<Guid> newVaccineIds);
+        Task<Vaccine> GetVaccineById(Guid vaccineId);
     }
 }

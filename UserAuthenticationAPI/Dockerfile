@@ -16,4 +16,8 @@ RUN apt-get update && apt-get install -y libkrb5-dev
 
 WORKDIR /app
 COPY --from=build /app .
+
+RUN mkdir -p /app/cert
+COPY cert/certificate.pfx /app/cert/
+
 ENTRYPOINT ["dotnet", "UserAuthenticationAPI.dll"]

@@ -135,6 +135,14 @@ namespace AppointmentManagementAPI.Services
                 }
                 else if (appointmentstatusmodel.Status == "Confirmed")
                 {
+                    var appointmentPromotions = await _appointmentrepository.GetAppointmentPromotionsByAppointmentId(appointmentstatusmodel.Id);
+                    foreach (var appointmentPromotion in appointmentPromotions)
+                    {
+                        if (appointmentPromotion.PromotionId.HasValue)
+                        {
+                            await _appointmentrepository.UpdatePromotionUsageLimit(appointmentPromotion.PromotionId.Value);
+                        }
+                    }
                     if (!string.IsNullOrWhiteSpace(appointments.Email))
                     {
                         string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ConfirmAppointment.html");
@@ -685,6 +693,14 @@ namespace AppointmentManagementAPI.Services
                     }
                     else if (appointmentUpdate.Status == "Confirmed")
                     {
+                        var appointmentPromotions = await _appointmentrepository.GetAppointmentPromotionsByAppointmentId(appointmentUpdate.Id);
+                        foreach (var appointmentPromotion in appointmentPromotions)
+                        {
+                            if (appointmentPromotion.PromotionId.HasValue)
+                            {
+                                await _appointmentrepository.UpdatePromotionUsageLimit(appointmentPromotion.PromotionId.Value);
+                            }
+                        }
                         if (!string.IsNullOrWhiteSpace(appointments.Email))
                         {
                             string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ConfirmAppointment.html");

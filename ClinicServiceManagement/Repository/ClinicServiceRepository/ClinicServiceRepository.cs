@@ -113,7 +113,13 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
          new SqlParameter("@IsBlocked", 1)
     };
 
-            await _context.Database.ExecuteSqlRawAsync(sql, parameters);
+        await _context.Database.ExecuteSqlRawAsync(sql, parameters);
+        }
+        
+
+        public async Task<ClinicService> GetServiceByNameAndCategory(string name, Guid? categoryId)
+        {
+            return await _context.ClinicServices.FirstOrDefaultAsync(s => s.Name == name && s.Category == categoryId);
         }
 
     }

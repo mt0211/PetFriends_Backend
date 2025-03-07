@@ -7,8 +7,15 @@ using Microsoft.OpenApi.Models;
 using UserAuthenticationAPI.Services;
 using UserAuthenticationAPI.Repository.UserRepository;
 using UserAuthenticationAPI.Repository.OtpRepository;
+using UserAuthenticationAPI.Helpers;
+
+
+
+
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.Configure<GoogleOAuthOptions>(builder.Configuration.GetSection("GoogleOAuth"));
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -78,11 +85,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key is not configured.")))
         };
     });
-// builder.WebHost.ConfigureKestrel(serverOptions =>
-// {
-//     serverOptions.ListenAnyIP(80);
-//     serverOptions.ListenAnyIP(3000);
-// });
+    
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+     serverOptions.ListenAnyIP(80, listenOptions =>
+    {
+        listenOptions.UseHttps("/app/cert/certificate.pfx", "123123123");
+    });
+     serverOptions.ListenAnyIP(3000);
+});
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<VerifyService>();

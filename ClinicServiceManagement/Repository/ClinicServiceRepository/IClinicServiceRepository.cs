@@ -12,5 +12,6 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         Task UpdateStatus(ClinicService service);
         Task UpdateService(ClinicService service);
         Task AddService(ClinicService service);
+        Task<ClinicService> GetServiceByNameAndCategory(string name, Guid? categoryId);
     }
 }
