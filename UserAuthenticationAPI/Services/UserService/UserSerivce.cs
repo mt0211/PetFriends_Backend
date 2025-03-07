@@ -5,15 +5,20 @@ using UserAuthenticationAPI.Utilities;
 using DataAccess.Models;
 using UserAuthenticationAPI.Repository.UserRepository;
 using UserAuthenticationAPI.Repository.OtpRepository;
+using Google.Apis.Auth;
+using UserAuthenticationAPI.Helpers;
+using Microsoft.Extensions.Options;
 namespace UserAuthenticationAPI.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IOtpRepository _otpRepository;
-    public UserService(IUserRepository userRepository, IOtpRepository otpRepository)
+    private readonly GoogleOAuthOptions _googleOAuthOptions;
+    public UserService(IUserRepository userRepository, IOtpRepository otpRepository, IOptions<GoogleOAuthOptions> googleOAuthOptions)
     {
         _userRepository = userRepository;
         _otpRepository = otpRepository;
+        _googleOAuthOptions = googleOAuthOptions.Value;
     }
     public async Task<ResultModel> Login(UserLoginReqModel LoginForm)
     {
@@ -370,4 +375,87 @@ public class UserService : IUserService
         }
         return Result;
     }
+        public async Task<ResultModel> LoginWithGoogle(string googleToken)
+        {
+            ResultModel result = new();
+            try
+            {
+                // Xác thực Google token
+                var settings = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new[] { _googleOAuthOptions.ClientId } 
+                };
+
+                var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
+                
+                // Kiểm tra user có tồn tại trong database không
+                var user = await _userRepository.GetUserByEmail(payload.Email);
+                
+                if (user == null)
+                {
+                    // Tạo user mới nếu chưa tồn tại
+                    user = new User
+                    {
+                        Id = Guid.NewGuid(),
+                        Email = payload.Email,
+                        FullName = payload.Name,
+                        AvatarUrl = payload.Picture,
+                        Status = "ACTIVE",
+                        Role = "PARTNER",
+                        CreatedAt = DateTime.Now,
+                        LastLoggedIn = DateTime.Now
+                    };
+                    
+                    await _userRepository.Insert(user);
+                }
+                else
+                {
+                    // Cập nhật thông tin nếu user đã tồn tại
+                    if (user.Role != "PARTNER")
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 401;
+                        result.Message = "Permission Denied";
+                        return result;
+                    }
+
+                    user.LastLoggedIn = DateTime.Now;
+                    await _userRepository.Update(user);
+                }
+
+                // Tạo response data
+                var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.CreateMap<User, UserResModel>();
+                });
+                IMapper mapper = config.CreateMapper();
+                UserResModel userResModel = mapper.Map<User, UserResModel>(user);
+
+                UserLoginResModel loginResData = new UserLoginResModel
+                {
+                    User = userResModel,
+                    Token = Encoder.GenerateJWT(user)
+                };
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = loginResData;
+                result.Message = "Login with Google successfully";
+            }
+            catch (InvalidJwtException)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Invalid Google token";
+            }
+            catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Code = 500;
+                result.ResponseFailed = e.InnerException != null 
+                    ? e.InnerException.Message + "\n" + e.StackTrace 
+                    : e.Message + "\n" + e.StackTrace;
+            }
+            return result;
+        }
 }

@@ -77,6 +77,15 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
             }
             try
             {
+                var existingService = await _clinicServiceRepository.GetServiceByNameAndCategory(serviceAddDTO.Name, serviceAddDTO.Category);
+
+                if (existingService != null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "A service with this name already exists in the selected category";
+                    return result;
+                }
                 var newService = new ClinicService
                 {
                     Id = Guid.NewGuid(),
@@ -93,6 +102,13 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     Image = serviceAddDTO.Image,
                  //   IsBlocked = 1,
                 };
+                if(serviceAddDTO.DiscountFrom > serviceAddDTO.DiscountTo)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Discount from must be less than discount to";
+                    return result;
+                }
                 await _clinicServiceRepository.AddService(newService);
                 //  await _clinicServiceRepository.UpdateDiscountedPrice(newService);
 
@@ -279,7 +295,15 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     result.Message = "Service not found";
                     return result;
                 }
+                // var existingService = await _clinicServiceRepository.GetServiceByNameAndCategory(serviceUpdateDTO.Name, serviceUpdateDTO.Category);
 
+                // if (existingService != null && existingService.Id != serviceUpdateDTO.Id)
+                // {
+                //     result.IsSuccess = false;
+                //     result.Code = 400;
+                //     result.Message = "A service with this name already exists in the selected category";
+                //     return result;
+                // }
                 // Cập nhật thông tin service từ DTO
                 service.Name = serviceUpdateDTO.Name ?? service.Name;
                 service.Description = serviceUpdateDTO.Description ?? service.Description;
@@ -292,6 +316,14 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                 service.DiscountTo = serviceUpdateDTO.DiscountTo;
                 service.Image = serviceUpdateDTO.Image ?? service.Image;
 
+                if(serviceUpdateDTO.DiscountFrom > serviceUpdateDTO.DiscountTo)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Discount from must be less than discount to";
+                    return result;
+                }
+               
                 // Gọi repository để cập nhật service
                 await _clinicServiceRepository.UpdateService(service);
 

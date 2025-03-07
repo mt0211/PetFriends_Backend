@@ -14,29 +14,34 @@ namespace PetManagementAPI.Repository.PetRepository
         }
         public async Task<IEnumerable<dynamic>> GetAllPets()
         {
-            return await _context.Pets
+                return await _context.Pets
                 .GroupJoin(
-                    _context.Users, // Bảng User
-                    pet => pet.UserPhoneNumber, // Khóa trong bảng Pet
-                    user => user.PhoneNumber,  // Khóa trong bảng User
-                    (pet, users) => new { Pet = pet, Users = users.DefaultIfEmpty() } // LEFT JOIN
+                    _context.Users,
+                    pet => pet.UserPhoneNumber,
+                    user => user.PhoneNumber,
+                    (pet, users) => new { Pet = pet, Users = users.DefaultIfEmpty() }
                 )
                 .Select(joinResult => new
                 {
                     Id = joinResult.Pet.Id,
-                    PetName = joinResult.Pet.Name,
+                    Name = joinResult.Pet.Name,
                     Gender = joinResult.Pet.Gender,
                     Species = joinResult.Pet.Species,
                     Breed = joinResult.Pet.Breed,
                     DateOfBirth = joinResult.Pet.DateOfBirth,
-                    OwnerName = joinResult.Users.FirstOrDefault() != null ? joinResult.Users.FirstOrDefault().FullName : "N/A",
+                    OwnerName = joinResult.Users.FirstOrDefault() != null ? joinResult.Users.FirstOrDefault().FullName : null,
                     OwnerPhoneNumber = joinResult.Pet.UserPhoneNumber,
-                    Vaccinated = joinResult.Pet.PetVaccines.Any() ? "Vaccinated" : "Not yet",
-                    VaccineNames = joinResult.Pet.PetVaccines != null && joinResult.Pet.PetVaccines.Any()
-    ? string.Join(", ", joinResult.Pet.PetVaccines.Select(pv => pv.Vaccine.Name))
-    : "N/A"
+                    Vaccinated = joinResult.Pet.UserPetVaccines.Any() ? "Vaccinated" : "Not yet",
+                    VaccineNames = joinResult.Pet.UserPetVaccines.Any() 
+                        ? string.Join(", ", 
+                            joinResult.Pet.UserPetVaccines.Select(upv => 
+                                upv.VaccineId != null 
+                                    ? upv.Vaccine.Name
+                                    : upv.Name + "(outside of clinic system)"
+                            ).Where(name => !string.IsNullOrEmpty(name))
+                        )
+                        : "N/A"  // Trả về "N/A" khi không có vaccine nào
                 })
-                //.OrderBy(p => p.PetName) 
                 .ToListAsync();
         }
 
@@ -49,45 +54,64 @@ namespace PetManagementAPI.Repository.PetRepository
             }
             return user;
         }
+
+
         public async Task<IEnumerable<Vaccine>> GetAllVaccine()
         {
-            return await _context.Vaccines.ToListAsync();
+            return await _context.Vaccines
+            .Where(v => v.Status == 0)
+            .ToListAsync();
         }
-        public async Task AddPetVaccineAsync(PetVaccine petVaccine)
+        public async Task AddUserPetVaccineAsync(UserPetVaccine petVaccine)
         {
-            await _context.PetVaccines.AddAsync(petVaccine);
+            await _context.UserPetVaccines.AddAsync(petVaccine);
             await _context.SaveChangesAsync();
         }
+        
+        public async Task<Vaccine> GetVaccineById(Guid vaccineId)
+        {
+            return await _context.Vaccines.FirstOrDefaultAsync(v => v.Id == vaccineId);
+        }
+
+
+
+
         public async Task<dynamic> GetPetById(Guid petId)
         {
             return await _context.Pets
-         .Include(p => p.User) // Bao gồm thông tin chủ sở hữu
-         .Include(p => p.PetVaccines) // Bao gồm thông tin vaccine
-         .ThenInclude(pv => pv.Vaccine) // Bao gồm chi tiết vaccine
-         .Where(p => p.Id == petId)
-         .Select(p => new
-         {
-             Id = p.Id,
-             Name = p.Name,
-             Gender = p.Gender,
-             Species = p.Species,
-             Breed = p.Breed,
-             DateOfBirth = p.DateOfBirth,
-             OwnerName = p.User != null ? p.User.FullName : "N/A",
-             OwnerPhoneNumber = p.UserPhoneNumber,
-             Vaccinated = p.PetVaccines.Any() ? "Vaccinated" : "Not yet",
-             VaccineNames = p.PetVaccines != null && p.PetVaccines.Any()
-    ? string.Join(", ", p.PetVaccines.Select(pv => pv.Vaccine.Name))
-    : "N/A"
-         })
-         .FirstOrDefaultAsync();
+            .Include(p => p.User)
+            .Include(p => p.UserPetVaccines) // Thay đổi sang UserPetVaccines
+                .ThenInclude(upv => upv.Vaccine) // Include thông tin vaccine từ bảng Vaccine
+            .Where(p => p.Id == petId)
+            .Select(p => new
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Gender = p.Gender,
+                Species = p.Species,
+                Breed = p.Breed,
+                DateOfBirth = p.DateOfBirth,
+                OwnerName = p.User != null ? p.User.FullName : "N/A",
+                OwnerPhoneNumber = p.UserPhoneNumber,
+                Vaccinated = p.UserPetVaccines.Any() ? "Vaccinated" : "Not yet",
+                VaccineNames = p.UserPetVaccines != null && p.UserPetVaccines.Any()
+                    ? string.Join(", ", 
+                        p.UserPetVaccines.Select(upv => 
+                            upv.VaccineId != null 
+                                ? upv.Vaccine.Name  // Vaccine trong hệ thống
+                                : upv.Name + "(outside of system)" // Vaccine ngoài hệ thống
+                        ).Where(name => !string.IsNullOrEmpty(name))
+                    )
+                    : "N/A"
+            })
+            .FirstOrDefaultAsync();
         }
 
         public async Task DeletePetWithVaccinesAsync(Guid petId)
         {
             //Delete in PetVaccine table
-            var petVaccines = _context.PetVaccines.Where(pv => pv.PetId == petId);
-            _context.PetVaccines.RemoveRange(petVaccines);
+            var petVaccines = _context.UserPetVaccines.Where(pv => pv.PetId == petId);
+            _context.UserPetVaccines.RemoveRange(petVaccines);
 
             //Delete in Pet table
             var pet = await _context.Pets.FindAsync(petId);
@@ -114,28 +138,24 @@ namespace PetManagementAPI.Repository.PetRepository
         public async Task<Pet> GetPetByUpdate(Guid petId)
         {
             return await _context.Pets
-                .Include(p => p.User)
-                .Include(p => p.PetVaccines)
-                .ThenInclude(pv => pv.Vaccine)
-                .FirstOrDefaultAsync(p => p.Id == petId);
+            .Include(p => p.User)
+            .Include(p => p.UserPetVaccines) // Thay đổi sang UserPetVaccines
+                .ThenInclude(upv => upv.Vaccine)
+            .FirstOrDefaultAsync(p => p.Id == petId);
         }
 
         public async Task RemoveAllPetVaccinesAsync(Guid petId)
         {
 
-            // Tạo một DbContext mới để cô lập việc xóa
             using (var context = new PetfriendsContext())
             {
-
-                // Truy xuất các vaccine liên quan đến petId
-                var existingVaccines = await context.PetVaccines
-                    .Where(pv => pv.PetId == petId)
+                var existingVaccines = await context.UserPetVaccines
+                    .Where(upv => upv.PetId == petId)
                     .ToListAsync();
 
                 if (existingVaccines.Any())
                 {
-                    // Xóa tất cả các vaccine này
-                    context.PetVaccines.RemoveRange(existingVaccines);
+                    context.UserPetVaccines.RemoveRange(existingVaccines);
                     await context.SaveChangesAsync();
                 }
             }
@@ -145,21 +165,25 @@ namespace PetManagementAPI.Repository.PetRepository
         {
             if (newVaccineIds != null && newVaccineIds.Any())
             {
-                var newPetVaccines = newVaccineIds.Select(vaccineId => new PetVaccine
+                foreach (var vaccineId in newVaccineIds)
                 {
-                    Id = Guid.NewGuid(),
-                    PetId = petId,
-                    VaccineId = vaccineId,
-                    DateGiven = DateTime.UtcNow,
-                    Notes = "Added during update"
-                }).ToList();
+                    var vaccine = await GetVaccineById(vaccineId);
+                    if (vaccine != null)
+                    {
+                        var newUserPetVaccine = new UserPetVaccine
+                        {
+                            Id = Guid.NewGuid(),
+                            PetId = petId,
+                            VaccineId = vaccineId,
+                            Name = vaccine.Name,
+                            NumberOfDoses = vaccine.NumberOfDoses,
+                            Recommendation = vaccine.Recommendation
+                        };
 
-                foreach (var vaccine in newPetVaccines)
-                {
-                    _context.Entry(vaccine).State = EntityState.Added; // Đánh dấu trạng thái thêm mới
+                        await _context.UserPetVaccines.AddAsync(newUserPetVaccine);
+                    }
                 }
-
-                await _context.SaveChangesAsync(); // Lưu thay đổi
+                await _context.SaveChangesAsync();
             }
         }
 

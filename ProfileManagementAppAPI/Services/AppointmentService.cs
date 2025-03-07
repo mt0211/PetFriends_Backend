@@ -40,7 +40,14 @@ namespace ProfileManagementAppAPI.Services
             }
             try
             {
-
+                var checkReview = await _repository.CheckReview(reviewModel.AppointmentId);
+                if(checkReview)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 403;
+                    result.Message = "Appointment already has review";
+                    return result;
+                }
                 var reviewEntity = new Feedback
                 {
                     Id = Guid.NewGuid(),
@@ -1238,6 +1245,46 @@ namespace ProfileManagementAppAPI.Services
                 result.Code = 200;
                 result.Data = appointmentDetail;
                 result.Message = "Successfully get appointment detail";
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
+        public async Task<ResultModel> CheckReview(string token, Guid appointmentId)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Invalid user ID";
+                return result;
+            }
+
+            try
+            {
+                var checkReview = await _repository.CheckReview(appointmentId);
+                if(checkReview)
+                {
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = true;
+                    result.Message = "Appointment has been reviewed";
+                }
+                else
+                {
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = false;
+                    result.Message = "Appointment has not been reviewed";
+                }
             }
             catch (Exception ex)
             {

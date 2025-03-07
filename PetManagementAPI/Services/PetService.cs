@@ -41,7 +41,7 @@ namespace PetManagementAPI.Services
                 var petList = pets.Select(p => new PetModel
                 {
                     Id = p.Id,
-                    Name = p.PetName,
+                    Name = p.Name,
                     Gender = p.Gender,
                     Species = p.Species,
                     Breed = p.Breed,
@@ -77,7 +77,7 @@ namespace PetManagementAPI.Services
             if (!Guid.TryParse(userId, out Guid id))
             {
                 result.IsSuccess = false;
-                result.Code = 400; // Bad request
+                result.Code = 400;
                 result.Message = "Invalid user ID";
                 return result;
             }
@@ -99,22 +99,28 @@ namespace PetManagementAPI.Services
 
                 await _petRepository.Insert(pet);
 
-                if (addPetReqModel.Vaccinated && addPetReqModel != null && addPetReqModel.VaccineIds.Any())
+                if (addPetReqModel.Vaccinated && addPetReqModel.VaccineIds != null && addPetReqModel.VaccineIds.Any())
                 {
-                    foreach (var VaccineID in addPetReqModel.VaccineIds)
+                    foreach (var vaccineId in addPetReqModel.VaccineIds)
                     {
-                        var NewPetVaccine = new PetVaccine
+                        // Lấy thông tin vaccine từ database
+                        var vaccine = await _petRepository.GetVaccineById(vaccineId);
+                        if (vaccine != null)
                         {
-                            PetId = pet.Id,
-                            VaccineId = VaccineID,
-                            DateGiven = DateTime.UtcNow,
-                            Notes = "Vaccine added for registration"
-                        };
-                        await _petRepository.AddPetVaccineAsync(NewPetVaccine);
+                            var newUserPetVaccine = new UserPetVaccine
+                            {
+                                Id = Guid.NewGuid(),
+                                PetId = pet.Id,
+                                VaccineId = vaccineId,
+                                Name = vaccine.Name, // Lưu tên vaccine
+                                NumberOfDoses = vaccine.NumberOfDoses,
+                                Recommendation = vaccine.Recommendation
+                            };
+                            await _petRepository.AddUserPetVaccineAsync(newUserPetVaccine);
+                        }
                     }
                 }
 
-                //Success response
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Message = "Successfully add new pet";
@@ -273,15 +279,8 @@ namespace PetManagementAPI.Services
             try
             {
                 var pet = await _petRepository.GetPetByUpdate(petDto.Id);
-                //if (pet == null)
-                //{
-                //    result.IsSuccess = false;
-                //    result.Code = 404;
-                //    result.Message = "Pet not found.";
-                //    return result;
-                //}
 
-                // Nếu có số điện thoại, tìm User liên kết
+                // Cập nhật thông tin User nếu có số điện thoại
                 if (!string.IsNullOrEmpty(petDto.PhoneNumber))
                 {
                     var user = await _petRepository.GetUserByPhoneNumber(petDto.PhoneNumber);
@@ -297,20 +296,19 @@ namespace PetManagementAPI.Services
                 pet.DateOfBirth = petDto.DateOfBirth;
                 pet.Vaccinated = (byte)(petDto.Vaccinated ? 1 : 0);
 
-               
                 await _petRepository.UpdatePetAsync(pet);
 
-                
+                // Xử lý vaccines
                 if (!petDto.Vaccinated)
                 {
-                    
+                    // Nếu không tiêm vaccine, xóa tất cả vaccine
                     await _petRepository.RemoveAllPetVaccinesAsync(pet.Id);
                 }
                 else if (petDto.VaccineIds != null && petDto.VaccineIds.Any())
                 {
-                    
-                    await _petRepository.RemoveAllPetVaccinesAsync(pet.Id); 
-                    await _petRepository.AddPetVaccinesAsync(pet.Id, petDto.VaccineIds); 
+                    // Nếu có vaccine mới, xóa vaccine cũ và thêm vaccine mới
+                    await _petRepository.RemoveAllPetVaccinesAsync(pet.Id);
+                    await _petRepository.AddPetVaccinesAsync(pet.Id, petDto.VaccineIds);
                 }
 
                 result.IsSuccess = true;

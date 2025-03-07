@@ -275,5 +275,10 @@ namespace ProfileManagementAppAPI.Repositories
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
         }
         
+        //CHECK REVIEW
+        public async Task<bool> CheckReview(Guid appointmentId)
+        {
+            return await _context.Feedbacks.AnyAsync(f => f.AppointmentId == appointmentId);
+        }
     }
 }

@@ -50,6 +50,23 @@ namespace AppUserAuthenticationAPI.Services
                 }
                 else
                 {
+                    var numberOfAppointment = await _appUserAuthenticationRepository.GetNumberOfAppointment(User.Id);
+                    if(numberOfAppointment == 0)
+                    {
+
+                        User.TypeGroup = "First-Time Visitors";
+                        await _appUserAuthenticationRepository.UpdateUserTypeGroup(User);
+                    }
+                    else if(numberOfAppointment > 0)
+                    {
+                        User.TypeGroup = "Normal Customer";
+                        await _appUserAuthenticationRepository.UpdateUserTypeGroup(User);
+                    }
+                    if (numberOfAppointment > 3)
+                    {
+                        User.TypeGroup = "Loyalty Members";
+                        await _appUserAuthenticationRepository.UpdateUserTypeGroup(User);
+                    }
                     var Salt = User.Salt;
                     var PasswordStored = User.Password;
                     if (Salt != null && PasswordStored != null)
