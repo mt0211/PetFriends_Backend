@@ -10,5 +10,7 @@ namespace AppUserAuthenticationAPI.Repositories
 
         Task<User> GetUserByOTP(string otp, string email);
         Task<User> GetUserByPhoneNumber(string phoneNumber);
+        Task<int> GetNumberOfAppointment(Guid userId);
+         Task UpdateUserTypeGroup(User user);
     }
 }

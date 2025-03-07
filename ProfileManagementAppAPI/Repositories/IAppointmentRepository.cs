@@ -48,5 +48,6 @@ namespace ProfileManagementAppAPI.Repositories
          Task RemoveAppointmentPromotion(AppointmentPromotion promotion);
          Task UpdateAppointment(Appointment appointment);
          Task<Appointment> GetAppointmentDetailById(Guid appointmentId);
+         Task<bool> CheckReview(Guid appointmentId);
     }
 }

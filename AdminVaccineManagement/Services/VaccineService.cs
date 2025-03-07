@@ -249,9 +249,9 @@ namespace AdminVaccineManagement.Services
             try
             {
                 var vaccine = await _repository.GetVaccineByName(AddModel.Name);
-                if(vaccine.Name == AddModel.Name)
+                if(vaccine!=null)
                 {
-                    result.IsSuccess = true;
+                    result.IsSuccess = false;
                     result.Code = 400;
                     result.Message = "Vaccine already exists!";
                     return result;

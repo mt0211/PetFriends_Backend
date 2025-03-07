@@ -2,6 +2,7 @@
 using UserAuthenticationAPI.Services;
 using UserAuthenticationAPI.DTOs.ResultModel;
 using UserAuthenticationAPI.DTOs.UserDTOs;
+using UserAuthenticationAPI.DTOs.GoogleLoginDTOs;
 namespace UserAuthenticationAPI.Controllers
 {
     [ApiController]
@@ -124,6 +125,12 @@ namespace UserAuthenticationAPI.Controllers
                 return BadRequest("Email and OTP code are required.");
             }
             ResultModel result = await _verifyService.VerifyResetPassword(VerifyModel.Email, VerifyModel.OTPCode);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDTO googleLoginDTO)
+        {
+            ResultModel result = await _userService.LoginWithGoogle(googleLoginDTO.Token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
     }

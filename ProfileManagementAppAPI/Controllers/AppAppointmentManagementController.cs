@@ -154,5 +154,12 @@ namespace ProfileManagementAppAPI.Controllers
             ResultModel result = await _profileManagementService.GetAppointmentDetail(token, appointmentId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("check-review")]
+        public async Task<IActionResult> CheckReview([FromQuery] Guid appointmentId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _profileManagementService.CheckReview(token, appointmentId);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

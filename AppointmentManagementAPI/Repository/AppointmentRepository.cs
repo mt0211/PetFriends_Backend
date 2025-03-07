@@ -232,6 +232,22 @@ namespace AppointmentManagementAPI.Repository
             }
             await   _context.SaveChangesAsync();
         }
+        public async Task UpdatePromotionUsageLimit(Guid promotionId)
+        {
+            var promotion = await _context.Promotions.FindAsync(promotionId);
+            if (promotion != null && promotion.UsageLimit > 0)
+            {
+                promotion.UsageLimit -= 1;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<AppointmentPromotion>> GetAppointmentPromotionsByAppointmentId(Guid appointmentId)
+        {
+            return await _context.AppointmentPromotions
+                .Where(ap => ap.AppointmentId == appointmentId)
+                .ToListAsync();
+        }
 
     }
 }

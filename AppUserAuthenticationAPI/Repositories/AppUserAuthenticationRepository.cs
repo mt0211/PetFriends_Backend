@@ -60,5 +60,17 @@ namespace AppUserAuthenticationAPI.Repositories
             }
             return user;
         }
+
+        public async Task<int> GetNumberOfAppointment(Guid userId)
+        {
+            var numberOfAppointment = await _context.Appointments.CountAsync(a => a.UserId == userId);
+            return numberOfAppointment;
+        }
+        public async Task UpdateUserTypeGroup(User user)
+        {
+               _context.Users.Attach(user);
+               _context.Entry(user).Property(u => u.TypeGroup).IsModified = true;
+               await _context.SaveChangesAsync();
+        }
     }
 }
