@@ -1,6 +1,7 @@
 ﻿using ClinicServiceManagement.DTOs.ResultModel;
 using ClinicServiceManagement.DTOs.ServiceDTOs;
 using ClinicServiceManagement.Utilites;
+using ClinicServiceManagement.Utilities;
 using ClinicServiceManagementAPI.Repository.ClinicServiceRepository;
 using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
     public class ClinicServiceService : IClinicServiceService
     {
         private readonly IClinicServiceRepository _clinicServiceRepository;
-       // private readonly PetfriendsContext _context;
+        // private readonly PetfriendsContext _context;
         public ClinicServiceService(IClinicServiceRepository clinicServiceRepository)
         {
             _clinicServiceRepository = clinicServiceRepository;
@@ -100,23 +101,40 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     DiscountFrom = serviceAddDTO.DiscountFrom,
                     DiscountTo = serviceAddDTO.DiscountTo,
                     Image = serviceAddDTO.Image,
-                 //   IsBlocked = 1,
+                    IsBlocked = 1,
                 };
-                if(serviceAddDTO.DiscountFrom > serviceAddDTO.DiscountTo)
+                if (serviceAddDTO.DiscountFrom > serviceAddDTO.DiscountTo)
                 {
                     result.IsSuccess = false;
                     result.Code = 400;
                     result.Message = "Discount from must be less than discount to";
                     return result;
                 }
-                await _clinicServiceRepository.AddService(newService);
-                //  await _clinicServiceRepository.UpdateDiscountedPrice(newService);
-
-
-                result.IsSuccess = true;
-                result.Code = 200;
-                result.Data = newService;
-                result.Message = "Successfully added new service";
+                var vaccine = await _clinicServiceRepository.GetVaccineByName(serviceAddDTO.Name);
+                var getCategory = await _clinicServiceRepository.GetCategoryByID(serviceAddDTO.Category);
+                if (vaccine == null && getCategory.Name == "Vaccination")
+                {
+                    var user = await _clinicServiceRepository.GetListAdminAccount();
+                    foreach (var admin in user)
+                    {
+                        if (!string.IsNullOrWhiteSpace(admin.Email))
+                        {
+                            string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "Notification.html");
+                            string Html = File.ReadAllText(FilePath);
+                            Html = Html.Replace("{{VaccineName}}", serviceAddDTO.Name);
+                            bool EmailSent = await Email.SendEmail(admin.Email, "Vaccine Notification", Html);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Email does not exist. Skipping email notification.");
+                        }
+                    }
+                }
+                    await _clinicServiceRepository.AddService(newService);
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = newService;
+                    result.Message = "Successfully added new service";
             }
             catch (Exception ex)
             {
@@ -316,14 +334,21 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                 service.DiscountTo = serviceUpdateDTO.DiscountTo;
                 service.Image = serviceUpdateDTO.Image ?? service.Image;
 
-                if(serviceUpdateDTO.DiscountFrom > serviceUpdateDTO.DiscountTo)
+                if (serviceUpdateDTO.DiscountFrom > serviceUpdateDTO.DiscountTo)
                 {
                     result.IsSuccess = false;
                     result.Code = 400;
                     result.Message = "Discount from must be less than discount to";
                     return result;
                 }
-               
+                var clinicservice = await _clinicServiceRepository.GetServiceByName(serviceUpdateDTO.Name);
+                if (clinicservice != null && clinicservice.Id != serviceUpdateDTO.Id)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "A service with this name already exists";
+                    return result;
+                }
                 // Gọi repository để cập nhật service
                 await _clinicServiceRepository.UpdateService(service);
 
@@ -345,6 +370,37 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     service.Image
                 };
                 result.Message = "Successfully updated service";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+
+            return result;
+        }
+
+        public async Task<ResultModel> GetAllVaccine(string token)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+
+            try
+            {
+                var vaccines = await _clinicServiceRepository.GetAllVaccine();
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = vaccines;
+                result.Message = "Successfully get all vaccine";
             }
             catch (Exception ex)
             {

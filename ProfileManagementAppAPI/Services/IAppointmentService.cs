@@ -33,5 +33,8 @@ namespace ProfileManagementAppAPI.Services
 
       //CHECK REVIEW
       Task<ResultModel> CheckReview(string token, Guid appointmentId);
+
+      //COUNT SERVICE
+      Task<ResultModel> CountService(string token);
     }
 }

@@ -133,5 +133,15 @@ namespace UserAuthenticationAPI.Controllers
             ResultModel result = await _userService.LoginWithGoogle(googleLoginDTO.Token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpPost("google-signup")]
+        public async Task<IActionResult> GoogleSignUp([FromBody] GoogleLoginDTO googleLoginDTO)
+        {
+            if (string.IsNullOrEmpty(googleLoginDTO.Token))
+            {
+                return BadRequest(new { message = "Token is required" });
+            }
+            ResultModel result = await _userService.SignUpWithGoogle(googleLoginDTO.Token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

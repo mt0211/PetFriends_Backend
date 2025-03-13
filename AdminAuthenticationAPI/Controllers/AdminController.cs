@@ -5,6 +5,7 @@ using AdminAuthenticationAPI.Service.AdminService;
 //using AdminAuthenticationAPI.Service.VerifyAdminService;
 using AdminAuthenticationAPI.DTOs.AdminDTOs;
 using static AdminAuthenticationAPI.DTOs.AdminDTOs.AdminReqModel;
+using AdminAuthenticationAPI.DTOs.GoogleLoginDTOs;
 namespace AdminAuthenticationAPI.Controllers
 {
     [ApiController]
@@ -22,6 +23,12 @@ namespace AdminAuthenticationAPI.Controllers
         public async Task<IActionResult> Login([FromBody] AdminLoginReqModel adminLoginReqModel)
         {
             ResultModelAdmin result = await _adminService.LoginAdmin(adminLoginReqModel);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDTO googleLoginDTO)
+        {
+            ResultModelAdmin result = await _adminService.LoginWithGoogle(googleLoginDTO.Token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 

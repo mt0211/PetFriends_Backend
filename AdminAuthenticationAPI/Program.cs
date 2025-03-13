@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using AdminAuthenticationAPI.Service.AdminService;
 using AdminAuthenticationAPI.Repository.AdminRepository;
+using AdminAuthenticationAPI.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,7 +86,8 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 });
 //Register dependency injection here:
 
-
+builder.Services.Configure<GoogleOAuthOptions>(
+    builder.Configuration.GetSection("GoogleOAuth"));
 
 // Configure the HTTP request pipeline.
 builder.Services.AddScoped<AdminService>();

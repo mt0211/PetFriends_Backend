@@ -25,7 +25,7 @@ namespace AppointmentManagementAPI.Repository
         Task UpdateDailyRevenue(decimal amount);
         Task UpdateServiceRevenue(Guid serviceTypeId, decimal amount);
         Task UpdatePromotionUsageLimit(Guid promotionId);
-        Task<List<AppointmentPromotion>> GetAppointmentPromotionsByAppointmentId(Guid appointmentId);
-
+        
+        Task<Appointment> GetAppointmentWithDetails(Guid appointmentId);
     }
 }

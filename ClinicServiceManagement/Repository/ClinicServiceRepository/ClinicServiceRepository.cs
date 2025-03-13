@@ -122,5 +122,32 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
             return await _context.ClinicServices.FirstOrDefaultAsync(s => s.Name == name && s.Category == categoryId);
         }
 
+        public async Task<List<Vaccine>> GetAllVaccine()
+        {
+            return await _context.Vaccines
+            .Where(v => v.Status == 0)
+            .ToListAsync();
+        }
+
+        public async Task<ClinicService> GetServiceByName(string name)
+        {
+            return await _context.ClinicServices.FirstOrDefaultAsync(s => s.Name == name);
+        }
+
+        public async Task<Vaccine> GetVaccineByName(string name)
+        {
+            return await _context.Vaccines.FirstOrDefaultAsync(v => v.Name == name);
+        }
+
+        public async Task<Category> GetCategoryByID(Guid? id)
+        {
+            return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<List<User>> GetListAdminAccount()
+        {
+            return await _context.Users.Where(u => u.Role == "ADMIN").ToListAsync();
+        }
+
     }
 }

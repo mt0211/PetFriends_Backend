@@ -6,5 +6,6 @@ namespace AdminAuthenticationAPI.Service.AdminService
     public interface IAdminService
     {
         Task<ResultModelAdmin> LoginAdmin(AdminReqModel.AdminLoginReqModel adminLoginReqModel);
+        Task<ResultModelAdmin> LoginWithGoogle(string googleToken);
     }
 }
