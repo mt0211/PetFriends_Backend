@@ -1,4 +1,5 @@
 ﻿using AppUserAuthenticationAPI.DTOs.AppUserDTOs;
+using AppUserAuthenticationAPI.DTOs.GoogleLoginDTOs;
 using AppUserAuthenticationAPI.DTOs.ResultModel;
 using AppUserAuthenticationAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +44,22 @@ namespace AppUserAuthenticationAPI.Controllers
                 return BadRequest("Email and OTP code are required.");
             }
             ResultModel result = await _verifyService.VerifyEmail(VerifyModel.Email, VerifyModel.OTPCode);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDTO googleLoginDTO)
+        {
+            ResultModel result = await _appUserAuthenticationService.LoginWithGoogle(googleLoginDTO.Token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPost("google-signup")]
+        public async Task<IActionResult> GoogleSignUp([FromBody] GoogleLoginDTO googleLoginDTO)
+        {
+            if (string.IsNullOrEmpty(googleLoginDTO.Token))
+            {
+                return BadRequest(new { message = "Token is required" });
+            }
+            ResultModel result = await _appUserAuthenticationService.SignUpWithGoogle(googleLoginDTO.Token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 

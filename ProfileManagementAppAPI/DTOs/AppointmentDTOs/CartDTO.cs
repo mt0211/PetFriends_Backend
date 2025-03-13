@@ -7,7 +7,7 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
 {
     public class AddToCartDTO
     {
-        public Guid ClinicServiceId { get; set; }
+        public Guid ServiceId { get; set; }
         public Guid PetId { get; set; }
     }
     public class CartDetailDTO
@@ -64,6 +64,7 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
         public string UserName { get; set; }
         public string UserPhone { get; set; }
         public string UserEmail { get; set; }
+        public string UserAvatar { get; set; }
         public string PetName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime StartAt { get; set; }
@@ -72,6 +73,8 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
         public decimal? TotalAmount { get; set; }
         public decimal? DiscountAmount { get; set; }
         public decimal? FinalAmount { get; set; }
+        public string? ReviewContent { get; set; }
+        public int? Rating { get; set; }
         public List<BookingServiceDTO> Services { get; set; } = new List<BookingServiceDTO>();
     }
 
@@ -108,10 +111,9 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
     public class UpdateAppointmentDTO
     {
         public Guid AppointmentId { get; set; }
-        public DateTime? DateBook { get; set; }
+        public string Date { get; set; }  // Format: "yyyy-MM-dd"
+        public string Time { get; set; }  // Format: "h:mm tt" (e.g., "1:22 AM")
         public string? Notes { get; set; }
-        public List<Guid>? PromotionIds { get; set; }
-         public List<Guid>? ServiceIds { get; set; }
     }
     public class AppointmentDetailDTO
     {
@@ -124,7 +126,9 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
         public DateTime? DateBook { get; set; }
         public string Notes { get; set; }
         public string Status { get; set; }
-        public decimal? TotalAmount { get; set; }
+        public int TotalAmount { get; set; }
+        public int DiscountAmount { get; set; }
+        public int FinalAmount { get; set; }
     }
 
     public class AppointmentServiceDTO

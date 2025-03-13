@@ -9,6 +9,7 @@ using AppAppointmentManagementAPI.DTOs.ReviewModel;
 using ProfileManagementAppAPI.DTOs.CategoryClinicServiceDTO;
 using ProfileManagementAppAPI.DTOs.AppointmentDTOs;
 using ProfileManagementAppAPI.DTOs.PromotionDTOs;
+using System.Globalization;
 
 namespace ProfileManagementAppAPI.Services
 {
@@ -393,15 +394,6 @@ namespace ProfileManagementAppAPI.Services
             }
             try
             {
-                var checkUserCartItem = await _repository.CheckUserCartItemByServiceId(addToCartDTO.ClinicServiceId);
-                
-                if(checkUserCartItem != null)
-                {
-                    result.IsSuccess = false;
-                    result.Code = 400;
-                    result.Message = "Service already in cart";
-                    return result;
-                }
                 var checkUserCart = await _repository.CheckUserCart(id);
                 if(checkUserCart == null)
                 {
@@ -416,13 +408,22 @@ namespace ProfileManagementAppAPI.Services
                     {
                       Id = Guid.NewGuid(),
                       CartId = newCart.Id,
-                      ClinicServiceId = addToCartDTO.ClinicServiceId,
+                      ClinicServiceId = addToCartDTO.ServiceId,
                       PetId = addToCartDTO.PetId
                     };
                     await _repository.AddNewCartItem(newCartItem);
                 }
                 else
                 {
+                    var checkUserCartItem = await _repository.CheckUserCartItemByServiceId(addToCartDTO.ServiceId, id);
+                
+                    if(checkUserCartItem != null)
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 400;
+                        result.Message = "Service already in cart";
+                        return result;
+                    }
                      var existingCartItems = await _repository.GetCartItemsByCartId(checkUserCart.Id);
             
                     if (existingCartItems != null && existingCartItems.Any())
@@ -440,7 +441,7 @@ namespace ProfileManagementAppAPI.Services
                     {
                         Id = Guid.NewGuid(),
                         CartId = checkUserCart.Id,
-                        ClinicServiceId = addToCartDTO.ClinicServiceId,
+                        ClinicServiceId = addToCartDTO.ServiceId,
                         PetId = addToCartDTO.PetId
                     };
                     await _repository.AddNewCartItem(newCartItem);
@@ -903,6 +904,7 @@ namespace ProfileManagementAppAPI.Services
                     UserName = a.User.FullName,
                     UserPhone = a.User.PhoneNumber,
                     UserEmail = a.User.Email,
+                    UserAvatar = a.User.AvatarUrl,
                     PetName = a.Pet.Name,
                     CreatedAt = a.CreatedAt ?? DateTime.UtcNow,
                     StartAt = a.StartAt ?? DateTime.UtcNow,
@@ -911,6 +913,8 @@ namespace ProfileManagementAppAPI.Services
                     TotalAmount = a.TotalAmount,
                     DiscountAmount = a.DiscountAmount,
                     FinalAmount = a.FinalAmount,
+                    ReviewContent = a.Feedbacks.FirstOrDefault()?.Content,
+                    Rating = a.Feedbacks.FirstOrDefault()?.Rating,
                     Services = a.AppointmentClinicServices.Select(s => new BookingServiceDTO
                     {
                         ServiceName = s.ClinicService.Name,
@@ -976,7 +980,6 @@ namespace ProfileManagementAppAPI.Services
             }
             return result;
         }
-
         public async Task<ResultModel> CancelAppointment(string token, Guid appointmentId)
         {
             var result = new ResultModel();
@@ -1026,6 +1029,28 @@ namespace ProfileManagementAppAPI.Services
 
             try
             {
+                // Parse date và time
+                if (!DateTime.TryParseExact(updateDTO.Date, "yyyy-MM-dd", 
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateValue))
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Invalid date format. Use yyyy-MM-dd";
+                    return result;
+                }
+
+                if (!DateTime.TryParseExact(updateDTO.Time, "h:mm tt", 
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime timeValue))
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Invalid time format. Use h:mm tt (e.g., 1:22 AM)";
+                    return result;
+                }
+
+                // Combine date và time
+                var combinedDateTime = dateValue.Date.Add(timeValue.TimeOfDay);
+
                 // Lấy thông tin appointment
                 var appointment = await _repository.GetAppointmentById(updateDTO.AppointmentId);
                 if (appointment == null)
@@ -1053,126 +1078,26 @@ namespace ProfileManagementAppAPI.Services
                     return result;
                 }
 
-                // Cập nhật thông tin cơ bản nếu có thay đổi
-                if (updateDTO.DateBook.HasValue)
-                    appointment.StartAt = updateDTO.DateBook;
-                
+                // Cập nhật datetime và notes
+                appointment.StartAt = combinedDateTime;
                 if (!string.IsNullOrEmpty(updateDTO.Notes))
                     appointment.Note = updateDTO.Notes;
 
-                // Xử lý thay đổi services
-                var currentServices = await _repository.GetAppointmentServices(appointment.Id);
-
-                if (updateDTO.ServiceIds != null)
-                {
-                    // Xóa những service không còn trong danh sách mới
-                    var servicesToRemove = currentServices
-                        .Where(s => !updateDTO.ServiceIds.Contains(s.ClinicServiceId));
-                    foreach (var service in servicesToRemove)
-                    {
-                        await _repository.RemoveAppointmentService(service);
-                    }
-
-                    // Thêm những service mới
-                    foreach (var serviceId in updateDTO.ServiceIds)
-                    {
-                        if (!currentServices.Any(s => s.ClinicServiceId == serviceId))
-                        {
-                            var appointmentService = new AppointmentClinicService
-                            {
-                                Id = Guid.NewGuid(),
-                                AppointmentId = appointment.Id,
-                                ClinicServiceId = serviceId,
-                                DateGiven = appointment.StartAt ?? DateTime.UtcNow,
-                                Notes = appointment.Note
-                            };
-                            await _repository.AddAppointmentClinicService(appointmentService);
-                        }
-                    }
-                }
-
-                // Tính toán lại tổng tiền sau khi thay đổi services
-                var updatedServices = await _repository.GetAppointmentServices(appointment.Id);
-                decimal totalAmount = updatedServices.Sum(s => s.ClinicService.DiscountedPrice ?? 0);
-
-                // Xử lý thay đổi promotions
-                if (updateDTO.PromotionIds != null)
-                {
-                    var currentPromotions = await _repository.GetAppointmentPromotions(appointment.Id);
-                    var newPromotionIds = updateDTO.PromotionIds.Take(2).ToList();
-                    
-                    // Xóa những promotion không còn trong danh sách mới
-                    foreach (var promotion in currentPromotions)
-                    {
-                        if (!newPromotionIds.Contains(promotion.PromotionId ?? Guid.Empty))
-                        {
-                            await _repository.RemoveAppointmentPromotion(promotion);
-                        }
-                    }
-
-                    // Thêm những promotion mới
-                    decimal discountAmount = 0;
-                    var user = await _repository.GetUserByUserId(id);
-
-                    foreach (var promotionId in newPromotionIds)
-                    {
-                        if (!currentPromotions.Any(p => p.PromotionId == promotionId))
-                        {
-                            var promotion = await _repository.GetPromotionById(promotionId);
-                            if (promotion != null && promotion.Status == "Active")
-                            {
-                                bool canApply = false;
-                                if (promotion.TargetGroup == "All Customers") canApply = true;
-                                else if (promotion.TargetGroup == "First-Time Visitors" && 
-                                        user.TypeGroup == "First-Time Visitors") canApply = true;
-                                else if (promotion.TargetGroup == "Loyalty Members" && 
-                                        user.TypeGroup == "Loyalty Members") canApply = true;
-
-                                if (canApply)
-                                {
-                                    decimal currentDiscountAmount = 0;
-                                    if (promotion.Type == 0) // Phần trăm
-                                        currentDiscountAmount = totalAmount * (promotion.DiscountDetail.GetValueOrDefault() / 100);
-                                    else if (promotion.Type == 1) // Số tiền cố định
-                                        currentDiscountAmount = promotion.DiscountDetail.GetValueOrDefault();
-
-                                    var appointmentPromotion = new AppointmentPromotion
-                                    {
-                                        Id = Guid.NewGuid(),
-                                        AppointmentId = appointment.Id,
-                                        PromotionId = promotion.Id,
-                                        DiscountAmount = currentDiscountAmount,
-                                        CreateAt = DateTime.UtcNow
-                                    };
-                                    await _repository.AddAppointmentPromotion(appointmentPromotion);
-                                    discountAmount += currentDiscountAmount;
-                                }
-                            }
-                        }
-                    }
-
-                    // Cập nhật tổng giảm giá
-                    if (discountAmount > totalAmount)
-                        discountAmount = totalAmount;
-
-                    appointment.DiscountAmount = discountAmount;
-                    appointment.FinalAmount = totalAmount - discountAmount;
-                }
-
-                appointment.TotalAmount = totalAmount;
                 await _repository.UpdateAppointment(appointment);
 
+                // Lấy thông tin services để trả về
+                var services = await _repository.GetAppointmentServices(appointment.Id);
+                
                 // Tạo response
-                var updatedAppointment = await _repository.GetAppointmentById(appointment.Id);
                 var bookingResult = new BookingResultDTO
                 {
-                    AppointmentId = updatedAppointment.Id,
-                    DateBook = updatedAppointment.StartAt ?? DateTime.UtcNow,
-                    Notes = updatedAppointment.Note,
-                    TotalAmount = updatedAppointment.TotalAmount,
-                    DiscountAmount = updatedAppointment.DiscountAmount,
-                    FinalAmount = updatedAppointment.FinalAmount,
-                    Services = updatedServices.Select(s => new CartServiceDTO
+                    AppointmentId = appointment.Id,
+                    DateBook = appointment.StartAt ?? DateTime.UtcNow,
+                    Notes = appointment.Note,
+                    TotalAmount = appointment.TotalAmount,
+                    DiscountAmount = appointment.DiscountAmount,
+                    FinalAmount = appointment.FinalAmount,
+                    Services = services.Select(s => new CartServiceDTO
                     {
                         ServiceId = s.ClinicService.Id,
                         ServiceName = s.ClinicService.Name,
@@ -1229,7 +1154,9 @@ namespace ProfileManagementAppAPI.Services
                     DateBook = appointment.StartAt,
                     Notes = appointment.Note,
                     Status = appointment.Status,
-                    TotalAmount = appointment.TotalAmount,
+                    TotalAmount = (int)Math.Round(appointment.TotalAmount ?? 0),
+                    DiscountAmount = (int)Math.Round(appointment.DiscountAmount ?? 0),
+                    FinalAmount = (int)Math.Round(appointment.FinalAmount ?? 0),
                     Services = appointment.AppointmentClinicServices.Select(acs => new AppointmentServiceDTO
                     {
                         ServiceId = acs.ClinicService.Id,
@@ -1285,6 +1212,36 @@ namespace ProfileManagementAppAPI.Services
                     result.Data = false;
                     result.Message = "Appointment has not been reviewed";
                 }
+            }
+            catch (Exception ex)
+            {
+                result.IsSuccess = false;
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
+        public async Task<ResultModel> CountService(string token)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            try
+            {
+                var cart = await _repository.GetCartByUserId(id);
+                var count = await _repository.CountService(cart.Id);
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = count;
+                result.Message = "Successfully count service";
             }
             catch (Exception ex)
             {

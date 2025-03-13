@@ -93,6 +93,7 @@ namespace AppointmentManagementAPI.Services
             try
             {
                 // Lấy thông tin appointment
+                var appointmentdetail = await _appointmentrepository.GetAppointmentWithDetails(appointmentstatusmodel.Id);
                 var appointment = await _appointmentrepository.Get(appointmentstatusmodel.Id);
                 var appointments = await _appointmentrepository.GetAppointmentAndUserEmail(appointmentstatusmodel.Id);
                 if (appointment == null)
@@ -135,12 +136,15 @@ namespace AppointmentManagementAPI.Services
                 }
                 else if (appointmentstatusmodel.Status == "Confirmed")
                 {
-                    var appointmentPromotions = await _appointmentrepository.GetAppointmentPromotionsByAppointmentId(appointmentstatusmodel.Id);
-                    foreach (var appointmentPromotion in appointmentPromotions)
+                    
+                    if (appointmentdetail.AppointmentPromotions != null)
                     {
-                        if (appointmentPromotion.PromotionId.HasValue)
+                        foreach (var appointmentPromotion in appointmentdetail.AppointmentPromotions)
                         {
-                            await _appointmentrepository.UpdatePromotionUsageLimit(appointmentPromotion.PromotionId.Value);
+                            if (appointmentPromotion.PromotionId.HasValue)
+                            {
+                                await _appointmentrepository.UpdatePromotionUsageLimit(appointmentPromotion.PromotionId.Value);
+                            }
                         }
                     }
                     if (!string.IsNullOrWhiteSpace(appointments.Email))
@@ -627,6 +631,7 @@ namespace AppointmentManagementAPI.Services
 
                 try
                 {
+                    var appointmentdetail = await _appointmentrepository.GetAppointmentWithDetails(appointmentUpdate.Id);
                     var appointment = await _appointmentrepository.GetAppointmentByID(appointmentUpdate.Id);
                     var appointments = await _appointmentrepository.GetAppointmentAndUserEmail(appointmentUpdate.Id);
                     if (appointment == null)
@@ -693,14 +698,16 @@ namespace AppointmentManagementAPI.Services
                     }
                     else if (appointmentUpdate.Status == "Confirmed")
                     {
-                        var appointmentPromotions = await _appointmentrepository.GetAppointmentPromotionsByAppointmentId(appointmentUpdate.Id);
-                        foreach (var appointmentPromotion in appointmentPromotions)
+                        if (appointmentdetail.AppointmentPromotions != null)
+                    {
+                        foreach (var appointmentPromotion in appointmentdetail.AppointmentPromotions)
                         {
                             if (appointmentPromotion.PromotionId.HasValue)
                             {
                                 await _appointmentrepository.UpdatePromotionUsageLimit(appointmentPromotion.PromotionId.Value);
                             }
                         }
+                    }
                         if (!string.IsNullOrWhiteSpace(appointments.Email))
                         {
                             string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ConfirmAppointment.html");

@@ -21,7 +21,7 @@ namespace ProfileManagementAppAPI.Repositories
        Task<UserCart> CheckUserCart(Guid userId);
        Task AddNewCart(UserCart userCart);
        Task AddNewCartItem(UserCartItem userCartItem);
-       Task<UserCartItem> CheckUserCartItemByServiceId(Guid serviceId);
+       Task<UserCartItem> CheckUserCartItemByServiceId(Guid serviceId, Guid userId);
        Task<UserCart> GetCartByUserId(Guid userId);
 
        Task UpdateCart(UserCart userCart);
@@ -49,5 +49,6 @@ namespace ProfileManagementAppAPI.Repositories
          Task UpdateAppointment(Appointment appointment);
          Task<Appointment> GetAppointmentDetailById(Guid appointmentId);
          Task<bool> CheckReview(Guid appointmentId);
+         Task<int> CountService(Guid cartId);
     }
 }

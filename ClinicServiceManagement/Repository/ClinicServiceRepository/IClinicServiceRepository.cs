@@ -13,5 +13,10 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         Task UpdateService(ClinicService service);
         Task AddService(ClinicService service);
         Task<ClinicService> GetServiceByNameAndCategory(string name, Guid? categoryId);
+        Task<List<Vaccine>> GetAllVaccine();
+        Task<ClinicService> GetServiceByName(string name);
+        Task<Vaccine> GetVaccineByName(string name);
+        Task<Category> GetCategoryByID(Guid? id);
+        Task<List<User>> GetListAdminAccount();
     }
 }

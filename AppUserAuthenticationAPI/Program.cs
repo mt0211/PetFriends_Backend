@@ -1,3 +1,4 @@
+using AppUserAuthenticationAPI.Helpers;
 using AppUserAuthenticationAPI.Repositories;
 using AppUserAuthenticationAPI.Repository.OtpRepository;
 using AppUserAuthenticationAPI.Services;
@@ -81,7 +82,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
+builder.Services.Configure<GoogleOAuthOptions>(
+    builder.Configuration.GetSection("GoogleOAuth"));
+    
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
    serverOptions.ListenAnyIP(80);

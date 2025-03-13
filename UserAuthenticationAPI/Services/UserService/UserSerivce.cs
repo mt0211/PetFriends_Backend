@@ -14,11 +14,13 @@ public class UserService : IUserService
     private readonly IUserRepository _userRepository;
     private readonly IOtpRepository _otpRepository;
     private readonly GoogleOAuthOptions _googleOAuthOptions;
-    public UserService(IUserRepository userRepository, IOtpRepository otpRepository, IOptions<GoogleOAuthOptions> googleOAuthOptions)
+    private readonly ILogger<UserService> _logger;
+    public UserService(IUserRepository userRepository, IOtpRepository otpRepository, IOptions<GoogleOAuthOptions> googleOAuthOptions, ILogger<UserService> logger)
     {
         _userRepository = userRepository;
         _otpRepository = otpRepository;
         _googleOAuthOptions = googleOAuthOptions.Value;
+        _logger = logger;
     }
     public async Task<ResultModel> Login(UserLoginReqModel LoginForm)
     {
@@ -375,87 +377,170 @@ public class UserService : IUserService
         }
         return Result;
     }
-        public async Task<ResultModel> LoginWithGoogle(string googleToken)
+    public async Task<ResultModel> LoginWithGoogle(string googleToken)
+    {
+        ResultModel result = new();
+        try
         {
-            ResultModel result = new();
-            try
+            // Xác thực token Google
+            var settings = new GoogleJsonWebSignature.ValidationSettings
             {
-                // Xác thực Google token
-                var settings = new GoogleJsonWebSignature.ValidationSettings()
-                {
-                    Audience = new[] { _googleOAuthOptions.ClientId } 
-                };
-
-                var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
+                Audience = new List<string> { _googleOAuthOptions.ClientId }
+            };
+            
+            var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
+            
+            // Kiểm tra xem người dùng đã tồn tại trong hệ thống chưa
+            var user = await _userRepository.GetUserByEmail(payload.Email);
+            
+            if (user == null)
+            {
+                result.IsSuccess = false;
+                result.Code = 404;
+                result.Message = "Email is not registered in the system. Please register an account before logging in with Google.";
+                return result;
                 
-                // Kiểm tra user có tồn tại trong database không
-                var user = await _userRepository.GetUserByEmail(payload.Email);
-                
-                if (user == null)
-                {
-                    // Tạo user mới nếu chưa tồn tại
-                    user = new User
-                    {
-                        Id = Guid.NewGuid(),
-                        Email = payload.Email,
-                        FullName = payload.Name,
-                        AvatarUrl = payload.Picture,
-                        Status = "ACTIVE",
-                        Role = "PARTNER",
-                        CreatedAt = DateTime.Now,
-                        LastLoggedIn = DateTime.Now
-                    };
-                    
-                    await _userRepository.Insert(user);
-                }
-                else
-                {
-                    // Cập nhật thông tin nếu user đã tồn tại
-                    if (user.Role != "PARTNER")
-                    {
-                        result.IsSuccess = false;
-                        result.Code = 401;
-                        result.Message = "Permission Denied";
-                        return result;
-                    }
-
-                    user.LastLoggedIn = DateTime.Now;
-                    await _userRepository.Update(user);
-                }
-
-                // Tạo response data
-                var config = new MapperConfiguration(cfg =>
-                {
-                    cfg.CreateMap<User, UserResModel>();
-                });
-                IMapper mapper = config.CreateMapper();
-                UserResModel userResModel = mapper.Map<User, UserResModel>(user);
-
-                UserLoginResModel loginResData = new UserLoginResModel
-                {
-                    User = userResModel,
-                    Token = Encoder.GenerateJWT(user)
-                };
-
-                result.IsSuccess = true;
-                result.Code = 200;
-                result.Data = loginResData;
-                result.Message = "Login with Google successfully";
             }
-            catch (InvalidJwtException)
+            if (user.Role != "PARTNER")
             {
                 result.IsSuccess = false;
                 result.Code = 400;
-                result.Message = "Invalid Google token";
+                result.Message = "You don't have permission to login with Google";
+                return result;
             }
-            catch (Exception e)
+            if (user.Status != "ACTIVE")
             {
                 result.IsSuccess = false;
-                result.Code = 500;
-                result.ResponseFailed = e.InnerException != null 
-                    ? e.InnerException.Message + "\n" + e.StackTrace 
-                    : e.Message + "\n" + e.StackTrace;
+                result.Code = 400;
+                result.Message = "Can't login with Google because your account is not active";
+                return result;
             }
-            return result;
+            user.LastLoggedIn = DateTime.Now;
+            await _userRepository.Update(user);
+            // Tạo JWT token
+            var token = Encoder.GenerateJWT(user);
+            
+            // Tạo response model
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<User, UserResModel>();
+            });
+            IMapper mapper = config.CreateMapper();
+            UserResModel userResModel = mapper.Map<User, UserResModel>(user);
+
+            UserLoginResModel loginResData = new UserLoginResModel
+            {
+                User = userResModel,
+                Token = token
+            };
+            
+            result.IsSuccess = true;
+            result.Code = 200;
+            result.Message = "Login successful";
+            result.Data = loginResData;
         }
+        catch (InvalidJwtException ex)
+        {
+            _logger.LogWarning($"Invalid Google token: {ex.Message}");
+            result.IsSuccess = false;
+            result.Code = 401;
+            result.Message = "Invalid Google token";
+            result.ResponseFailed = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during Google login");
+            result.IsSuccess = false;
+            result.Code = 500;
+            result.Message = "An unexpected error occurred";
+            result.ResponseFailed = ex.InnerException != null 
+                ? $"{ex.InnerException.Message}\n{ex.StackTrace}"
+                : $"{ex.Message}\n{ex.StackTrace}";
+        }
+
+    return result;
+    }
+    public async Task<ResultModel> SignUpWithGoogle(string googleToken)
+    {
+        ResultModel result = new();
+        try
+        {
+            // Xác thực token Google
+            var settings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new List<string> { _googleOAuthOptions.ClientId }
+            };
+            
+            var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
+            
+            // Kiểm tra xem email đã tồn tại chưa
+            var existingUser = await _userRepository.GetUserByEmail(payload.Email);
+            
+            if (existingUser != null)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "This email is already registered in the system. Please login with your account";
+                return result;
+            }
+
+            // Tạo tài khoản mới
+            var newUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = payload.Email,
+                FullName = payload.Name,
+                AvatarUrl = payload.Picture,
+                Status = "ACTIVE",
+                CreatedAt = DateTime.Now,
+                Role = "PARTNER",
+                LastLoggedIn = DateTime.Now
+            };
+            
+            await _userRepository.Insert(newUser);
+            _logger.LogInformation($"Created new user via Google signup: {payload.Email}");
+
+            // Tạo JWT token
+            var token = Encoder.GenerateJWT(newUser);
+            
+            // Tạo response model
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<User, UserResModel>();
+            });
+            IMapper mapper = config.CreateMapper();
+            UserResModel userResModel = mapper.Map<User, UserResModel>(newUser);
+
+            UserLoginResModel signUpResData = new UserLoginResModel
+            {
+                User = userResModel,
+                Token = token
+            };
+            
+            result.IsSuccess = true;
+            result.Code = 201; // Created
+            result.Message = "Sign up successfully";
+            result.Data = signUpResData;
+        }
+        catch (InvalidJwtException ex)
+        {
+            _logger.LogWarning($"Invalid Google token: {ex.Message}");
+            result.IsSuccess = false;
+            result.Code = 401;
+            result.Message = "Invalid Google token";
+            result.ResponseFailed = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during Google signup");
+            result.IsSuccess = false;
+            result.Code = 500;
+            result.Message = "An error occurred during signup";
+            result.ResponseFailed = ex.InnerException != null 
+                ? $"{ex.InnerException.Message}\n{ex.StackTrace}"
+                : $"{ex.Message}\n{ex.StackTrace}";
+        }
+
+        return result;
+    }
 }
