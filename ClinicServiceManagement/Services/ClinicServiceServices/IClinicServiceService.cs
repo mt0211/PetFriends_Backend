@@ -11,5 +11,6 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
         Task<ResultModel> GetServiceDetail(string token, Guid ServiceID);
         Task<ResultModel> UpdateServiceStatus(string token, Guid serviceId);
         Task<ResultModel> UpdateService(string token, ServiceUpdateDTO serviceUpdateDTO);
+        Task<ResultModel> GetAllVaccine(string token);
     }
 }

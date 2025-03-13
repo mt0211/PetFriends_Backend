@@ -63,7 +63,13 @@ namespace ClinicServiceManagement.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
-       
+       [HttpGet("vaccine-list")]
+       public async Task<IActionResult> GetVaccineList()
+       {
+        string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+        ResultModel result = await _service.GetAllVaccine(token);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+       }
 
     }
 }

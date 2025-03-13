@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using UserAuthenticationAPI.Helpers;
 using UserAuthenticationAPI.Repository.OtpRepository;
 using UserAuthenticationAPI.Repository.UserRepository;
 using UserAuthenticationAPI.Services;
@@ -81,6 +82,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
+//Google OAuthConfig
+builder.Services.Configure<GoogleOAuthOptions>(
+    builder.Configuration.GetSection("GoogleOAuth"));
 // Kestrel chỉ lắng nghe cổng 5000 (HTTP)
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {

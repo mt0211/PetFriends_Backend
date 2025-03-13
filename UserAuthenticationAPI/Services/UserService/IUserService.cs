@@ -12,4 +12,5 @@ public interface IUserService
   Task<ResultModel> ChangePassword(Guid userId, ChangePasswordReqModel changePasswordModel);
   public Task<ResultModel> ResetPassword(UserResetPasswordReqModel ResetPasswordReqModel);
    Task<ResultModel> LoginWithGoogle(string googleToken);
+   Task<ResultModel> SignUpWithGoogle(string googleToken);
 }

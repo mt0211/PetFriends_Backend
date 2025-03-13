@@ -11,3 +11,8 @@ public class JwtSettings
     public int AccessTokenExpirationMinutes { get; set; }
     public int RefreshTokenExpirationDays { get; set; }
 }
+ public class GoogleOAuthOptions
+    {
+        public string ClientId { get; set; } = string.Empty;
+        public string ClientSecret { get; set; } = string.Empty;
+    }

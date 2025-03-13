@@ -102,9 +102,14 @@ namespace ProfileManagementAppAPI.Repositories
             await _context.UserCartItems.AddAsync(userCartItem);
             await _context.SaveChangesAsync();
         }
-        public async Task<UserCartItem> CheckUserCartItemByServiceId(Guid serviceId)
+        public async Task<UserCartItem> CheckUserCartItemByServiceId(Guid serviceId, Guid userId)
         {
-            return await _context.UserCartItems.FirstOrDefaultAsync(uc => uc.ClinicServiceId == serviceId);
+            return await _context.UserCartItems
+        .Include(uc => uc.Cart)
+        .Where(uc => uc.ClinicServiceId == serviceId 
+            && uc.Cart.Status == 0
+            && uc.Cart.UserId == userId) // Thêm điều kiện check UserId
+        .FirstOrDefaultAsync();
         }
         public async Task<UserCart> GetCartByUserId(Guid userId)
         {
@@ -191,6 +196,7 @@ namespace ProfileManagementAppAPI.Repositories
             return await _context.Appointments
             .Include(a => a.User)
             .Include(a => a.Pet)
+            .Include(a=> a.Feedbacks)
             .Include(a => a.AppointmentClinicServices)
             .ThenInclude(a => a.ClinicService)
             .Where(a => a.UserId == userId).ToListAsync();
@@ -279,6 +285,13 @@ namespace ProfileManagementAppAPI.Repositories
         public async Task<bool> CheckReview(Guid appointmentId)
         {
             return await _context.Feedbacks.AnyAsync(f => f.AppointmentId == appointmentId);
+        }
+
+
+        //COUNT SERVICE
+        public async Task<int> CountService(Guid cartId)
+        {
+            return await _context.UserCartItems.CountAsync(uc => uc.CartId == cartId);
         }
     }
 }
