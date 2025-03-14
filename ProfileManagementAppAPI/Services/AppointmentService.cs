@@ -484,8 +484,8 @@ namespace ProfileManagementAppAPI.Services
                 if (cart == null)
                 {
                     result.IsSuccess = false;
-                    result.Code = 404;
-                    result.Message = "Cart not found";
+                    result.Code = 200;
+                    result.Message = "Cart is empty";
                     return result;
                 }
 
@@ -539,6 +539,25 @@ namespace ProfileManagementAppAPI.Services
 
             try
             {
+                if (!DateTime.TryParseExact(updateCartDTO.Date, "yyyy-MM-dd", 
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateValue))
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Invalid date format. Use yyyy-MM-dd";
+                    return result;
+                }
+
+                if (!DateTime.TryParseExact(updateCartDTO.Time, "h:mm tt", 
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime timeValue))
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Invalid time format. Use h:mm tt (e.g., 1:22 AM)";
+                    return result;
+                }
+                 var appointmentDateTime = dateValue.Date.Add(timeValue.TimeOfDay);
+
                 var cart = await _repository.GetCartByUserId(id);
                 if (cart == null)
                 {
@@ -615,7 +634,7 @@ namespace ProfileManagementAppAPI.Services
                     UserId = id,
                     PetId = cart.UserCartItems.FirstOrDefault()?.PetId,
                     CreatedAt = DateTime.UtcNow,
-                    StartAt = updateCartDTO.DateBook,
+                    StartAt = appointmentDateTime,
                     Status = "Pending",
                     Note = updateCartDTO.Notes,
                     TotalAmount = totalAmount,
@@ -632,7 +651,7 @@ namespace ProfileManagementAppAPI.Services
                         Id = Guid.NewGuid(),
                         AppointmentId = appointment.Id,
                         ClinicServiceId = cartItem.ClinicServiceId.Value,
-                        DateGiven = updateCartDTO.DateBook,
+                        DateGiven = appointmentDateTime,
                         Notes = updateCartDTO.Notes,
                         Price = cartItem.ClinicService.DiscountedPrice
                     };
@@ -657,7 +676,7 @@ namespace ProfileManagementAppAPI.Services
                 var updateCart = new UserCart
                 {
                     Id = updateCartDTO.CartId,
-                    Datebook = updateCartDTO.DateBook,
+                    Datebook = appointmentDateTime,
                     Notes = updateCartDTO.Notes,
                     Status = 1 // Đã đặt lịch
                 };
@@ -667,7 +686,7 @@ namespace ProfileManagementAppAPI.Services
                 var bookingResult = new BookingResultDTO
                 {
                     AppointmentId = appointment.Id,
-                    DateBook = updateCartDTO.DateBook,
+                    DateBook = appointmentDateTime,
                     Notes = updateCartDTO.Notes,
                     TotalAmount = totalAmount,
                     DiscountAmount = discountAmount,
@@ -755,7 +774,7 @@ namespace ProfileManagementAppAPI.Services
                 if (remainingItems == null || !remainingItems.Any())
                 {
                     // Nếu không còn item nào, xóa luôn cart
-                    await _repository.RemoveCart(cart);
+                    await _repository.RemoveCart(cart.Id);
                     result.IsSuccess = true;
                     result.Code = 200;
                     result.Message = "Service removed and cart is now empty";

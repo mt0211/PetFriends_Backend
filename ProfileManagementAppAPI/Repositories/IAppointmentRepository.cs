@@ -29,7 +29,7 @@ namespace ProfileManagementAppAPI.Repositories
          Task AddAppointmentClinicService(AppointmentClinicService appointmentService);
          Task<List<UserCartItem>> GetCartItemsByCartId(Guid cartId);
         Task RemoveCartItem(UserCartItem cartItem);
-        Task RemoveCart(UserCart cart);
+        Task RemoveCart(Guid cartId);
         Task<List<Promotion>> GetPromotionTypeAllMember();
         Task<List<Promotion>> GetPromotionTypeNewMember();
         Task<List<Promotion>> GetPromotionTypeLoyaltyMember();

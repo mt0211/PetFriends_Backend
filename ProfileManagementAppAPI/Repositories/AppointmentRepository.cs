@@ -151,26 +151,38 @@ namespace ProfileManagementAppAPI.Repositories
 
         public async Task RemoveCartItem(UserCartItem cartItem)
         {
-            _context.UserCartItems.Remove(cartItem);
+            var itemToRemove = await _context.UserCartItems
+            .FirstOrDefaultAsync(ci => ci.Id == cartItem.Id);
+        
+            if (itemToRemove != null)
+            {
+                _context.UserCartItems.Remove(itemToRemove);
+                await _context.SaveChangesAsync();
+            }
+        }
+        public async Task RemoveCart(Guid cartId)
+        {
+           var cartToRemove = await _context.UserCarts
+        .FirstOrDefaultAsync(c => c.Id == cartId);
+    
+        if (cartToRemove != null)
+        {
+            _context.UserCarts.Remove(cartToRemove);
             await _context.SaveChangesAsync();
         }
-        public async Task RemoveCart(UserCart cart)
-        {
-            _context.UserCarts.Remove(cart);
-            await _context.SaveChangesAsync();
         }
         public async Task<List<Promotion>> GetPromotionTypeAllMember()
         {
-            return await _context.Promotions.Where(p => p.TargetGroup == "All Customers" && p.Status == "Active").ToListAsync();
+            return await _context.Promotions.Where(p => p.TargetGroup == "All Customers" && p.Status == "Active" && p.UsageLimit > 0).ToListAsync();
         }
 
         public async Task<List<Promotion>> GetPromotionTypeNewMember()
         {
-            return await _context.Promotions.Where(p => p.TargetGroup == "First-Time Visitors" && p.Status == "Active").ToListAsync();
+            return await _context.Promotions.Where(p => p.TargetGroup == "First-Time Visitors" && p.Status == "Active" && p.UsageLimit > 0).ToListAsync();
         }
         public async Task<List<Promotion>> GetPromotionTypeLoyaltyMember()
         {
-            return await _context.Promotions.Where(p => p.TargetGroup == "Loyalty Members" && p.Status == "Active").ToListAsync();
+            return await _context.Promotions.Where(p => p.TargetGroup == "Loyalty Members" && p.Status == "Active" && p.UsageLimit > 0).ToListAsync();
         }
         public async Task<User> GetUserByUserId(Guid userId)
         {
