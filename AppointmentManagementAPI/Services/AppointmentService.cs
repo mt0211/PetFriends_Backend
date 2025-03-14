@@ -92,8 +92,6 @@ namespace AppointmentManagementAPI.Services
 
             try
             {
-                // Lấy thông tin appointment
-                var appointmentdetail = await _appointmentrepository.GetAppointmentWithDetails(appointmentstatusmodel.Id);
                 var appointment = await _appointmentrepository.Get(appointmentstatusmodel.Id);
                 var appointments = await _appointmentrepository.GetAppointmentAndUserEmail(appointmentstatusmodel.Id);
                 if (appointment == null)
@@ -136,17 +134,18 @@ namespace AppointmentManagementAPI.Services
                 }
                 else if (appointmentstatusmodel.Status == "Confirmed")
                 {
-                    
-                    if (appointmentdetail.AppointmentPromotions != null)
+                    // UPDATE USAGE LIMIT PROMOTION
+                    var appointmentPromotions = await _appointmentrepository.GetAppointmentPromotions(appointment.Id);
+                    foreach (var appointmentPromotion in appointmentPromotions)
                     {
-                        foreach (var appointmentPromotion in appointmentdetail.AppointmentPromotions)
+                        if (appointmentPromotion.Promotion != null && appointmentPromotion.Promotion.UsageLimit > 0)
                         {
-                            if (appointmentPromotion.PromotionId.HasValue)
-                            {
-                                await _appointmentrepository.UpdatePromotionUsageLimit(appointmentPromotion.PromotionId.Value);
-                            }
+                            appointmentPromotion.Promotion.UsageLimit -= 1;
+                            await _appointmentrepository.UpdatePromotion(appointmentPromotion.Promotion);
                         }
                     }
+                    
+                    //SEND EMAIL
                     if (!string.IsNullOrWhiteSpace(appointments.Email))
                     {
                         string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ConfirmAppointment.html");
@@ -631,7 +630,7 @@ namespace AppointmentManagementAPI.Services
 
                 try
                 {
-                    var appointmentdetail = await _appointmentrepository.GetAppointmentWithDetails(appointmentUpdate.Id);
+                    
                     var appointment = await _appointmentrepository.GetAppointmentByID(appointmentUpdate.Id);
                     var appointments = await _appointmentrepository.GetAppointmentAndUserEmail(appointmentUpdate.Id);
                     if (appointment == null)
@@ -698,16 +697,16 @@ namespace AppointmentManagementAPI.Services
                     }
                     else if (appointmentUpdate.Status == "Confirmed")
                     {
-                        if (appointmentdetail.AppointmentPromotions != null)
-                    {
-                        foreach (var appointmentPromotion in appointmentdetail.AppointmentPromotions)
+                        // UPDATE USAGE LIMIT PROMOTION
+                        var appointmentPromotions = await _appointmentrepository.GetAppointmentPromotions(appointment.Id);
+                        foreach (var appointmentPromotion in appointmentPromotions)
                         {
-                            if (appointmentPromotion.PromotionId.HasValue)
+                            if (appointmentPromotion.Promotion != null && appointmentPromotion.Promotion.UsageLimit > 0)
                             {
-                                await _appointmentrepository.UpdatePromotionUsageLimit(appointmentPromotion.PromotionId.Value);
+                                appointmentPromotion.Promotion.UsageLimit -= 1;
+                                await _appointmentrepository.UpdatePromotion(appointmentPromotion.Promotion);
                             }
                         }
-                    }
                         if (!string.IsNullOrWhiteSpace(appointments.Email))
                         {
                             string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ConfirmAppointment.html");
