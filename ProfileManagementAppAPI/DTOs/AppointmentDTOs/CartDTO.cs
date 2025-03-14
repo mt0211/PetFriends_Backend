@@ -34,7 +34,8 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
     public class UpdateCartDTO
     {
         public Guid CartId { get; set; }
-        public DateTime DateBook { get; set; }
+        public string Date { get; set; }  // Format: "yyyy-MM-dd"
+        public string Time { get; set; }  // Format: "h:mm tt" (e.g., "1:22 AM")
         public string Notes { get; set; }
         public List<Guid>? PromotionIds { get; set; } = new List<Guid>();
     }
@@ -42,6 +43,8 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
     {
         public Guid AppointmentId { get; set; }
         public DateTime DateBook { get; set; }
+        public string Date { get; set; }        // Format: "yyyy-MM-dd"
+        public string Time { get; set; }        // Format: "h:mm tt"
         public string Notes { get; set; }
         public decimal? TotalAmount { get; set; }
         public decimal? DiscountAmount { get; set; }

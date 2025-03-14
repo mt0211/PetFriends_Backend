@@ -232,24 +232,22 @@ namespace AppointmentManagementAPI.Repository
             }
             await   _context.SaveChangesAsync();
         }
-        public async Task UpdatePromotionUsageLimit(Guid promotionId)
+
+        public async Task<List<AppointmentPromotion>> GetAppointmentPromotions(Guid appointmentId)
         {
-            var promotion = await _context.Promotions.FindAsync(promotionId);
-            if (promotion != null)  // Bỏ điều kiện && promotion.UsageLimit > 0
-            {
-                promotion.UsageLimit = Math.Max(0, promotion.UsageLimit - 1); 
-                await _context.SaveChangesAsync();
-            }
+            return await _context.AppointmentPromotions
+                .Include(ap => ap.Promotion)
+                .Where(ap => ap.AppointmentId == appointmentId)
+                .ToListAsync();
         }
 
-       
-        public async Task<Appointment> GetAppointmentWithDetails(Guid appointmentId)
+        public async Task UpdatePromotion(Promotion promotion)
         {
-            return await _context.Appointments
-                .Include(a => a.AppointmentPromotions)
-                    .ThenInclude(ap => ap.Promotion)
-                .FirstOrDefaultAsync(a => a.Id == appointmentId);
+            _context.Promotions.Attach(promotion);
+            _context.Entry(promotion).Property(p => p.UsageLimit).IsModified = true;
+            await _context.SaveChangesAsync();
         }
+       
 
     }
 }
