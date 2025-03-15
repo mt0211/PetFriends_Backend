@@ -123,6 +123,9 @@ namespace AppointmentManagementAPI.Services
                         await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
                     }
 
+                    //Update into pet vaccine profile if user choose vaccination service
+                    await UpdatePetVaccineInfo(appointment, services);
+
                     // Chuẩn bị dữ liệu trả về
                     Result.Data = new AppointmentUpdateResultModel
                     {
@@ -687,12 +690,14 @@ namespace AppointmentManagementAPI.Services
                             {
                                 await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
                             }
-                        result.Data = new AppointmentStatusResultModel
-                        {
-                            Status = appointment.Status,
-                            Services = services,
-                            TotalPrice = totalAmount
-                        };
+                            await UpdatePetVaccineInfo(appointment, services);
+                            
+                            result.Data = new AppointmentStatusResultModel
+                            {
+                                Status = appointment.Status,
+                                Services = services,
+                                TotalPrice = totalAmount
+                            };
                   
                     }
                     else if (appointmentUpdate.Status == "Confirmed")
@@ -757,5 +762,73 @@ namespace AppointmentManagementAPI.Services
                 return result;
             }
 
+
+        //Helper method for update pet vaccine in information
+        private async Task UpdatePetVaccineInfo(Appointment appointment, List<AppointmentServiceDetailModel> services)
+        {
+            // Chỉ xử lý nếu có pet ID
+            if (appointment.PetId == null)
+                return;
+
+            // Lấy danh sách các dịch vụ thuộc category "Vaccination"
+            var vaccinationServices = await _appointmentrepository.GetVaccinationServices(services.Select(s => s.ClinicServiceId).ToList());
+            
+            if (vaccinationServices == null || !vaccinationServices.Any())
+                return;
+
+            foreach (var vaccineService in vaccinationServices)
+            {
+                // Kiểm tra xem pet đã có vaccine này chưa
+                var existingPetVaccine = await _appointmentrepository.GetPetVaccineByNameAndPetId(vaccineService.Name, appointment.PetId.Value);
+                
+                if (existingPetVaccine != null)
+                {
+                    // Nếu đã có, thêm một liều mới
+                    var nextDoseNumber = (existingPetVaccine.UserPetVaccineDoses.Count > 0) 
+                        ? existingPetVaccine.UserPetVaccineDoses.Max(d => d.DoseNumber) + 1 
+                        : 1;
+                    
+                    var newDose = new UserPetVaccineDose
+                    {
+                        Id = Guid.NewGuid(),
+                        UserPetVaccineId = existingPetVaccine.Id,
+                        DoseNumber = nextDoseNumber,
+                        DateGiven = appointment.EndAt ?? DateTime.UtcNow
+                    };
+                    
+                    await _appointmentrepository.AddUserPetVaccineDose(newDose);
+                    
+                    // Cập nhật số liều
+                    existingPetVaccine.NumberOfDoses = nextDoseNumber;
+                    await _appointmentrepository.UpdateUserPetVaccine(existingPetVaccine);
+                }
+                else
+                {
+                    // Nếu chưa có, tạo mới vaccine và liều đầu tiên
+                    var systemVaccine = await _appointmentrepository.GetVaccineByName(vaccineService.Name);
+                    
+                    var newPetVaccine = new UserPetVaccine
+                    {
+                        Id = Guid.NewGuid(),
+                        PetId = appointment.PetId.Value,
+                        VaccineId = systemVaccine?.Id,
+                        Name = vaccineService.Name,
+                        NumberOfDoses = 1
+                    };
+                    
+                    await _appointmentrepository.AddUserPetVaccine(newPetVaccine);
+                    
+                    var firstDose = new UserPetVaccineDose
+                    {
+                        Id = Guid.NewGuid(),
+                        UserPetVaccineId = newPetVaccine.Id,
+                        DoseNumber = 1,
+                        DateGiven = appointment.EndAt ?? DateTime.UtcNow
+                    };
+                    
+                    await _appointmentrepository.AddUserPetVaccineDose(firstDose);
+                }
+            }
+        }
     }
 }

@@ -198,11 +198,16 @@ namespace AppPetManagementAPI.Repositories
             .FirstOrDefaultAsync();
         }
 
-        public async Task<UserPetVaccine> CheckVaccineName(Guid petId)
+        public async Task<UserPetVaccine> CheckVaccineName(Guid petId, string vaccineName)
         {
             return await _context.UserPetVaccines
-            .Where(uv => uv.PetId == petId)
-            .FirstOrDefaultAsync();
+        .Where(uv => uv.PetId == petId && uv.Name == vaccineName)
+        .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<User>> GetListAdmin()
+        {
+            return await _context.Users.Where(u => u.Role == "ADMIN").ToListAsync();
         }
         
     }

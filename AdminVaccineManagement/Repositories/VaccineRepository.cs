@@ -103,5 +103,17 @@ namespace AdminVaccineManagement.Repositories
             return await _context.Vaccines.FirstOrDefaultAsync(v => v.Name == name);
         }
 
+        public async Task UpdateUserPetVaccinesWithSystemVaccine(string vaccineName, Guid vaccineId)
+        {
+            var userPetVaccines = await _context.UserPetVaccines
+                .Where(upv => upv.Name == vaccineName && upv.VaccineId == null)
+                .ToListAsync();
+            foreach (var upv in userPetVaccines)
+            {
+                upv.VaccineId = vaccineId;
+                _context.UserPetVaccines.Update(upv);
+            }
+            await _context.SaveChangesAsync();
+        }
     }
 }

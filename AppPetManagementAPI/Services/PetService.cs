@@ -213,7 +213,25 @@ namespace AppPetManagementAPI.Services
                     }
                 }
                 var existingVaccine = await _repository.GetVaccineByName(model.VaccineName);
+                var listAdminAccount = await _repository.GetListAdmin();
                 Guid? vaccineId = existingVaccine?.Id;
+                if ( existingVaccine == null ||existingVaccine.Id == null)
+                {
+                    foreach (var admin in listAdminAccount)
+                    {
+                    if (!string.IsNullOrWhiteSpace(admin.Email))
+                        {
+                            string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "Notification.html");
+                            string Html = File.ReadAllText(FilePath);
+                            Html = Html.Replace("{{VaccineName}}", model.VaccineName);
+                            bool EmailSent = await Email.SendEmail(admin.Email, "Vaccine Notification", Html);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Email does not exist. Skipping email notification.");
+                        }
+                    }
+                }
                 var newPetVaccine = new UserPetVaccine
                 {
                     Id = Guid.NewGuid(),
@@ -222,7 +240,7 @@ namespace AppPetManagementAPI.Services
                     Name = model.VaccineName,
                     NumberOfDoses = model.NumberOfDoses
                 };
-                var checkVaccineName = await _repository.CheckVaccineName(model.PetID);
+                var checkVaccineName = await _repository.CheckVaccineName(model.PetID, model.VaccineName);
                 if (checkVaccineName != null)
                 {
                     result.IsSuccess = false;
