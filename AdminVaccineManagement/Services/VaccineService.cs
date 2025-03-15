@@ -276,6 +276,7 @@ namespace AdminVaccineManagement.Services
                             DaysAfterPrevious = AddModel.Injecttions[i]
                         };
                         await _repository.AddVaccineDoses(vaccineDose); // Sử dụng repository method
+                        await _repository.UpdateUserPetVaccinesWithSystemVaccine(AddModel.Name, newvaccine.Id);
                     }
                     var responseDTO = new VaccineResponseDTO
                 {

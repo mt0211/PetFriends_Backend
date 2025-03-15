@@ -26,5 +26,11 @@ namespace AppointmentManagementAPI.Repository
         Task UpdateServiceRevenue(Guid serviceTypeId, decimal amount);
         Task<List<AppointmentPromotion>> GetAppointmentPromotions(Guid appointmentId);
         Task UpdatePromotion(Promotion promotion);
+        Task<List<ClinicService>> GetVaccinationServices(List<Guid> serviceIds);
+        Task<UserPetVaccine> GetPetVaccineByNameAndPetId(string vaccineName, Guid petId);
+        Task<Vaccine> GetVaccineByName(string name);
+        Task AddUserPetVaccine(UserPetVaccine petVaccine);
+        Task AddUserPetVaccineDose(UserPetVaccineDose petVaccineDose);
+        Task UpdateUserPetVaccine(UserPetVaccine petVaccine);
     }
 }

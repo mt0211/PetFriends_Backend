@@ -248,6 +248,47 @@ namespace AppointmentManagementAPI.Repository
             await _context.SaveChangesAsync();
         }
        
+       public async Task<List<ClinicService>> GetVaccinationServices(List<Guid> serviceIds)
+        {
+            return await _context.ClinicServices
+                .Include(cs => cs.CategoryNavigation)
+                .Where(cs => serviceIds.Contains(cs.Id) && 
+                    cs.CategoryNavigation.Name.ToLower() == "Vaccination")
+                .ToListAsync();
+        }
+
+        public async Task<UserPetVaccine> GetPetVaccineByNameAndPetId(string vaccineName, Guid petId)
+        {
+            return await _context.UserPetVaccines
+                .Include(upv => upv.UserPetVaccineDoses)
+                .Where(upv => upv.PetId == petId && upv.Name == vaccineName)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Vaccine> GetVaccineByName(string name)
+        {
+            return await _context.Vaccines
+                .Where(v => v.Name == name)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task AddUserPetVaccine(UserPetVaccine petVaccine)
+        {
+            await _context.UserPetVaccines.AddAsync(petVaccine);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddUserPetVaccineDose(UserPetVaccineDose petVaccineDose)
+        {
+            await _context.UserPetVaccineDoses.AddAsync(petVaccineDose);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateUserPetVaccine(UserPetVaccine petVaccine)
+        {
+            _context.UserPetVaccines.Update(petVaccine);
+            await _context.SaveChangesAsync();
+        }
 
     }
 }

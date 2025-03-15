@@ -40,4 +40,9 @@
 			<HintPath>..\lib\DataAccess.dll</HintPath>
 		</Reference>
 	</ItemGroup>
+	<ItemGroup>
+    <None Update="TemplateEmail\Notification.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

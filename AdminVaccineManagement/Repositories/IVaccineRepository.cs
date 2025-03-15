@@ -14,5 +14,6 @@ namespace AdminVaccineManagement.Repositories
         Task UpdateVaccineDose(VaccineDose vaccineDose);
         Task AddVaccine(Vaccine vaccine);
         Task<Vaccine> GetVaccineByName(string name);
+        Task UpdateUserPetVaccinesWithSystemVaccine(string vaccineName, Guid vaccineId);
     }
 }
