@@ -23,6 +23,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<Category> Categories { get; set; }
 
+    public virtual DbSet<ChatMessage> ChatMessages { get; set; }
+
     public virtual DbSet<ClinicService> ClinicServices { get; set; }
 
     public virtual DbSet<DailyRevenueSummary> DailyRevenueSummaries { get; set; }
@@ -64,6 +66,8 @@ public partial class PetfriendsContext : DbContext
     public virtual DbSet<Vaccine> Vaccines { get; set; }
 
     public virtual DbSet<VaccineDose> VaccineDoses { get; set; }
+
+    public virtual DbSet<VideoCall> VideoCalls { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -155,6 +159,38 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(255);
         });
 
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ChatMess__3214EC077B19C47B");
+
+            entity.ToTable("ChatMessage");
+
+            entity.HasIndex(e => e.ReceiverId, "IX_ChatMessage_ReceiverId");
+
+            entity.HasIndex(e => e.SenderId, "IX_ChatMessage_SenderId");
+
+            entity.HasIndex(e => e.SentTime, "IX_ChatMessage_SentTime").IsDescending();
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.MessageType)
+                .HasMaxLength(20)
+                .HasDefaultValue("Text");
+            entity.Property(e => e.SentTime).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Receiver).WithMany(p => p.ChatMessageReceivers)
+                .HasForeignKey(d => d.ReceiverId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChatMessage_ReceiverUser");
+
+            entity.HasOne(d => d.Sender).WithMany(p => p.ChatMessageSenders)
+                .HasForeignKey(d => d.SenderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ChatMessage_SenderUser");
+        });
+
         modelBuilder.Entity<ClinicService>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__ClinicSe__3214EC071AA777F3");
@@ -223,6 +259,7 @@ public partial class PetfriendsContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.Sentiment).HasMaxLength(8);
 
             entity.HasOne(d => d.Appointment).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.AppointmentId)
@@ -540,6 +577,40 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.Vaccine).WithMany(p => p.VaccineDoses)
                 .HasForeignKey(d => d.VaccineId)
                 .HasConstraintName("FK__VaccineDo__Vacci__0880433F");
+        });
+
+        modelBuilder.Entity<VideoCall>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__VideoCal__3214EC078E38D705");
+
+            entity.ToTable("VideoCall");
+
+            entity.HasIndex(e => e.CallerId, "IX_VideoCall_CallerId");
+
+            entity.HasIndex(e => e.ReceiverId, "IX_VideoCall_ReceiverId");
+
+            entity.HasIndex(e => e.StartTime, "IX_VideoCall_StartTime").IsDescending();
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CallType)
+                .HasMaxLength(20)
+                .HasDefaultValue("Video");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.EndTime).HasColumnType("datetime");
+            entity.Property(e => e.StartTime).HasColumnType("datetime");
+            entity.Property(e => e.Status).HasMaxLength(50);
+
+            entity.HasOne(d => d.Caller).WithMany(p => p.VideoCallCallers)
+                .HasForeignKey(d => d.CallerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_VideoCall_CallerUser");
+
+            entity.HasOne(d => d.Receiver).WithMany(p => p.VideoCallReceivers)
+                .HasForeignKey(d => d.ReceiverId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_VideoCall_ReceiverUser");
         });
 
         OnModelCreatingPartial(modelBuilder);

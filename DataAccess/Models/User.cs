@@ -37,6 +37,10 @@ public partial class User
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
+    public virtual ICollection<ChatMessage> ChatMessageReceivers { get; set; } = new List<ChatMessage>();
+
+    public virtual ICollection<ChatMessage> ChatMessageSenders { get; set; } = new List<ChatMessage>();
+
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
     public virtual ICollection<ForumComment> ForumComments { get; set; } = new List<ForumComment>();
@@ -50,4 +54,8 @@ public partial class User
     public virtual ICollection<UserBookingSummary> UserBookingSummaries { get; set; } = new List<UserBookingSummary>();
 
     public virtual ICollection<UserCart> UserCarts { get; set; } = new List<UserCart>();
+
+    public virtual ICollection<VideoCall> VideoCallCallers { get; set; } = new List<VideoCall>();
+
+    public virtual ICollection<VideoCall> VideoCallReceivers { get; set; } = new List<VideoCall>();
 }
