@@ -168,6 +168,23 @@ namespace AdminReport.Repositories
             }
             return user;
         }
+
+        public async Task<IEnumerable<dynamic>> GetSystemVaccineCount()
+        {
+            var count = await _context.UserPetVaccines
+            .Where(upv => upv.VaccineId!=null)
+            .GroupBy(upv => upv.Name)
+            .Select(c=> new
+            {
+                Name = c.Key,
+                Count = c.Count()
+            })
+            .OrderBy(x=> x.Count)
+            .ToListAsync();
+            return count;
+        }
+
+        
     }
 
 }

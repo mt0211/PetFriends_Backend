@@ -7,5 +7,6 @@ namespace AdminReport.Services
         Task<ResultModel> GetDataUserStatus(string token, int year, int month);
         Task<ResultModel> GetDataNewUser(string token, int year, int month);
         Task<ResultModel> GetPostDistribution(string token);
+        Task<ResultModel> GetSystemVaccineCount(string token);
     }
 }

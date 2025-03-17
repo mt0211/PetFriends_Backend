@@ -21,7 +21,7 @@ namespace AccountManagementAPI.Services
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
-            
+
             if (!Guid.TryParse(userId, out Guid id))
             {
                 result.IsSuccess = false;
@@ -37,7 +37,7 @@ namespace AccountManagementAPI.Services
                 return result;
             }
             var user = await _repository.Get(id);
-            if(user.Role != "ADMIN")
+            if (user.Role != "ADMIN")
             {
                 result.IsSuccess = false;
                 result.Code = 401;
@@ -92,9 +92,9 @@ namespace AccountManagementAPI.Services
             try
             {
                 var account = await _repository.Get(userUpdateStatusModel.Id);
-                if (userUpdateStatusModel.Status == "Blocked")
+
+                if (userUpdateStatusModel.Status == "INACTIVE")
                 {
-                    userUpdateStatusModel.Status = "INACTIVE";
                     if (!string.IsNullOrWhiteSpace(account.Email))
                     {
                         string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "Notification.html");
@@ -109,9 +109,9 @@ namespace AccountManagementAPI.Services
                         Console.WriteLine("Email does not exist. Skipping email notification.");
                     }
                 }
-                else if (userUpdateStatusModel.Status == "Active")
+
+                if (userUpdateStatusModel.Status == "ACTIVE")
                 {
-                    userUpdateStatusModel.Status = "ACTIVE";
                     if (!string.IsNullOrWhiteSpace(account.Email))
                     {
                         string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "UnbanNotification.html");
@@ -268,9 +268,8 @@ namespace AccountManagementAPI.Services
             try
             {
                 var account = await _repository.Get(userUpdateModel.Id);
-                if (account.Status == "ACTIVE" && userUpdateModel.Status == "Blocked")
+                if (account.Status == "ACTIVE" && userUpdateModel.Status == "INACTIVE")
                 {
-                    userUpdateModel.Status = "INACTIVE";
                     if (!string.IsNullOrWhiteSpace(account.Email))
                     {
                         string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "Notification.html");
@@ -284,9 +283,8 @@ namespace AccountManagementAPI.Services
                         Console.WriteLine("Email does not exist. Skipping email notification.");
                     }
                 }
-                else if (account.Status == "INACTIVE" && userUpdateModel.Status == "Active")
+                else if (account.Status == "INACTIVE" && userUpdateModel.Status == "ACTIVE")
                 {
-                    userUpdateModel.Status = "ACTIVE";
                     if (!string.IsNullOrWhiteSpace(account.Email))
                     {
                         string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "UnbanNotification.html");
@@ -305,29 +303,21 @@ namespace AccountManagementAPI.Services
                     // Trạng thái không thay đổi, không cần gửi email
                     Console.WriteLine("Status unchanged. No email will be sent.");
                 }
-                if (userUpdateModel.Status == "Blocked")
-                {
-                    userUpdateModel.Status = "INACTIVE";
-                }
-                if (userUpdateModel.Status == "Active")
-                {
-                    userUpdateModel.Status = "ACTIVE";
-                }
-                    account.FullName = userUpdateModel.FullName;
-                    //  account.Email = userUpdateModel.Email;
-                    //   account.PhoneNumber = userUpdateModel.PhoneNumber;
-                    account.Address = userUpdateModel.Address;
-                    account.Dob = userUpdateModel.Dob;
-                    account.Role = userUpdateModel.Role;
-                    account.Status = userUpdateModel.Status;
-                    account.AvatarUrl = userUpdateModel.AvartarURL;
+                account.FullName = userUpdateModel.FullName;
+                //  account.Email = userUpdateModel.Email;
+                //   account.PhoneNumber = userUpdateModel.PhoneNumber;
+                account.Address = userUpdateModel.Address;
+                account.Dob = userUpdateModel.Dob;
+                account.Role = userUpdateModel.Role;
+                account.Status = userUpdateModel.Status;
+                account.AvatarUrl = userUpdateModel.AvartarURL;
 
-                    _ = await _repository.Update(account);
-                    Result.IsSuccess = true;
-                    Result.Code = 200;
-                    Result.Data = account;
-                    Result.Message = "Update account successfully!";
-                
+                _ = await _repository.Update(account);
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = account;
+                Result.Message = "Update account successfully!";
+
             }
             catch (Exception e)
             {

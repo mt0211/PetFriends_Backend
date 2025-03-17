@@ -133,6 +133,13 @@ namespace AdminAuthenticationAPI.Service.AdminService
                     return result;
                     
                 }
+                if (user.Role != "ADMIN")
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Permission denied!";
+                    return result;
+                }
             
                 if (user.Status != "ACTIVE")
                 {

@@ -142,5 +142,35 @@ namespace AdminReport.Services
             }
             return result;
         }
+        public async Task<ResultModel> GetSystemVaccineCount(string token)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Invalid user ID";
+                return result;
+            }
+
+           try
+           {
+            var UsageLimit = await _repository.GetSystemVaccineCount();
+            result.IsSuccess = true;
+            result.Code= 200;
+            result.Data= UsageLimit;
+             result.Message = "Successfully get vaccine usage statistics";
+           }
+           catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result; 
+        }
     }
 }
