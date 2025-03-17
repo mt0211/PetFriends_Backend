@@ -17,6 +17,8 @@ public partial class Feedback
 
     public Guid? AppointmentId { get; set; }
 
+    public string? Sentiment { get; set; }
+
     public virtual Appointment? Appointment { get; set; }
 
     public virtual User User { get; set; } = null!;
