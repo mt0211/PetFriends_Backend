@@ -8,5 +8,6 @@ namespace AdminReport.Repositories
         Task<IEnumerable<dynamic>> GetDataNewUser(int year, int? month);
         Task<IEnumerable<dynamic>> GetPostDistribution();
         Task<User> GetUserByID(Guid id);
+        Task<IEnumerable<dynamic>> GetSystemVaccineCount();
     }
 }

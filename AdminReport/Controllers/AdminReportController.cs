@@ -34,5 +34,12 @@ namespace AdminReport.Controllers
             ResultModel result = await _service.GetPostDistribution(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("get-top-vaccine")]
+        public async Task<IActionResult> GetTopSystemVaccine()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.GetSystemVaccineCount(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

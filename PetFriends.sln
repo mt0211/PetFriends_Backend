@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppPetManagementAPI", "AppP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppForumManamgement", "AppForumManamgement\AppForumManamgement.csproj", "{554E3DE9-1FEF-413E-9FAB-305AFEBCA930}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDemandAPI", "ServiceDemandAPI\ServiceDemandAPI.csproj", "{4F9F29C2-A52E-410E-A8B3-E278B4060676}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,6 +155,10 @@ Global
 		{554E3DE9-1FEF-413E-9FAB-305AFEBCA930}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{554E3DE9-1FEF-413E-9FAB-305AFEBCA930}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{554E3DE9-1FEF-413E-9FAB-305AFEBCA930}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F9F29C2-A52E-410E-A8B3-E278B4060676}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F9F29C2-A52E-410E-A8B3-E278B4060676}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F9F29C2-A52E-410E-A8B3-E278B4060676}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F9F29C2-A52E-410E-A8B3-E278B4060676}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
