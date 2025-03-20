@@ -2,6 +2,8 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UserAuthenticationAPI.Controllers;
 using UserAuthenticationAPI.DTOs.UserDTOs;
+using UserAuthenticationAPI.Helpers;
 using UserAuthenticationAPI.Repository.OtpRepository;
 using UserAuthenticationAPI.Repository.UserRepository;
 using UserAuthenticationAPI.Services;
@@ -25,11 +28,16 @@ namespace PetFriendsUnitTest.Services
         private readonly UserService _userService;
         private readonly VerifyService _verifyService;
         private readonly Mock<UserAuthenticationAPI.Utilities.Encoder> _mockEncoder;
+        private readonly Mock<IOptions<GoogleOAuthOptions>> _mockGoogleOptions;
+        private readonly Mock<ILogger<UserService>> _mockLogger;
+
         public UserServiceTests()
         {
             _mockUserRepository = new Mock<IUserRepository>();
             _mockOtpRepository = new Mock<IOtpRepository>();
-            _userService = new UserService(_mockUserRepository.Object, _mockOtpRepository.Object);
+            _mockGoogleOptions = new Mock<IOptions<GoogleOAuthOptions>>();
+            _mockLogger = new Mock<ILogger<UserService>>();
+            _userService = new UserService(_mockUserRepository.Object, _mockOtpRepository.Object, _mockGoogleOptions.Object, _mockLogger.Object);
         }
 
         [Fact]
@@ -315,5 +323,170 @@ namespace PetFriendsUnitTest.Services
             Assert.Equal(404, result.Code);
             Assert.Equal("Not found", result.Message);
         }
+        [Fact]
+        public async Task Login_NullLoginModel_ReturnsBadRequest()
+        {
+            // Arrange
+            UserLoginReqModel? loginModel = null;
+
+            // Act
+            var result = await _userService.Login(loginModel);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(400, result.Code);
+            Assert.Equal("Invalid login request", result.Message);
+        }
+
+        [Fact]
+        public async Task Login_EmptyEmail_ReturnsBadRequest()
+        {
+            // Arrange
+            var loginModel = new UserLoginReqModel
+            {
+                Email = "",
+                Password = "password123"
+            };
+
+            // Act
+            var result = await _userService.Login(loginModel);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(400, result.Code);
+            Assert.Equal("Email is required", result.Message);
+        }
+
+        [Fact]
+        public async Task Login_EmptyPassword_ReturnsBadRequest()
+        {
+            // Arrange
+            var loginModel = new UserLoginReqModel
+            {
+                Email = "test@example.com",
+                Password = ""
+            };
+
+            // Act
+            var result = await _userService.Login(loginModel);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(400, result.Code);
+            Assert.Equal("Password is required", result.Message);
+        }
+
+        [Fact]
+        public async Task Login_UserRepositoryThrowsException_ReturnsInternalServerError()
+        {
+            // Arrange
+            var loginModel = new UserLoginReqModel
+            {
+                Email = "test@example.com",
+                Password = "password123"
+            };
+
+            _mockUserRepository.Setup(repo => repo.GetUserByEmail(loginModel.Email))
+                            .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _userService.Login(loginModel);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(500, result.Code);
+            Assert.Equal("An error occurred while processing your request", result.Message);
+        }
+
+        [Fact]
+        public async Task Login_UpdateLastLoginFails_ReturnsInternalServerError()
+        {
+            // Arrange
+            var loginModel = new UserLoginReqModel
+            {
+                Email = "test@example.com",
+                Password = "password123"
+            };
+
+            var hashedPasswordDto = UserAuthenticationAPI.Utilities.Encoder.CreateHashPassword("password123");
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = loginModel.Email,
+                Password = hashedPasswordDto.HashedPassword,
+                Salt = hashedPasswordDto.Salt,
+                Status = "ACTIVE"
+            };
+
+            _mockUserRepository.Setup(repo => repo.GetUserByEmail(loginModel.Email))
+                            .ReturnsAsync(user);
+            _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()))
+                            .ReturnsAsync(false);
+
+            // Act
+            var result = await _userService.Login(loginModel);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(500, result.Code);
+            Assert.Equal("Failed to update last login time", result.Message);
+        }
+
+        [Fact]
+        public async Task Login_UserLockedOut_ReturnsBadRequest()
+        {
+            // Arrange
+            var loginModel = new UserLoginReqModel
+            {
+                Email = "test@example.com",
+                Password = "password123"
+            };
+
+            var user = new User
+            {
+                Email = loginModel.Email,
+                Status = "LOCKED"
+            };
+
+            _mockUserRepository.Setup(repo => repo.GetUserByEmail(loginModel.Email))
+                            .ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.Login(loginModel);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(400, result.Code);
+            Assert.Equal("Account is locked", result.Message);
+        }
+
+        [Fact]
+        public async Task Login_UserSuspended_ReturnsBadRequest()
+        {
+            // Arrange
+            var loginModel = new UserLoginReqModel
+            {
+                Email = "test@example.com",
+                Password = "password123"
+            };
+
+            var user = new User
+            {
+                Email = loginModel.Email,
+                Status = "SUSPENDED"
+            };
+
+            _mockUserRepository.Setup(repo => repo.GetUserByEmail(loginModel.Email))
+                            .ReturnsAsync(user);
+
+            // Act
+            var result = await _userService.Login(loginModel);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal(400, result.Code);
+            Assert.Equal("Account is suspended", result.Message);
+        }
+
     }
 }

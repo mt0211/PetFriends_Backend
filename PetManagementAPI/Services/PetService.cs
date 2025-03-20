@@ -9,9 +9,11 @@ namespace PetManagementAPI.Services
     public class PetService : IPetService
     {
         private readonly IPetRepository _petRepository;
-        public PetService(IPetRepository petRepository)
+        private readonly PetfriendsContext _context;
+        public PetService(IPetRepository petRepository, PetfriendsContext context)
         {
             _petRepository = petRepository;
+            _context = context;
         }
         public async Task<ResultModel> GetAllPet(string token, int page)
         {
@@ -278,14 +280,31 @@ namespace PetManagementAPI.Services
             var result = new ResultModel();
             try
             {
+                // Lấy pet từ database
                 var pet = await _petRepository.GetPetByUpdate(petDto.Id);
-
-                // Cập nhật thông tin User nếu có số điện thoại
-                if (!string.IsNullOrEmpty(petDto.PhoneNumber))
+                if (pet == null)
                 {
-                    var user = await _petRepository.GetUserByPhoneNumber(petDto.PhoneNumber);
-                    pet.UserId = user?.Id;
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "Pet not found";
+                    return result;
+                }
+
+                // Tìm user dựa trên số điện thoại
+                var user = await _petRepository.GetUserByPhoneNumber(petDto.PhoneNumber);
+                if (user != null)
+                {
+                    // Cập nhật cả UserId và UserPhoneNumber
+                    pet.UserId = user.Id;
                     pet.UserPhoneNumber = petDto.PhoneNumber;
+                    Console.WriteLine($"Found user: {user.Id} for phone: {petDto.PhoneNumber}");
+                }
+                else
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User with provided phone number not found";
+                    return result;
                 }
 
                 // Cập nhật thông tin Pet
@@ -296,13 +315,24 @@ namespace PetManagementAPI.Services
                 pet.DateOfBirth = petDto.DateOfBirth;
                 pet.Vaccinated = (byte)(petDto.Vaccinated ? 1 : 0);
 
+                // Lưu thay đổi pet trước
                 await _petRepository.UpdatePetAsync(pet);
+                Console.WriteLine($"Pet updated: {pet.Id}, Name: {pet.Name}, UserId: {pet.UserId}");
 
-                // Xử lý vaccines
+                // Xử lý vaccines sau khi đã lưu pet
                 if (!petDto.Vaccinated)
                 {
                     // Nếu không tiêm vaccine, xóa tất cả vaccine
-                    await _petRepository.RemoveAllPetVaccinesAsync(pet.Id);
+                    var oldVaccines = pet.UserPetVaccines.ToList(); 
+                    foreach (var vaccine in oldVaccines)
+                    {
+                        if (vaccine.UserPetVaccineDoses?.Any() == true)
+                        {
+                            _context.UserPetVaccineDoses.RemoveRange(vaccine.UserPetVaccineDoses);
+                        }
+                        _context.UserPetVaccines.Remove(vaccine);
+                    }
+                    await _context.SaveChangesAsync();
                 }
                 else if (petDto.VaccineIds != null && petDto.VaccineIds.Any())
                 {
@@ -322,6 +352,8 @@ namespace PetManagementAPI.Services
                 result.ResponseFailed = ex.InnerException != null
                     ? ex.InnerException.Message + "\n" + ex.StackTrace
                     : ex.Message + "\n" + ex.StackTrace;
+        
+                Console.WriteLine($"Error in UpdatePet: {result.ResponseFailed}");
             }
 
             return result;
