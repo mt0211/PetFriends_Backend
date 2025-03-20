@@ -1,8 +1,10 @@
 ﻿
 using AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs;
+using AutoMapper;
 using DataAccess.Models;
 using DataAccess.Repositories;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace AppointmentManagementAPI.Repository
@@ -16,29 +18,102 @@ namespace AppointmentManagementAPI.Repository
         }
         public async Task<IEnumerable<dynamic>> GetAllApointment()
         {
-            return await _context.Appointments
-       .Include(a => a.User)
-       .Include(a => a.Pet)
-       .Include(a => a.GuestUser)
-       .Include(a => a.GuestPet)
-       .Include(a => a.AppointmentClinicServices)
-           .ThenInclude(acs => acs.ClinicService)
-       .Select(appointment => new
-       {
-           Id = appointment.Id,
-           CreatedAt = appointment.CreatedAt,
-           StartAt = appointment.StartAt,
-           EndAt = appointment.EndAt,
-           Status = appointment.Status,
-           Note = appointment.Note,
-           UserName = appointment.UserId != null ? appointment.User.FullName : appointment.GuestUser.FullName,
-           PetName = appointment.PetId != null ? appointment.Pet.Name : appointment.GuestPet.Name,
-           ServiceNames = appointment.AppointmentClinicServices
-               .Select(service => service.ClinicService.Name)
-               .ToList()
-       })
-       .ToListAsync();
-        }
+            // Bước 1: Lấy thông tin cơ bản của tất cả appointment
+            var appointments = await _context.Appointments
+                .AsNoTracking()
+                .OrderByDescending(a => a.CreatedAt) // Sử dụng index IX_Appointment_CreatedAt
+                .Select(a => new
+                {
+                    Id = a.Id,
+                    CreatedAt = a.CreatedAt,
+                    StartAt = a.StartAt,
+                    EndAt = a.EndAt,
+                    Status = a.Status,
+                    Note = a.Note,
+                    UserId = a.UserId,
+                    GuestUserId = a.GuestUserId,
+                    PetId = a.PetId,
+                    GuestPetId = a.GuestPetId
+                })
+                .ToListAsync();
+
+            if (!appointments.Any())
+                return new List<dynamic>();
+
+            // Bước 2: Lấy thông tin người dùng và thú cưng
+            var userIds = appointments.Where(a => a.UserId.HasValue).Select(a => a.UserId.Value).Distinct().ToList();
+            var guestUserIds = appointments.Where(a => a.GuestUserId.HasValue).Select(a => a.GuestUserId.Value).Distinct().ToList();
+            var petIds = appointments.Where(a => a.PetId.HasValue).Select(a => a.PetId.Value).Distinct().ToList();
+            var guestPetIds = appointments.Where(a => a.GuestPetId.HasValue).Select(a => a.GuestPetId.Value).Distinct().ToList();
+
+            // Lấy thông tin người dùng
+            var users = userIds.Any() ? await _context.Users
+                .AsNoTracking()
+                .Where(u => userIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.FullName })
+                .ToDictionaryAsync(u => u.Id, u => u.FullName) : new Dictionary<Guid, string>();
+
+            var guestUsers = guestUserIds.Any() ? await _context.GuestUsers
+                .AsNoTracking()
+                .Where(gu => guestUserIds.Contains(gu.Id))
+                .Select(gu => new { gu.Id, gu.FullName })
+                .ToDictionaryAsync(gu => gu.Id, gu => gu.FullName) : new Dictionary<Guid, string>();
+
+            // Lấy thông tin thú cưng
+            var pets = petIds.Any() ? await _context.Pets
+                .AsNoTracking()
+                .Where(p => petIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.Name })
+                .ToDictionaryAsync(p => p.Id, p => p.Name) : new Dictionary<Guid, string>();
+
+            var guestPets = guestPetIds.Any() ? await _context.GuestPets
+                .AsNoTracking()
+                .Where(gp => guestPetIds.Contains(gp.Id))
+                .Select(gp => new { gp.Id, gp.Name })
+                .ToDictionaryAsync(gp => gp.Id, gp => gp.Name) : new Dictionary<Guid, string>();
+
+            // Bước 3: Lấy thông tin dịch vụ
+            var appointmentIds = appointments.Select(a => a.Id).ToList();
+            var servicesByAppointment = await _context.AppointmentClinicServices
+                .AsNoTracking()
+                .Where(acs => appointmentIds.Contains(acs.AppointmentId))
+                .Join(_context.ClinicServices,
+                    acs => acs.ClinicServiceId,
+                    cs => cs.Id,
+                    (acs, cs) => new
+                    {
+                        AppointmentId = acs.AppointmentId,
+                        ServiceName = cs.Name
+                    })
+                .GroupBy(x => x.AppointmentId)
+                .ToDictionaryAsync(g => g.Key, g => g.Select(x => x.ServiceName).ToList());
+
+            // Bước 4: Kết hợp tất cả thông tin
+            var result = appointments.Select(a => new
+            {
+                Id = a.Id,
+                CreatedAt = a.CreatedAt,
+                StartAt = a.StartAt,
+                EndAt = a.EndAt,
+                Status = a.Status,
+                Note = a.Note,
+                UserName = a.UserId.HasValue && users.ContainsKey(a.UserId.Value) 
+                    ? users[a.UserId.Value] 
+                    : (a.GuestUserId.HasValue && guestUsers.ContainsKey(a.GuestUserId.Value) 
+                        ? guestUsers[a.GuestUserId.Value] 
+                        : null),
+                PetName = a.PetId.HasValue && pets.ContainsKey(a.PetId.Value) 
+                    ? pets[a.PetId.Value] 
+                    : (a.GuestPetId.HasValue && guestPets.ContainsKey(a.GuestPetId.Value) 
+                        ? guestPets[a.GuestPetId.Value] 
+                        : null),
+                ServiceNames = servicesByAppointment.ContainsKey(a.Id) 
+                    ? servicesByAppointment[a.Id] 
+                    : new List<string>()
+            }).ToList<dynamic>();
+
+            return result;
+                }
 
         public async Task<(string Email, string FullName, string status, DateTime? CreatedAt, DateTime? StartAt, DateTime? EndAt)> GetAppointmentAndUserEmail(Guid AppointmentID)
         {
@@ -290,5 +365,84 @@ namespace AppointmentManagementAPI.Repository
             await _context.SaveChangesAsync();
         }
 
+        //FIX API ADD APPOINTMENT
+        // 1) Tìm user thật (User) theo phone/email
+        public async Task<Guid?> GetUserIdByPhoneOrEmail(string? phone, string? email)
+        {
+            // Nếu không có phone/email gì hết thì bỏ qua
+            if (string.IsNullOrEmpty(phone) && string.IsNullOrEmpty(email))
+                return null;
+
+            var userId = await _context.Users
+                .Where(u =>
+                    (!string.IsNullOrEmpty(phone) && u.PhoneNumber == phone)
+                    || (!string.IsNullOrEmpty(email) && u.Email == email)
+                )
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync();
+
+            // Nếu FirstOrDefaultAsync() trả về Guid.Empty => ko tìm thấy => ta return null
+            return userId == Guid.Empty ? null : userId;
+        }
+
+        // 2) Tạo hoặc lấy GuestUser
+        public async Task<GuestUser> CreateOrGetGuestUser(AppointmentAddModel appointment)
+        {
+            // Nếu không có phone number => không thể lookup GuestUser
+            if (string.IsNullOrEmpty(appointment.GuestPhoneNumber))
+                return null; // tuỳ bạn xử lý
+
+            // Tìm GuestUser theo phone
+            var existingGuest = await GetGuestUserByPhoneNumber(appointment.GuestPhoneNumber);
+            if (existingGuest != null)
+            {
+                return existingGuest;
+            }
+
+            // Không có => tạo mới
+            var guestUserId = Guid.NewGuid();
+            var newGuestUser = new GuestUser
+            {
+                Id = guestUserId,
+                PhoneNumber = appointment.GuestPhoneNumber,
+                FullName = appointment.GuestFullName,
+                Email = appointment.GuestEmail,
+                Address = appointment.Address,
+                CreatedAt = DateTimeOffset.Now.DateTime
+            };
+            await InsertGuestUser(newGuestUser);
+            return newGuestUser;
+        }
+
+        // 3) Tạo hoặc lấy GuestPet
+        public async Task<GuestPet> CreateOrGetGuestPet(AppointmentAddModel appointment, Guid guestUserId)
+        {
+            if (string.IsNullOrEmpty(appointment.GuestPetName))
+                return null; // tuỳ bạn xử lý
+
+            // Tìm GuestPet theo tên
+            var existingGuestPet = await GetGuestPetByNameAndGuestUserId(appointment.GuestPetName, guestUserId);
+            if (existingGuestPet != null)
+            {
+                return existingGuestPet;
+            }
+
+            // Không có => tạo mới
+            var guestPetId = Guid.NewGuid();
+            var newGuestPet = new GuestPet
+            {
+                Id = guestPetId,
+                Name = appointment.GuestPetName,
+                DateOfBirth = appointment.GuestPetDateOfBirth,
+                Gender = appointment.GuestPetGender,
+                Species = appointment.GuestPetSpecies,
+                GuestUserId = guestUserId,
+                CreatedAt = DateTimeOffset.Now.DateTime
+            };
+            await InsertGuestPet(newGuestPet);
+            return newGuestPet;
+        }
+
     }
+
 }

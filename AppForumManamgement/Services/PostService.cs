@@ -220,7 +220,7 @@ namespace AppForumManamgement.Services
                 UserId = id,
                 PostContent = addmodel.PostContent,
                 ImageUrl = addmodel.ImageUrl,
-                Status = 0,
+                Status = 1,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
                };

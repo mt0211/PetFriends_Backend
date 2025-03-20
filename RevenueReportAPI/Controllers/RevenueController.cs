@@ -97,5 +97,12 @@ namespace RevenueReportAPI.Controllers
             ResultModel result = await _service.GetServiceRevenue(token, requestModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("export-excel")]
+        public async Task<IActionResult> ExportDataToExcel(int year, int? month)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.GetAllDataForExport(token, year, month);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

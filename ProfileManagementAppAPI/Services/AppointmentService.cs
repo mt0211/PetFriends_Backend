@@ -10,6 +10,7 @@ using ProfileManagementAppAPI.DTOs.CategoryClinicServiceDTO;
 using ProfileManagementAppAPI.DTOs.AppointmentDTOs;
 using ProfileManagementAppAPI.DTOs.PromotionDTOs;
 using System.Globalization;
+using ProfileManagementAppAPI.Helper;
 
 namespace ProfileManagementAppAPI.Services
 {
@@ -548,12 +549,11 @@ namespace ProfileManagementAppAPI.Services
                     return result;
                 }
 
-                if (!DateTime.TryParseExact(updateCartDTO.Time, "h:mm tt", 
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime timeValue))
+                if (!TimeFormatHelper.TryParseTime(updateCartDTO.Time, out DateTime timeValue))
                 {
                     result.IsSuccess = false;
                     result.Code = 400;
-                    result.Message = "Invalid time format. Use h:mm tt (e.g., 1:22 AM)";
+                    result.Message = "Invalid time format. Use h:mm AM/PM or h:mm SA/CH (e.g., 1:22 AM or 1:22 SA)";
                     return result;
                 }
                  var appointmentDateTime = dateValue.Date.Add(timeValue.TimeOfDay);
@@ -1057,13 +1057,12 @@ namespace ProfileManagementAppAPI.Services
                     result.Message = "Invalid date format. Use yyyy-MM-dd";
                     return result;
                 }
-
-                if (!DateTime.TryParseExact(updateDTO.Time, "h:mm tt", 
-                    CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime timeValue))
+               
+                if (!TimeFormatHelper.TryParseTime(updateDTO.Time, out DateTime timeValue))
                 {
                     result.IsSuccess = false;
                     result.Code = 400;
-                    result.Message = "Invalid time format. Use h:mm tt (e.g., 1:22 AM)";
+                    result.Message = "Invalid time format. Use h:mm AM/PM or h:mm SA/CH (e.g., 1:22 AM or 1:22 SA)";
                     return result;
                 }
 

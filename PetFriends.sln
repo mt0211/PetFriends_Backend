@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppForumManamgement", "AppF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDemandAPI", "ServiceDemandAPI\ServiceDemandAPI.csproj", "{4F9F29C2-A52E-410E-A8B3-E278B4060676}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealTimeCommunicationAPI", "RealTimeCommunicationAPI\RealTimeCommunicationAPI.csproj", "{CEA1F3D6-8210-40A3-86EA-EE7EE7EE0B91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +161,10 @@ Global
 		{4F9F29C2-A52E-410E-A8B3-E278B4060676}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F9F29C2-A52E-410E-A8B3-E278B4060676}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F9F29C2-A52E-410E-A8B3-E278B4060676}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEA1F3D6-8210-40A3-86EA-EE7EE7EE0B91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEA1F3D6-8210-40A3-86EA-EE7EE7EE0B91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEA1F3D6-8210-40A3-86EA-EE7EE7EE0B91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEA1F3D6-8210-40A3-86EA-EE7EE7EE0B91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

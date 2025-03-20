@@ -230,83 +230,105 @@ namespace AppointmentManagementAPI.Services
         public async Task<ResultModel> AddAppointment(string token, AppointmentAddModel appointment)
         {
             ResultModel result = new();
-            var userId = Encoder.DecodeToken(token, "userid");
-            if (!Guid.TryParse(userId, out Guid id))
+            var userIdFromToken = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userIdFromToken, out Guid userIdGuid))
             {
                 result.IsSuccess = false;
-                result.Code = 400; // Bad request
-                result.Message = "Invalid user ID";
+                result.Code = 400;
+                result.Message = "Invalid user ID from token";
                 return result;
             }
 
             try
             {
-                // Kiểm tra và tạo Guest User nếu chưa có
-                Guid? guestUserId = null;
-                if (!appointment.GuestUserId.HasValue || appointment.GuestUserId.Value == Guid.Empty)
+                // ================================
+                // Bước 0: Tìm user thật qua phone/email
+                // ================================
+                if (!appointment.UserId.HasValue || appointment.UserId.Value == Guid.Empty)
                 {
-                    if (!string.IsNullOrEmpty(appointment.GuestPhoneNumber))
+                    var userId = await _appointmentrepository.GetUserIdByPhoneOrEmail(
+                        appointment.GuestPhoneNumber, 
+                        appointment.GuestEmail
+                    );
+                    if (userId.HasValue)
                     {
-                        var guestUser = await _appointmentrepository.GetGuestUserByPhoneNumber(appointment.GuestPhoneNumber);
-                        if (guestUser == null)
+                        // Tìm thấy user => xài userId thật
+                        appointment.UserId = userId;
+                    }
+                }
+                if ((appointment.UserId.HasValue && appointment.UserId.Value != Guid.Empty)
+                    && (!appointment.PetId.HasValue || appointment.PetId.Value == Guid.Empty))
+                {
+                    if (!string.IsNullOrEmpty(appointment.GuestPetName))
+                    {
+                        // Tìm pet thật theo tên + userId
+                        var existingPet = await _appointmentrepository.GetPetByNameAndUserId(
+                            appointment.GuestPetName, 
+                            appointment.UserId.Value
+                        );
+                        if (existingPet != null)
                         {
-                            guestUserId = Guid.NewGuid();
-                            var newGuestUser = new GuestUser
-                            {
-                                Id = guestUserId.Value,
-                                PhoneNumber = appointment.GuestPhoneNumber,
-                                FullName = appointment.GuestFullName,
-                                Email = appointment.GuestEmail,
-                                Address = appointment.Address,
-                                CreatedAt = DateTimeOffset.Now.DateTime
-                            };
-                            await _appointmentrepository.InsertGuestUser(newGuestUser);
+                            // Tìm thấy pet => gán PetId
+                            appointment.PetId = existingPet.Id;
                         }
-                        else
+                    }
+                }
+                // ================================
+                // 1) CHECK USER CHÍNH CHỦ
+                // ================================
+                Guid? guestUserId = null;
+                if (appointment.UserId.HasValue && appointment.UserId.Value != Guid.Empty)
+                {
+                    // Đã có userId => skip GuestUser
+                }
+                else
+                {
+                    // Tạo/Lấy GuestUser
+                    if (!appointment.GuestUserId.HasValue || appointment.GuestUserId.Value == Guid.Empty)
+                    {
+                        var guestUser = await _appointmentrepository.CreateOrGetGuestUser(appointment);
+                        if (guestUser != null)
                         {
                             guestUserId = guestUser.Id;
                         }
                     }
-                }
-                else
-                {
-                    guestUserId = appointment.GuestUserId;
-                }
-
-                // Kiểm tra và tạo Guest Pet nếu chưa có
-                Guid? guestPetId = null;
-                if (!appointment.GuestPetId.HasValue || appointment.GuestPetId.Value == Guid.Empty)
-                {
-                    if (!string.IsNullOrEmpty(appointment.GuestPetName) && guestUserId.HasValue)
+                    else
                     {
-                        var guestPet = await _appointmentrepository.GetGuestPetByNameAndGuestUserId(appointment.GuestPetName, guestUserId.Value);
-                        if (guestPet == null)
-                        {
-                            guestPetId = Guid.NewGuid();
-                            var newGuestPet = new GuestPet
-                            {
-                                Id = guestPetId.Value,
-                                Name = appointment.GuestPetName,
-                                DateOfBirth = appointment.GuestPetDateOfBirth,
-                                Gender = appointment.GuestPetGender,
-                                Species = appointment.GuestPetSpecies,
-                                GuestUserId = guestUserId.Value,
-                                CreatedAt = DateTimeOffset.Now.DateTime
-                            };
-                            await _appointmentrepository.InsertGuestPet(newGuestPet);
-                        }
-                        else
-                        {
-                            guestPetId = guestPet.Id;
-                        }
+                        guestUserId = appointment.GuestUserId;
                     }
                 }
+
+                // ================================
+                // 2) CHECK PET CHÍNH CHỦ
+                // ================================
+                Guid? guestPetId = null;
+                if (appointment.PetId.HasValue && appointment.PetId.Value != Guid.Empty)
+                {
+                    // Đã có petId => skip GuestPet
+                }
                 else
                 {
-                    guestPetId = appointment.GuestPetId;
+                    // Tạo/Lấy GuestPet
+                    if (!appointment.GuestPetId.HasValue || appointment.GuestPetId.Value == Guid.Empty)
+                    {
+                        if (guestUserId.HasValue)
+                        {
+                            var guestPet = await _appointmentrepository.CreateOrGetGuestPet(appointment, guestUserId.Value);
+                            if (guestPet != null)
+                            {
+                                guestPetId = guestPet.Id;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        guestPetId = appointment.GuestPetId;
+                    }
                 }
 
-                // Tạo appointment mới
+                // ================================
+                // 3) TẠO APPOINTMENT
+                // ================================
                 var newAppointment = new Appointment
                 {
                     Id = Guid.NewGuid(),
@@ -314,16 +336,16 @@ namespace AppointmentManagementAPI.Services
                     PetId = appointment.PetId,
                     GuestUserId = guestUserId,
                     GuestPetId = guestPetId,
-                    //    ClinicServiceId = appointment.ClinicServiceId,
                     CreatedAt = DateTimeOffset.Now.DateTime,
                     StartAt = appointment.StartAt,
                     Status = appointment.Status,
                     Note = appointment.Note,
                 };
-
-                // Lưu appointment vào cơ sở dữ liệu
                 await _appointmentrepository.Insert(newAppointment);
 
+                // ================================
+                // 4) Thêm AppointmentClinicService
+                // ================================
                 foreach (var serviceId in appointment.ClinicServiceIds)
                 {
                     var appointmentService = new AppointmentClinicService
@@ -348,8 +370,11 @@ namespace AppointmentManagementAPI.Services
                     ? ex.InnerException.Message + "\n" + ex.StackTrace
                     : ex.Message + "\n" + ex.StackTrace;
             }
+
             return result;
         }
+
+
 
         public async Task<ResultModel> GetListClinicservice(string token)
         {
