@@ -32,5 +32,8 @@ namespace AppointmentManagementAPI.Repository
         Task AddUserPetVaccine(UserPetVaccine petVaccine);
         Task AddUserPetVaccineDose(UserPetVaccineDose petVaccineDose);
         Task UpdateUserPetVaccine(UserPetVaccine petVaccine);
+        Task<Guid?> GetUserIdByPhoneOrEmail(string? phone, string? email);
+        Task<GuestUser> CreateOrGetGuestUser(AppointmentAddModel appointment);
+        Task<GuestPet> CreateOrGetGuestPet(AppointmentAddModel appointment, Guid guestUserId);
     }
 }

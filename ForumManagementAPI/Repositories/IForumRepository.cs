@@ -11,5 +11,6 @@ namespace ForumManagementAPI.Repositories
         Task DeletePost(Guid PostID);
         Task DeleteComment(Guid PCommentID);
         Task<(string email, string commentcontent)> GetUserEmailByCommentID(Guid cid);
+        Task<(string email, string postcontent)> GetUserEmailByPostID(Guid pid);
     }
 }
