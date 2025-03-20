@@ -415,5 +415,204 @@ namespace RevenueReportAPI.Services
                 };
             }
         }
+
+        public async Task<ResultModel> GetAllDataForExport(string token, int year, int? month)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            
+            try
+            {
+                // Tính toán startDate và endDate dựa trên year và month
+                DateTime startDate, endDate;
+                
+                if (month.HasValue && month.Value > 0)
+                {
+                    // Nếu có month, lấy dữ liệu của tháng đó
+                    startDate = new DateTime(year, month.Value, 1);
+                    endDate = startDate.AddMonths(1).AddDays(-1);
+                }
+                else
+                {
+                    // Nếu không có month, lấy dữ liệu của cả năm
+                    startDate = new DateTime(year, 1, 1);
+                    endDate = new DateTime(year, 12, 31);
+                }
+                
+                var (userbookingsummaries, revenues, servicerevenue) = await _revenueRepository.GetAllDataForExport(year, month, startDate, endDate);
+                using (var package = new OfficeOpenXml.ExcelPackage())
+                {
+                    //USER BOOKING SUMMARY///////////////////////
+                    //Create new sheet and name
+                    var GetUserBookingSummariesForExport = package.Workbook.Worksheets.Add("User Booking Summaries");
+                    
+                    //Header
+                    GetUserBookingSummariesForExport.Cells[1, 1].Value = "User Name";
+                    GetUserBookingSummariesForExport.Cells[1, 2].Value = "Total Booking";
+                    GetUserBookingSummariesForExport.Cells[1, 3].Value = "Total Amount";
+
+                    //STYLE FOR HEADER  
+                    using (var range = GetUserBookingSummariesForExport.Cells[1, 1, 1, 3])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin; 
+
+                        range.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black); 
+                    }
+
+                    //DATA  
+                    int row = 2;
+                    foreach (var item in userbookingsummaries)
+                    {
+                        GetUserBookingSummariesForExport.Cells[row, 1].Value = item.UserName;
+                        GetUserBookingSummariesForExport.Cells[row, 2].Value = item.NumberOfBook;
+                        GetUserBookingSummariesForExport.Cells[row, 3].Value = item.Amount;
+                        row++;
+                    }
+
+                    //Style for data
+                    if (row > 2) 
+                    {
+                        var dataRange = GetUserBookingSummariesForExport.Cells[2, 1, row - 1, 3];
+                        dataRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                        dataRange.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
+                    }
+                    GetUserBookingSummariesForExport.Cells.AutoFitColumns();
+
+                    //Total Revenue
+                    var GetTotalRevenue = package.Workbook.Worksheets.Add("Total Revenue");
+
+                    GetTotalRevenue.Cells[1,1].Value = "Date";
+                    GetTotalRevenue.Cells[1,2].Value = "Total Revenue";
+
+                    using (var range = GetTotalRevenue.Cells[1, 1, 1, 2])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin; 
+
+                        range.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black); 
+                    }
+
+                    int rowdatarevenue = 2;
+                    foreach (var item in revenues)
+                    {
+                        GetTotalRevenue.Cells[rowdatarevenue, 1].Value = item.Date;
+                        GetTotalRevenue.Cells[rowdatarevenue, 1].Style.Numberformat.Format = "dd/MM/yyyy";
+                        GetTotalRevenue.Cells[rowdatarevenue, 2].Value = item.Revenue;
+                        rowdatarevenue++;
+                    }
+                    if (rowdatarevenue > 2)
+                    {
+                        var dataRange = GetTotalRevenue.Cells[2, 1, rowdatarevenue - 1, 2];
+                        dataRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                        dataRange.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
+                    }
+                    GetTotalRevenue.Cells.AutoFitColumns();
+
+                    //Service Revenue
+                    var GetServiceRevenue = package.Workbook.Worksheets.Add("Service Revenue");
+
+                    GetServiceRevenue.Cells[1,1].Value = "Date";
+                    GetServiceRevenue.Cells[1,2].Value = "Service Revenue";
+                    GetServiceRevenue.Cells[1,3].Value = "Service Name";
+                    using (var range = GetServiceRevenue.Cells[1, 1, 1, 3])
+                    {
+                        range.Style.Font.Bold = true;
+                        range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin; 
+
+                        range.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black); 
+                    }
+
+                    int rowservicerevenue = 2;
+                    foreach (var item in servicerevenue)
+                    {
+                        GetServiceRevenue.Cells[rowservicerevenue, 1].Value = item.Date;
+                        GetServiceRevenue.Cells[rowservicerevenue, 1].Style.Numberformat.Format = "dd/MM/yyyy";
+                        GetServiceRevenue.Cells[rowservicerevenue, 2].Value = item.Revenue;
+                        GetServiceRevenue.Cells[rowservicerevenue, 3].Value = item.ServiceType;
+                        rowservicerevenue++;
+                    }
+                    
+                    if (rowservicerevenue > 2)
+                    {
+                        var dataRange = GetServiceRevenue.Cells[2, 1, rowservicerevenue - 1, 3];
+                        dataRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                        dataRange.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        dataRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
+                    }
+                    GetServiceRevenue.Cells.AutoFitColumns();
+                    
+                    //Convert to byte array and save to file
+                    var fileBytes = package.GetAsByteArray();
+
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = Convert.ToBase64String(fileBytes);
+                    result.Message = "Successfully exported all data to Excel";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
     }
 }

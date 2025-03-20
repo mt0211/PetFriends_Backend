@@ -243,6 +243,21 @@ namespace ForumManagementAPI.Services
             {
                 var post = await _repository.Get(updateStatusRequestModel.Id);
                 post.Status = updateStatusRequestModel.Status;
+                if(post.Status == 0)
+                {
+                    var userinfor = await _repository.GetUserEmailByPostID(updateStatusRequestModel.Id);
+                    if (!string.IsNullOrWhiteSpace(userinfor.email)) 
+                    {
+                        string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "PostNotification.html");
+                        string Html = File.ReadAllText(FilePath);
+                        Html = Html.Replace("{{content}}", userinfor.postcontent);
+                        bool EmailSent = await Email.SendEmail(userinfor.email, "Violate community standards", Html);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Email does not exist. Skipping email notification.");
+                    }
+                }
                 await _repository.Update(post);
                 result.IsSuccess = true;
                 result.Code = 200;

@@ -6,7 +6,9 @@ namespace RevenueReportAPI.Services
     {
         Task<ResultModel> GetUserBookingSummary(string token);
         Task<ResultModel> GetDetailServiceRevenue(string token, RevenueRequestModel request);
-           Task<ResultModel> GetTotalRevenue(string token, RevenueRequestModel request);
+        Task<ResultModel> GetTotalRevenue(string token, RevenueRequestModel request);
         Task<ResultModel> GetServiceRevenue(string token, RevenueRequestModel request);
+      //  Task<ResultModel> ExportDataToExcel(string token);
+        Task<ResultModel> GetAllDataForExport(string token, int year, int? month);
     }
 }

@@ -31,7 +31,7 @@ namespace PetManagementAPI.Repository.PetRepository
                     DateOfBirth = joinResult.Pet.DateOfBirth,
                     OwnerName = joinResult.Users.FirstOrDefault() != null ? joinResult.Users.FirstOrDefault().FullName : null,
                     OwnerPhoneNumber = joinResult.Pet.UserPhoneNumber,
-                    Vaccinated = joinResult.Pet.UserPetVaccines.Any() ? "Vaccinated" : "Not yet",
+                    Vaccinated = joinResult.Pet.UserPetVaccines.Any(),
                     VaccineNames = joinResult.Pet.UserPetVaccines.Any() 
                         ? string.Join(", ", 
                             joinResult.Pet.UserPetVaccines.Select(upv => 
@@ -93,7 +93,7 @@ namespace PetManagementAPI.Repository.PetRepository
                 DateOfBirth = p.DateOfBirth,
                 OwnerName = p.User != null ? p.User.FullName : "N/A",
                 OwnerPhoneNumber = p.UserPhoneNumber,
-                Vaccinated = p.UserPetVaccines.Any() ? "Vaccinated" : "Not yet",
+                Vaccinated = p.UserPetVaccines.Any(),
                 VaccineNames = p.UserPetVaccines != null && p.UserPetVaccines.Any()
                     ? string.Join(", ", 
                         p.UserPetVaccines.Select(upv => 

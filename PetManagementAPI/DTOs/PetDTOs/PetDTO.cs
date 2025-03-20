@@ -16,7 +16,7 @@
 
         public string OwnerName { get; set; }
         public string OwnerPhoneNumber { get; set; }
-        public string Vaccinated { get; set; } 
+        public bool Vaccinated { get; set; } 
         public string VaccineNames { get; set; } 
     }
     public class AddPetReqModel

@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RealTimeCommunicationAPI.Hubs;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
-
+var app = builder.Build();
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -76,6 +77,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 
+builder.Services.AddSignalR();
+app.MapHub<ChatHub>("/chatHub");
+app.MapHub<VideoHub>("/videoHub");
+
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
    serverOptions.ListenAnyIP(80);
@@ -90,13 +95,15 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 //////////////////////
 // Configure the HTTP request pipeline.
-var app = builder.Build();
+
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
 
 app.UseSwagger();
 app.UseSwaggerUI();

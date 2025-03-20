@@ -101,5 +101,18 @@ namespace ForumManagementAPI.Repositories
             }
             await _context.SaveChangesAsync();
         }
+
+        public async Task<(string email, string postcontent)> GetUserEmailByPostID(Guid pid)
+        {
+            var email = await _context.ForumPosts
+            .Where(c=>c.Id == pid)
+            .Include(p => p.User)
+            .Select(c=> new
+            {
+                c.User.Email,
+                c.PostContent
+            }).FirstOrDefaultAsync();
+            return (email.Email, email.PostContent);
+        }
     }
 }
