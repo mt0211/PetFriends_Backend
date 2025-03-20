@@ -150,11 +150,11 @@ namespace AdminReport.Repositories
                 })
                 .ToListAsync();
             var result = new List<dynamic>
-    {
-        new { type = "Approved", value = statusCounts.FirstOrDefault(x => x.Status == 2)?.Count * 100 / totalPosts ?? 0 },
-        new { type = "Rejected", value = statusCounts.FirstOrDefault(x => x.Status == 0)?.Count * 100 / totalPosts ?? 0 },
-        new { type = "Pending", value = statusCounts.FirstOrDefault(x => x.Status == 0)?.Count * 100 / totalPosts ?? 0 }
-    };
+        {
+            new { type = "Approved", value = statusCounts.FirstOrDefault(x => x.Status == 2)?.Count * 100 / totalPosts ?? 0 },
+            new { type = "Rejected", value = statusCounts.FirstOrDefault(x => x.Status == 0)?.Count * 100 / totalPosts ?? 0 },
+            new { type = "Pending", value = statusCounts.FirstOrDefault(x => x.Status == 0)?.Count * 100 / totalPosts ?? 0 }
+        };
 
             return result;
         }
@@ -173,17 +173,103 @@ namespace AdminReport.Repositories
         {
             var count = await _context.UserPetVaccines
             .Where(upv => upv.VaccineId!=null)
-            .GroupBy(upv => upv.Name)
-            .Select(c=> new
-            {
-                Name = c.Key,
-                Count = c.Count()
+            .Select(upv => new 
+            { upv.Name
+            , upv.NumberOfDoses
             })
-            .OrderBy(x=> x.Count)
+            .OrderByDescending(upv => upv.NumberOfDoses)
             .ToListAsync();
             return count;
         }
 
+        public async Task<List<dynamic>> GetTopVaccine()
+        {
+            var count = await _context.UserPetVaccines
+            .Where(upv => upv.VaccineId != null)
+             .Select(upv => new 
+            { upv.Name
+            , upv.NumberOfDoses
+            })
+            .OrderByDescending(upv => upv.NumberOfDoses)
+            .ToListAsync();
+            return  count.Cast<dynamic>().ToList();
+        }
+
+        public async Task<(List<dynamic> vaccineData, List<dynamic> postDistribution, IEnumerable<dynamic> newUsers, IEnumerable<dynamic> userStatus)> GetAllReportsDataForExport(int year, int? month)
+        {
+            // Lấy dữ liệu vaccine
+            var vaccineData = await GetTopVaccine();
+            
+            // Lấy dữ liệu phân phối bài đăng
+            var postDistribution = await GetPostDistribution();
+            
+            // Lấy dữ liệu người dùng mới
+            var newUsers = await GetDataNewUser(year, month ?? 0);
+            
+            // Lấy dữ liệu trạng thái người dùng
+            var userStatus = await GetDataUserStatusForExcel(year, month ?? 0);
+            
+            return (vaccineData, postDistribution.ToList(), newUsers, userStatus);
+        }
+        
+        public async Task<IEnumerable<dynamic>> GetDataUserStatusForExcel(int year, int? month)
+        {
+            // Nếu month = 0 => gán lại null
+            if (month.HasValue && month.Value == 0)
+            {
+                month = null;
+            }
+
+            if (!month.HasValue)
+            {
+                // Lấy dữ liệu cả năm (12 tháng)
+                var userStatistics = await _context.Users
+                    .Where(u => u.LastLoggedIn.HasValue && u.LastLoggedIn.Value.Year == year)
+                    .GroupBy(u => u.LastLoggedIn.Value.Month)
+                    .Select(g => new
+                    {
+                        Month = g.Key,
+                        ActiveUsers = g.Count(u => u.Status == "ACTIVE"),
+                        InactiveUsers = g.Count(u => u.Status == "INACTIVE")
+                    })
+                    .ToListAsync();
+
+                var months = new[] { "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec" };
+
+                // Trả về MỘT dòng cho mỗi tháng
+                return months.Select((m, index) => new 
+                {
+                    month = m,
+                    ActiveUsers = userStatistics.FirstOrDefault(x => x.Month == index + 1)?.ActiveUsers ?? 0,
+                    InactiveUsers = userStatistics.FirstOrDefault(x => x.Month == index + 1)?.InactiveUsers ?? 0
+                });
+            }
+            else
+            {
+                // Lấy dữ liệu theo ngày
+                int daysInMonth = DateTime.DaysInMonth(year, month.Value);
+                var dailyStatistics = await _context.Users
+                    .Where(u => u.LastLoggedIn.HasValue &&
+                                u.LastLoggedIn.Value.Year == year &&
+                                u.LastLoggedIn.Value.Month == month.Value)
+                    .GroupBy(u => u.LastLoggedIn.Value.Day)
+                    .Select(g => new
+                    {
+                        Day = g.Key,
+                        ActiveUsers = g.Count(u => u.Status == "ACTIVE"),
+                        InactiveUsers = g.Count(u => u.Status == "INACTIVE")
+                    })
+                    .ToListAsync();
+
+                // Mỗi ngày 1 dòng
+                return Enumerable.Range(1, daysInMonth).Select(d => new
+                {
+                    day = d.ToString("D2"),
+                    ActiveUsers = dailyStatistics.FirstOrDefault(x => x.Day == d)?.ActiveUsers ?? 0,
+                    InactiveUsers = dailyStatistics.FirstOrDefault(x => x.Day == d)?.InactiveUsers ?? 0
+                });
+            }
+        }
         
     }
 

@@ -41,5 +41,12 @@ namespace AdminReport.Controllers
             ResultModel result = await _service.GetSystemVaccineCount(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+       [HttpGet("export-excel")]
+       public async Task<IActionResult> ExportDota(int year, int? month)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.ExportAllReportsToExcel(token, year, month);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

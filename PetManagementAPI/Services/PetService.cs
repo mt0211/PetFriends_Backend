@@ -317,8 +317,11 @@ namespace PetManagementAPI.Services
             }
             catch (Exception ex)
             {
-                result.Code = 500;
-                result.ResponseFailed = ex.Message;
+                 result.IsSuccess = false;
+                result.Code = 500; // Internal server error
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
             }
 
             return result;
