@@ -81,7 +81,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Kestrel chỉ lắng nghe cổng 5000 (HTTP)
 // builder.WebHost.ConfigureKestrel(serverOptions =>
 // {
 //     serverOptions.ListenAnyIP(80);

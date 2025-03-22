@@ -12,11 +12,9 @@ namespace PetManagementAPI.Repository
         Task AddUserPetVaccineAsync(UserPetVaccine petVaccine);
         Task<dynamic> GetPetById(Guid petId);
         Task DeletePetWithVaccinesAsync(Guid petId);
-        Task UpdatePetAsync(Pet pet);
-        Task UpdatePetVaccinesAsync(Guid petId, List<Guid> newVaccineIds);
-        Task<Pet> GetPetByUpdate(Guid petId);
-        Task RemoveAllPetVaccinesAsync(Guid petId);
-        Task AddPetVaccinesAsync(Guid petId, List<Guid> newVaccineIds);
         Task<Vaccine> GetVaccineById(Guid vaccineId);
+        Task UpdatePetBasicInfo(Guid petId,string name,string gender,string species,string breed,DateTime? dateOfBirth,Guid? userId,string userPhoneNumber,byte vaccinated);
+        Task RemoveAllPetVaccinesAsync(Guid petId);
+        Task UpdatePetVaccinesAsync(Guid petId, List<Guid> newVaccineIds);
     }
 }
