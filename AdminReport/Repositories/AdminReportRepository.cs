@@ -169,18 +169,7 @@ namespace AdminReport.Repositories
             return user;
         }
 
-        public async Task<IEnumerable<dynamic>> GetSystemVaccineCount()
-        {
-            var count = await _context.UserPetVaccines
-            .Where(upv => upv.VaccineId!=null)
-            .Select(upv => new 
-            { upv.Name
-            , upv.NumberOfDoses
-            })
-            .OrderByDescending(upv => upv.NumberOfDoses)
-            .ToListAsync();
-            return count;
-        }
+        
 
         public async Task<List<dynamic>> GetTopVaccine()
         {
@@ -190,6 +179,7 @@ namespace AdminReport.Repositories
             { upv.Name
             , upv.NumberOfDoses
             })
+            .Distinct()
             .OrderByDescending(upv => upv.NumberOfDoses)
             .ToListAsync();
             return  count.Cast<dynamic>().ToList();

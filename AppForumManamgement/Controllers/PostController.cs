@@ -77,5 +77,26 @@ namespace AppForumManamgement.Controllers
             ResultModel result = await _service.UpdatePost(token, updateModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpGet("post-list-by-user")]
+        public async Task<IActionResult> GetPostListByUserId()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.GetPostListByUserId(token);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpDelete("delete-comment/{cid}")]
+        public async Task<IActionResult> DeleteComment(Guid cid)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.DeleteComment(token, cid);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+        [HttpPut("update-comment")]
+        public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentReqModel updateModel)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            ResultModel result = await _service.UpdateComment(token, updateModel);
+           return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

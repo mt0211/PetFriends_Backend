@@ -232,7 +232,7 @@ namespace ProfileManagementAppAPI.Repositories
             await _context.Appointments
                 .Where(a => a.Id == appointmentId)
                 .ExecuteUpdateAsync(s => 
-                    s.SetProperty(b => b.Status, b => "Canceled")
+                    s.SetProperty(b => b.Status, b => "Cancelled")
                 );
         }
         }

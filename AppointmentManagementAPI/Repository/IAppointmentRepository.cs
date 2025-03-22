@@ -35,5 +35,15 @@ namespace AppointmentManagementAPI.Repository
         Task<Guid?> GetUserIdByPhoneOrEmail(string? phone, string? email);
         Task<GuestUser> CreateOrGetGuestUser(AppointmentAddModel appointment);
         Task<GuestPet> CreateOrGetGuestPet(AppointmentAddModel appointment, Guid guestUserId);
+        
+        //FIX UPDATE APPOINTMENT
+        Task<GuestUser> GetGuestUserByID(Guid? id);
+        Task<GuestPet> GetGuestPetByID(Guid? id);
+        Task UpdateGuestUser(GuestUser guestUser);
+        Task UpdateGuestPet(GuestPet guestPet);
+        Task<User> GetUserByID(Guid? id);
+        Task<Pet> GetPetByID(Guid? id);
+        Task<GuestUser> GetGuestUserByEmail(string email);
+        Task UpdateAppointmentBasicInfo(Guid appointmentId, string status, DateTime? startAt, string note, DateTime? endAt = null);
     }
 }

@@ -65,11 +65,19 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
     public class AppointmentUpdateModel
     {
         public Guid Id { get; set; } // ID của cuộc hẹn cần cập nhật
-
+        public string? FullName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Email { get; set; }
+        public string? Address { get; set; }
+        public string? PetName { get; set; }
+        public DateTime? DataOfBirth { get; set; }
+        public string? Gender { get; set; }
+        public string? Species { get; set; }
         public List<Guid> ServiceIds { get; set; } = new List<Guid>(); // ID dịch vụ của cuộc hẹn (ServiceType)
         public string? Status { get; set; } // Trạng thái cuộc hẹn (Confirmed, Canceled, Completed)
         public DateTime? StartAt { get; set; } // Thời gian bắt đầu cuộc hẹn       
         public string? Note { get; set; } // Ghi chú về cuộc hẹn
+
     }
     public class AppointmentServiceDetailModel
     {

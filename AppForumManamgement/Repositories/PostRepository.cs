@@ -100,6 +100,34 @@ namespace AppForumManamgement.Repositories
             _context.Entry(post).Property(p => p.UpdatedAt).IsModified = true;
             await _context.SaveChangesAsync();
         }
+        public async Task<List<ForumPost>> GetListPostByUserId(Guid id)
+        {
+            return await _context.ForumPosts.Where(p=>p.UserId == id).ToListAsync();
+        }
+
+
+        public async Task<ForumComment> GetCommentByID(Guid id)
+        {
+            return await _context.ForumComments.FindAsync(id);
+        }
+
+        public async Task DeleteCoomment(Guid id)
+        {
+            var comment = await _context.ForumComments.FindAsync(id);
+            if (comment != null)
+            {
+                _context.ForumComments.Remove(comment);
+                await _context.SaveChangesAsync();
+            }
+        }
+        public async Task<ForumComment> UpdateComment(ForumComment comment)
+        {
+            _context.ForumComments.Attach(comment);
+            _context.Entry(comment).Property(p => p.CommentContent).IsModified = true;
+            _context.Entry(comment).Property(p => p.UpdatedAt).IsModified = true;
+            await _context.SaveChangesAsync();
+            return comment;
+        }
         
     }
 }
