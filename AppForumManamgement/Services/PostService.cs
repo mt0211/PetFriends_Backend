@@ -404,5 +404,134 @@ namespace AppForumManamgement.Services
             }
             return result;
         }
+        public async Task<ResultModel> GetPostListByUserId(string token)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            if (userId == null)
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Please authorize";
+                return result;
+            }
+            try
+            {
+               var postList = await _repository.GetListPostByUserId(id);
+               result.IsSuccess = true;
+               result.Code = 200;
+               result.Data = postList;
+               result.Message = "Successfully get post by id";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
+        
+        public async Task<ResultModel> DeleteComment(string token, Guid cid)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            if (userId == null)
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Please authorize";
+                return result;
+            }
+            try
+            {
+               var comment = await _repository.GetCommentByID(cid);
+                if(comment.UserId != id)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Can't delete other user's comment";
+                    return result;
+                }
+                await _repository.DeleteCoomment(cid);
+               result.IsSuccess = true;
+               result.Code = 200;
+               result.Message = "Successfully deleted comment";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
+        public async Task<ResultModel> UpdateComment(string token, UpdateCommentReqModel updateCommentReqModel)
+        {
+            var result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Invalid user ID";
+                return result;
+            }
+            if (userId == null)
+            {
+                result.IsSuccess = false;
+                result.Code = 400; // Bad request
+                result.Message = "Please authorize";
+                return result;
+            }
+            try
+            {
+               var comment = await _repository.GetCommentByID(updateCommentReqModel.CommentId);
+                if(comment.UserId != id)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Can't update other user's comment";
+                    return result;
+                }
+                var newComment = new ForumComment
+                {
+                    Id = updateCommentReqModel.CommentId,
+                    CommentContent = updateCommentReqModel.CommentContent,
+                    UpdatedAt = DateTime.Now
+                };
+                  await _repository.UpdateComment(newComment);
+               result.IsSuccess = true;
+               result.Code = 200;
+               result.Message = "Successfully update comment";
+            }
+            catch (Exception ex)
+            {
+                result.Code = 500;
+                result.ResponseFailed = ex.InnerException != null
+                    ? ex.InnerException.Message + "\n" + ex.StackTrace
+                    : ex.Message + "\n" + ex.StackTrace;
+            }
+            return result;
+        }
     }
 }

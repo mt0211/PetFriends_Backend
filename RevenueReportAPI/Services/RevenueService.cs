@@ -4,6 +4,7 @@ using RevenueReportAPI.DTOs.RevenueDTOs;
 using RevenueReportAPI.DTOs.UserRevenueDTOs;
 using RevenueReportAPI.Repositories;
 using RevenueReportAPI.Utilities;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 
 namespace RevenueReportAPI.Services
@@ -453,17 +454,41 @@ namespace RevenueReportAPI.Services
                     //Create new sheet and name
                     var GetUserBookingSummariesForExport = package.Workbook.Worksheets.Add("User Booking Summaries");
                     
+                    // --- Title: Top Vaccine Report (row 1) ---
+                    GetUserBookingSummariesForExport.Cells[1, 1].Value = "User Booking Summaries Report";
+                    var titleRange = GetUserBookingSummariesForExport.Cells[1, 1, 1, 3];
+                    titleRange.Merge = true;
+                    titleRange.Style.Font.Bold = true;
+                    titleRange.Style.Font.Size = 14;
+                    titleRange.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    titleRange.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    titleRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.White);
+                    titleRange.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+
+                    // Thêm viền cho titleRange
+                    titleRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRange.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                    titleRange.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                    titleRange.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                    titleRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
+                    /// -- End of title style section --
+
+
                     //Header
-                    GetUserBookingSummariesForExport.Cells[1, 1].Value = "User Name";
-                    GetUserBookingSummariesForExport.Cells[1, 2].Value = "Total Booking";
-                    GetUserBookingSummariesForExport.Cells[1, 3].Value = "Total Amount";
+                    GetUserBookingSummariesForExport.Cells[2, 1].Value = "User Name";
+                    GetUserBookingSummariesForExport.Cells[2, 2].Value = "Total Booking";
+                    GetUserBookingSummariesForExport.Cells[2, 3].Value = "Total Amount";
 
                     //STYLE FOR HEADER  
-                    using (var range = GetUserBookingSummariesForExport.Cells[1, 1, 1, 3])
+                    using (var range = GetUserBookingSummariesForExport.Cells[2, 1, 2, 3])
                     {
                         range.Style.Font.Bold = true;
+                        range.Style.Font.Color.SetColor(ColorTranslator.FromHtml("#f2f4f4"));
                         range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#1f618d"));
 
                         range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
@@ -477,7 +502,7 @@ namespace RevenueReportAPI.Services
                     }
 
                     //DATA  
-                    int row = 2;
+                    int row = 3;
                     foreach (var item in userbookingsummaries)
                     {
                         GetUserBookingSummariesForExport.Cells[row, 1].Value = item.UserName;
@@ -487,7 +512,7 @@ namespace RevenueReportAPI.Services
                     }
 
                     //Style for data
-                    if (row > 2) 
+                    if (row > 3) 
                     {
                         var dataRange = GetUserBookingSummariesForExport.Cells[2, 1, row - 1, 3];
                         dataRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
@@ -501,18 +526,43 @@ namespace RevenueReportAPI.Services
                         dataRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
                     }
                     GetUserBookingSummariesForExport.Cells.AutoFitColumns();
-
+                    var tablenewuser = GetUserBookingSummariesForExport.Tables.Add(GetUserBookingSummariesForExport.Cells[2, 1, row - 1, 3], "UserBookingSummaryTable");
+                    tablenewuser.ShowHeader = true;
+                    tablenewuser.ShowFilter = false;
+                    tablenewuser.TableStyle = OfficeOpenXml.Table.TableStyles.Medium2;
                     //Total Revenue
                     var GetTotalRevenue = package.Workbook.Worksheets.Add("Total Revenue");
 
-                    GetTotalRevenue.Cells[1,1].Value = "Date";
-                    GetTotalRevenue.Cells[1,2].Value = "Total Revenue";
+                     // --- Title: Top Vaccine Report (row 1) ---
+                    GetTotalRevenue.Cells[1, 1].Value = "Total Revenue Report";
+                    var titleRanges = GetTotalRevenue.Cells[1, 1, 1, 2];
+                    titleRanges.Merge = true;
+                    titleRanges.Style.Font.Bold = true;
+                    titleRanges.Style.Font.Size = 14;
+                    titleRanges.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    titleRanges.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    titleRanges.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.White);
+                    titleRanges.Style.Font.Color.SetColor(System.Drawing.Color.Black);
 
-                    using (var range = GetTotalRevenue.Cells[1, 1, 1, 2])
+                    // Thêm viền cho titleRange
+                    titleRanges.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRanges.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRanges.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRanges.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRanges.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                    titleRanges.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                    titleRanges.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                    titleRanges.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
+                    /// -- End of title style section --
+                    GetTotalRevenue.Cells[2,1].Value = "Date";
+                    GetTotalRevenue.Cells[2,2].Value = "Total Revenue";
+
+                    using (var range = GetTotalRevenue.Cells[2, 1, 2, 2])
                     {
                         range.Style.Font.Bold = true;
+                        range.Style.Font.Color.SetColor(ColorTranslator.FromHtml("#f2f4f4"));
                         range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#1f618d"));
 
                         range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
@@ -525,7 +575,7 @@ namespace RevenueReportAPI.Services
                         range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black); 
                     }
 
-                    int rowdatarevenue = 2;
+                    int rowdatarevenue = 3;
                     foreach (var item in revenues)
                     {
                         GetTotalRevenue.Cells[rowdatarevenue, 1].Value = item.Date;
@@ -533,9 +583,9 @@ namespace RevenueReportAPI.Services
                         GetTotalRevenue.Cells[rowdatarevenue, 2].Value = item.Revenue;
                         rowdatarevenue++;
                     }
-                    if (rowdatarevenue > 2)
+                    if (rowdatarevenue > 3)
                     {
-                        var dataRange = GetTotalRevenue.Cells[2, 1, rowdatarevenue - 1, 2];
+                        var dataRange = GetTotalRevenue.Cells[3, 1, rowdatarevenue - 1, 2];
                         dataRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         dataRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         dataRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
@@ -547,18 +597,47 @@ namespace RevenueReportAPI.Services
                         dataRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
                     }
                     GetTotalRevenue.Cells.AutoFitColumns();
-
+                    var tablenewusers = GetTotalRevenue.Tables.Add(GetTotalRevenue.Cells[2, 1, rowdatarevenue - 1, 2], "NewUsersTable");
+                    tablenewusers.ShowHeader = true;
+                    tablenewusers.ShowFilter = false;
+                    tablenewusers.TableStyle = OfficeOpenXml.Table.TableStyles.Medium2;
                     //Service Revenue
                     var GetServiceRevenue = package.Workbook.Worksheets.Add("Service Revenue");
 
-                    GetServiceRevenue.Cells[1,1].Value = "Date";
-                    GetServiceRevenue.Cells[1,2].Value = "Service Revenue";
-                    GetServiceRevenue.Cells[1,3].Value = "Service Name";
-                    using (var range = GetServiceRevenue.Cells[1, 1, 1, 3])
+                     // --- Title: Top Vaccine Report (row 1) ---
+                   GetServiceRevenue.Cells[1, 1].Value = "Service Revenue Report";
+                    var titleRangesss = GetServiceRevenue.Cells[1, 1, 1, 3];
+                    titleRangesss.Merge = true;
+                    titleRangesss.Style.Font.Bold = true;
+                    titleRangesss.Style.Font.Size = 14;
+                    titleRangesss.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    titleRangesss.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    titleRangesss.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.White);
+                    titleRangesss.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+
+
+                    // Viền cho title
+                    titleRangesss.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRangesss.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRangesss.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    titleRangesss.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+
+                    titleRangesss.Style.Border.Top.Color.SetColor(System.Drawing.Color.Black);
+                    titleRangesss.Style.Border.Left.Color.SetColor(System.Drawing.Color.Black);
+                    titleRangesss.Style.Border.Right.Color.SetColor(System.Drawing.Color.Black);
+                    titleRangesss.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
+                    /// -- End of title style section --
+
+                    GetServiceRevenue.Cells[2,1].Value = "Date";
+                    GetServiceRevenue.Cells[2,2].Value = "Service Revenue";
+                    GetServiceRevenue.Cells[2,3].Value = "Service Name";
+                    using (var range = GetServiceRevenue.Cells[2, 1, 2, 3])
                     {
                         range.Style.Font.Bold = true;
+                        range.Style.Font.Color.SetColor(ColorTranslator.FromHtml("#f2f4f4"));
                         range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#1f618d"));
 
                         range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
@@ -571,7 +650,7 @@ namespace RevenueReportAPI.Services
                         range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black); 
                     }
 
-                    int rowservicerevenue = 2;
+                    int rowservicerevenue = 3;
                     foreach (var item in servicerevenue)
                     {
                         GetServiceRevenue.Cells[rowservicerevenue, 1].Value = item.Date;
@@ -581,9 +660,9 @@ namespace RevenueReportAPI.Services
                         rowservicerevenue++;
                     }
                     
-                    if (rowservicerevenue > 2)
+                    if (rowservicerevenue > 3)
                     {
-                        var dataRange = GetServiceRevenue.Cells[2, 1, rowservicerevenue - 1, 3];
+                        var dataRange = GetServiceRevenue.Cells[3, 1, rowservicerevenue - 1, 3];
                         dataRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         dataRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                         dataRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
@@ -595,7 +674,13 @@ namespace RevenueReportAPI.Services
                         dataRange.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.Black);
                     }
                     GetServiceRevenue.Cells.AutoFitColumns();
-                    
+                    var tableuserstatus = GetServiceRevenue.Tables.Add(
+                        GetServiceRevenue.Cells[2, 1, rowservicerevenue - 1, 3],
+                        "ServiceRevenueReport"
+                    );
+                    tableuserstatus.ShowHeader = true;
+                    tableuserstatus.ShowFilter = false;
+                    tableuserstatus.TableStyle = OfficeOpenXml.Table.TableStyles.Medium2;
                     //Convert to byte array and save to file
                     var fileBytes = package.GetAsByteArray();
 

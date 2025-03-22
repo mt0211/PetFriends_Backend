@@ -35,5 +35,10 @@
         public string PostContent { get; set; }
         public string ImageUrl { get; set; }
     }
+    public class UpdateCommentReqModel
+    {
+        public Guid CommentId { get; set; }
+        public string CommentContent { get; set; }
+    }
 
 }

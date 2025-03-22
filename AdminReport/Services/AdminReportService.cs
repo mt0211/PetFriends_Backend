@@ -158,7 +158,7 @@ namespace AdminReport.Services
 
             try
             {
-                var UsageLimit = await _repository.GetSystemVaccineCount();
+                var UsageLimit = await _repository.GetTopVaccine();
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = UsageLimit;

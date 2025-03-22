@@ -442,7 +442,56 @@ namespace AppointmentManagementAPI.Repository
             await InsertGuestPet(newGuestPet);
             return newGuestPet;
         }
+        //FIX API UPDATE APPOINTMENT
+        public async Task<GuestUser> GetGuestUserByID(Guid? id)
+        {
+            return await _context.GuestUsers.FindAsync(id);
+        }
+        public async Task<GuestPet> GetGuestPetByID(Guid? id)
+        {
+            return await _context.GuestPets.FindAsync(id);
+        }
 
+        public async Task UpdateGuestUser(GuestUser guestUser)
+        {
+            _context.GuestUsers.Update(guestUser);
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateGuestPet(GuestPet guestPet)
+        {
+            _context.GuestPets.Update(guestPet);
+            await _context.SaveChangesAsync();
+        }
+        
+        public async Task<User> GetUserByID(Guid? id)
+        {
+            return await _context.Users.FindAsync(id);
+        }
+        public async Task<Pet> GetPetByID(Guid? id)
+        {
+            return await _context.Pets.FindAsync(id);
+        }
+        public async Task<GuestUser> GetGuestUserByEmail(string email)
+        {
+           return await _context.GuestUsers.FirstOrDefaultAsync(u => u.Email == email);
+        }
+        public async Task UpdateAppointmentBasicInfo(Guid appointmentId, string status, DateTime? startAt, string note, DateTime? endAt = null)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            if (appointment != null)
+            {
+                appointment.Status = status;
+                appointment.StartAt = startAt;
+                appointment.Note = note;
+                
+                if (endAt.HasValue)
+                {
+                    appointment.EndAt = endAt;
+                }
+                
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 
 }

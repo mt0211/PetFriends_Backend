@@ -11,5 +11,9 @@ namespace AppForumManamgement.Repositories
         Task<User> GetUserByID(Guid id);
         Task<bool> GetUserPostByUserID(Guid id, Guid pid);
         Task UpdatePost(ForumPost post);
+        Task<List<ForumPost>> GetListPostByUserId(Guid id);
+        Task<ForumComment> GetCommentByID(Guid id);
+        Task DeleteCoomment(Guid id);
+        Task<ForumComment> UpdateComment(ForumComment comment);
     }
 }

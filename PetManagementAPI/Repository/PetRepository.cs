@@ -125,8 +125,44 @@ namespace PetManagementAPI.Repository.PetRepository
 
         public async Task UpdatePetAsync(Pet pet)
         {
-            _context.Pets.Update(pet);
+             try
+        {
+            // Đảm bảo entity được theo dõi và cập nhật
+            var existingPet = await _context.Pets.FindAsync(pet.Id);
+            if (existingPet != null)
+            {
+                // Cập nhật từng thuộc tính một cách rõ ràng
+                existingPet.Name = pet.Name;
+                existingPet.Gender = pet.Gender;
+                existingPet.Species = pet.Species;
+                existingPet.Breed = pet.Breed;
+                existingPet.DateOfBirth = pet.DateOfBirth;
+                existingPet.UserId = pet.UserId;
+                existingPet.UserPhoneNumber = pet.UserPhoneNumber;
+                existingPet.Vaccinated = pet.Vaccinated;
+                
+                // Ghi log để kiểm tra
+                Console.WriteLine($"Updating pet: {existingPet.Id}, Name: {existingPet.Name}, UserId: {existingPet.UserId}");
+            }
+            else
+            {
+                // Nếu không tìm thấy, attach và đánh dấu là modified
+                _context.Pets.Attach(pet);
+                _context.Entry(pet).State = EntityState.Modified;
+                Console.WriteLine($"Attaching pet: {pet.Id}, Name: {pet.Name}, UserId: {pet.UserId}");
+            }
+            
+            // Lưu thay đổi
             await _context.SaveChangesAsync();
+            Console.WriteLine("SaveChanges completed successfully");
+        }
+        catch (Exception ex)
+        {
+            // Ghi log lỗi để debug
+            Console.WriteLine($"Error updating pet: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            throw; // Re-throw để xử lý ở lớp service
+        }
         }
 
         public async Task UpdatePetVaccinesAsync(Guid petId, List<Guid> newVaccineIds)
@@ -137,27 +173,35 @@ namespace PetManagementAPI.Repository.PetRepository
 
         public async Task<Pet> GetPetByUpdate(Guid petId)
         {
-            return await _context.Pets
-            .Include(p => p.User)
-            .Include(p => p.UserPetVaccines) // Thay đổi sang UserPetVaccines
-                .ThenInclude(upv => upv.Vaccine)
-            .FirstOrDefaultAsync(p => p.Id == petId);
+           return await _context.Pets
+        .Include(p => p.User)
+        .Include(p => p.UserPetVaccines)
+            .ThenInclude(upv => upv.Vaccine)
+        .Include(p => p.UserPetVaccines)
+            .ThenInclude(upv => upv.UserPetVaccineDoses)
+        .FirstOrDefaultAsync(p => p.Id == petId);
         }
 
         public async Task RemoveAllPetVaccinesAsync(Guid petId)
         {
+           // 1) Lấy danh sách ID (hoặc load toàn bộ) nhưng AsNoTracking
+            var existingVaccines = await _context.UserPetVaccines
+                .AsNoTracking()
+                .Where(upv => upv.PetId == petId)
+                .Select(upv => upv.Id)  // chỉ cần ID
+                .ToListAsync();
 
-            using (var context = new PetfriendsContext())
+            if (existingVaccines.Any())
             {
-                var existingVaccines = await context.UserPetVaccines
-                    .Where(upv => upv.PetId == petId)
-                    .ToListAsync();
+                // 2) Tạo list entity stub
+                var stubs = existingVaccines
+                    .Select(id => new UserPetVaccine { Id = id })
+                    .ToList();
 
-                if (existingVaccines.Any())
-                {
-                    context.UserPetVaccines.RemoveRange(existingVaccines);
-                    await context.SaveChangesAsync();
-                }
+                // 3) Attach + Remove
+                _context.UserPetVaccines.AttachRange(stubs);
+                _context.UserPetVaccines.RemoveRange(stubs);
+                await _context.SaveChangesAsync();
             }
         }
 

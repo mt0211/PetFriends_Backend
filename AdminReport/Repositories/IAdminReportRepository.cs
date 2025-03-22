@@ -8,7 +8,7 @@ namespace AdminReport.Repositories
         Task<IEnumerable<dynamic>> GetDataNewUser(int year, int? month);
         Task<IEnumerable<dynamic>> GetPostDistribution();
         Task<User> GetUserByID(Guid id);
-        Task<IEnumerable<dynamic>> GetSystemVaccineCount();
+    
         Task<List<dynamic>> GetTopVaccine();
         Task<IEnumerable<dynamic>> GetDataUserStatusForExcel(int year, int? month);
         Task<(List<dynamic> vaccineData, List<dynamic> postDistribution, IEnumerable<dynamic> newUsers, IEnumerable<dynamic> userStatus)> GetAllReportsDataForExport(int year, int? month);
