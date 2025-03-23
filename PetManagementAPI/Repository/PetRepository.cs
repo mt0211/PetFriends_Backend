@@ -14,35 +14,35 @@ namespace PetManagementAPI.Repository.PetRepository
         }
         public async Task<IEnumerable<dynamic>> GetAllPets()
         {
-                return await _context.Pets
-                .GroupJoin(
-                    _context.Users,
-                    pet => pet.UserPhoneNumber,
-                    user => user.PhoneNumber,
-                    (pet, users) => new { Pet = pet, Users = users.DefaultIfEmpty() }
-                )
-                .Select(joinResult => new
-                {
-                    Id = joinResult.Pet.Id,
-                    Name = joinResult.Pet.Name,
-                    Gender = joinResult.Pet.Gender,
-                    Species = joinResult.Pet.Species,
-                    Breed = joinResult.Pet.Breed,
-                    DateOfBirth = joinResult.Pet.DateOfBirth,
-                    OwnerName = joinResult.Users.FirstOrDefault() != null ? joinResult.Users.FirstOrDefault().FullName : null,
-                    OwnerPhoneNumber = joinResult.Pet.UserPhoneNumber,
-                    Vaccinated = joinResult.Pet.UserPetVaccines.Any(),
-                    VaccineNames = joinResult.Pet.UserPetVaccines.Any() 
-                        ? string.Join(", ", 
-                            joinResult.Pet.UserPetVaccines.Select(upv => 
-                                upv.VaccineId != null 
-                                    ? upv.Vaccine.Name
-                                    : upv.Name + "(outside of clinic system)"
-                            ).Where(name => !string.IsNullOrEmpty(name))
-                        )
-                        : "N/A"  // Trả về "N/A" khi không có vaccine nào
-                })
-                .ToListAsync();
+            return await _context.Pets
+            .GroupJoin(
+                _context.Users,
+                pet => pet.UserPhoneNumber,
+                user => user.PhoneNumber,
+                (pet, users) => new { Pet = pet, Users = users.DefaultIfEmpty() }
+            )
+            .Select(joinResult => new
+            {
+                Id = joinResult.Pet.Id,
+                Name = joinResult.Pet.Name,
+                Gender = joinResult.Pet.Gender,
+                Species = joinResult.Pet.Species,
+                Breed = joinResult.Pet.Breed,
+                DateOfBirth = joinResult.Pet.DateOfBirth,
+                OwnerName = joinResult.Users.FirstOrDefault() != null ? joinResult.Users.FirstOrDefault().FullName : null,
+                OwnerPhoneNumber = joinResult.Pet.UserPhoneNumber,
+                Vaccinated = joinResult.Pet.UserPetVaccines.Any(),
+                VaccineNames = joinResult.Pet.UserPetVaccines.Any()
+                    ? string.Join(", ",
+                        joinResult.Pet.UserPetVaccines.Select(upv =>
+                            upv.VaccineId != null
+                                ? upv.Vaccine.Name
+                                : upv.Name + "(outside of clinic system)"
+                        ).Where(name => !string.IsNullOrEmpty(name))
+                    )
+                    : "N/A"  // Trả về "N/A" khi không có vaccine nào
+            })
+            .ToListAsync();
         }
 
         public async Task<User> GetUserByPhoneNumber(string phoneNumber)
@@ -67,7 +67,7 @@ namespace PetManagementAPI.Repository.PetRepository
             await _context.UserPetVaccines.AddAsync(petVaccine);
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task<Vaccine> GetVaccineById(Guid vaccineId)
         {
             return await _context.Vaccines.FirstOrDefaultAsync(v => v.Id == vaccineId);
@@ -95,9 +95,9 @@ namespace PetManagementAPI.Repository.PetRepository
                 OwnerPhoneNumber = p.UserPhoneNumber,
                 Vaccinated = p.UserPetVaccines.Any(),
                 VaccineNames = p.UserPetVaccines != null && p.UserPetVaccines.Any()
-                    ? string.Join(", ", 
-                        p.UserPetVaccines.Select(upv => 
-                            upv.VaccineId != null 
+                    ? string.Join(", ",
+                        p.UserPetVaccines.Select(upv =>
+                            upv.VaccineId != null
                                 ? upv.Vaccine.Name  // Vaccine trong hệ thống
                                 : upv.Name + "(outside of system)" // Vaccine ngoài hệ thống
                         ).Where(name => !string.IsNullOrEmpty(name))
@@ -123,113 +123,143 @@ namespace PetManagementAPI.Repository.PetRepository
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdatePetAsync(Pet pet)
+        public async Task UpdatePetBasicInfo(
+            Guid petId,
+            string name,
+            string gender,
+            string species,
+            string breed,
+            DateTime? dateOfBirth,
+            Guid? userId,
+            string userPhoneNumber,
+            byte vaccinated)
         {
-             try
-        {
-            // Đảm bảo entity được theo dõi và cập nhật
-            var existingPet = await _context.Pets.FindAsync(pet.Id);
-            if (existingPet != null)
-            {
-                // Cập nhật từng thuộc tính một cách rõ ràng
-                existingPet.Name = pet.Name;
-                existingPet.Gender = pet.Gender;
-                existingPet.Species = pet.Species;
-                existingPet.Breed = pet.Breed;
-                existingPet.DateOfBirth = pet.DateOfBirth;
-                existingPet.UserId = pet.UserId;
-                existingPet.UserPhoneNumber = pet.UserPhoneNumber;
-                existingPet.Vaccinated = pet.Vaccinated;
-                
-                // Ghi log để kiểm tra
-                Console.WriteLine($"Updating pet: {existingPet.Id}, Name: {existingPet.Name}, UserId: {existingPet.UserId}");
-            }
-            else
-            {
-                // Nếu không tìm thấy, attach và đánh dấu là modified
+            try {
+                // Tạo một entity mới với ID đã cho
+                var pet = new Pet
+                {
+                    Id = petId
+                };
+        
+                // Attach entity vào context
                 _context.Pets.Attach(pet);
-                _context.Entry(pet).State = EntityState.Modified;
-                Console.WriteLine($"Attaching pet: {pet.Id}, Name: {pet.Name}, UserId: {pet.UserId}");
+        
+                // Cập nhật các thuộc tính
+                pet.Name = name;
+                pet.Gender = gender;
+                pet.Species = species;
+                pet.Breed = breed;
+                pet.DateOfBirth = dateOfBirth;
+                pet.UserId = userId;
+                pet.UserPhoneNumber = userPhoneNumber;
+                pet.Vaccinated = vaccinated;
+        
+                // Đánh dấu các thuộc tính đã thay đổi
+                _context.Entry(pet).Property(p => p.Name).IsModified = true;
+                _context.Entry(pet).Property(p => p.Gender).IsModified = true;
+                _context.Entry(pet).Property(p => p.Species).IsModified = true;
+                _context.Entry(pet).Property(p => p.Breed).IsModified = true;
+                _context.Entry(pet).Property(p => p.DateOfBirth).IsModified = true;
+                _context.Entry(pet).Property(p => p.UserId).IsModified = true;
+                _context.Entry(pet).Property(p => p.UserPhoneNumber).IsModified = true;
+                _context.Entry(pet).Property(p => p.Vaccinated).IsModified = true;
+        
+                // Log trạng thái entity
+                Console.WriteLine($"Entity state after attach and modify: {_context.Entry(pet).State}");
+        
+                // Lưu thay đổi
+                var result = await _context.SaveChangesAsync();
+                Console.WriteLine($"SaveChangesAsync completed with {result} changes");
+        
+                if (result > 0)
+                {
+                    Console.WriteLine($"Basic pet info updated: {petId}, Name: {name}");
+                }
+                else
+                {
+                    Console.WriteLine($"No changes were saved to the database for pet: {petId}");
+                }
             }
-            
-            // Lưu thay đổi
-            await _context.SaveChangesAsync();
-            Console.WriteLine("SaveChanges completed successfully");
-        }
-        catch (Exception ex)
-        {
-            // Ghi log lỗi để debug
-            Console.WriteLine($"Error updating pet: {ex.Message}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
-            throw; // Re-throw để xử lý ở lớp service
-        }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in UpdatePetBasicInfo: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task UpdatePetVaccinesAsync(Guid petId, List<Guid> newVaccineIds)
         {
-            await RemoveAllPetVaccinesAsync(petId);
-            await AddPetVaccinesAsync(petId, newVaccineIds);
-        }
+            try
+            {
+                // Xóa tất cả vaccine cũ
+                await RemoveAllPetVaccinesAsync(petId);
 
-        public async Task<Pet> GetPetByUpdate(Guid petId)
-        {
-           return await _context.Pets
-        .Include(p => p.User)
-        .Include(p => p.UserPetVaccines)
-            .ThenInclude(upv => upv.Vaccine)
-        .Include(p => p.UserPetVaccines)
-            .ThenInclude(upv => upv.UserPetVaccineDoses)
-        .FirstOrDefaultAsync(p => p.Id == petId);
+                // Thêm vaccine mới
+                if (newVaccineIds != null && newVaccineIds.Any())
+                {
+                    foreach (var vaccineId in newVaccineIds)
+                    {
+                        var vaccine = await GetVaccineById(vaccineId);
+                        if (vaccine != null)
+                        {
+                            var newUserPetVaccine = new UserPetVaccine
+                            {
+                                Id = Guid.NewGuid(),
+                                PetId = petId,
+                                VaccineId = vaccineId,
+                                Name = vaccine.Name,
+                                NumberOfDoses = vaccine.NumberOfDoses,
+                                Recommendation = vaccine.Recommendation
+                            };
+
+                            await _context.UserPetVaccines.AddAsync(newUserPetVaccine);
+                            Console.WriteLine($"Added vaccine {vaccine.Name} for pet: {petId}");
+                        }
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating pet vaccines: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task RemoveAllPetVaccinesAsync(Guid petId)
         {
-           // 1) Lấy danh sách ID (hoặc load toàn bộ) nhưng AsNoTracking
-            var existingVaccines = await _context.UserPetVaccines
-                .AsNoTracking()
-                .Where(upv => upv.PetId == petId)
-                .Select(upv => upv.Id)  // chỉ cần ID
-                .ToListAsync();
-
-            if (existingVaccines.Any())
+            try
             {
-                // 2) Tạo list entity stub
-                var stubs = existingVaccines
-                    .Select(id => new UserPetVaccine { Id = id })
-                    .ToList();
+                // Lấy danh sách vaccine doses trước
+                var vaccineDoses = await _context.UserPetVaccineDoses
+                    .Where(upvd => upvd.UserPetVaccine.PetId == petId)
+                    .ToListAsync();
 
-                // 3) Attach + Remove
-                _context.UserPetVaccines.AttachRange(stubs);
-                _context.UserPetVaccines.RemoveRange(stubs);
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public async Task AddPetVaccinesAsync(Guid petId, List<Guid> newVaccineIds)
-        {
-            if (newVaccineIds != null && newVaccineIds.Any())
-            {
-                foreach (var vaccineId in newVaccineIds)
+                if (vaccineDoses.Any())
                 {
-                    var vaccine = await GetVaccineById(vaccineId);
-                    if (vaccine != null)
-                    {
-                        var newUserPetVaccine = new UserPetVaccine
-                        {
-                            Id = Guid.NewGuid(),
-                            PetId = petId,
-                            VaccineId = vaccineId,
-                            Name = vaccine.Name,
-                            NumberOfDoses = vaccine.NumberOfDoses,
-                            Recommendation = vaccine.Recommendation
-                        };
-
-                        await _context.UserPetVaccines.AddAsync(newUserPetVaccine);
-                    }
+                    _context.UserPetVaccineDoses.RemoveRange(vaccineDoses);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Removed {vaccineDoses.Count} vaccine doses for pet: {petId}");
                 }
-                await _context.SaveChangesAsync();
+
+                // Sau đó xóa vaccines
+                var vaccines = await _context.UserPetVaccines
+                    .Where(upv => upv.PetId == petId)
+                    .ToListAsync();
+
+                if (vaccines.Any())
+                {
+                    _context.UserPetVaccines.RemoveRange(vaccines);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"Removed {vaccines.Count} vaccines for pet: {petId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error removing pet vaccines: {ex.Message}");
+                throw;
             }
         }
-
     }
 }
