@@ -230,8 +230,6 @@ namespace PetManagementAPI.Services
             }
             return result;
         }
-
-
         public async Task<ResultModel> DeletePet(string token, Guid petId)
         {
             var result = new ResultModel();
@@ -280,8 +278,18 @@ namespace PetManagementAPI.Services
             var result = new ResultModel();
             try
             {
-                // Lấy pet từ database
-                var pet = await _petRepository.GetPetByUpdate(petDto.Id);
+                // Kiểm tra token
+                var userId = Encoder.DecodeToken(token, "userid");
+                if (!Guid.TryParse(userId, out Guid id))
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Invalid user ID";
+                    return result;
+                }
+
+                // Kiểm tra pet tồn tại
+                var pet = await _petRepository.Get(petDto.Id);
                 if (pet == null)
                 {
                     result.IsSuccess = false;
@@ -292,14 +300,7 @@ namespace PetManagementAPI.Services
 
                 // Tìm user dựa trên số điện thoại
                 var user = await _petRepository.GetUserByPhoneNumber(petDto.PhoneNumber);
-                if (user != null)
-                {
-                    // Cập nhật cả UserId và UserPhoneNumber
-                    pet.UserId = user.Id;
-                    pet.UserPhoneNumber = petDto.PhoneNumber;
-                    Console.WriteLine($"Found user: {user.Id} for phone: {petDto.PhoneNumber}");
-                }
-                else
+                if (user == null)
                 {
                     result.IsSuccess = false;
                     result.Code = 404;
@@ -307,38 +308,33 @@ namespace PetManagementAPI.Services
                     return result;
                 }
 
-                // Cập nhật thông tin Pet
-                pet.Name = petDto.Name;
-                pet.Gender = petDto.Gender;
-                pet.Species = petDto.Species;
-                pet.Breed = petDto.Breed;
-                pet.DateOfBirth = petDto.DateOfBirth;
-                pet.Vaccinated = (byte)(petDto.Vaccinated ? 1 : 0);
+                Console.WriteLine($"Found user: {user.Id} for phone: {petDto.PhoneNumber}");
 
-                // Lưu thay đổi pet trước
-                await _petRepository.UpdatePetAsync(pet);
-                Console.WriteLine($"Pet updated: {pet.Id}, Name: {pet.Name}, UserId: {pet.UserId}");
+                // Cập nhật thông tin cơ bản của Pet
+                await _petRepository.UpdatePetBasicInfo(
+                    petDto.Id,
+                    petDto.Name,
+                    petDto.Gender,
+                    petDto.Species,
+                    petDto.Breed,
+                    petDto.DateOfBirth,
+                    user.Id,
+                    petDto.PhoneNumber,
+                    (byte)(petDto.Vaccinated ? 1 : 0)
+                );
 
-                // Xử lý vaccines sau khi đã lưu pet
+                // Xử lý vaccines
                 if (!petDto.Vaccinated)
                 {
                     // Nếu không tiêm vaccine, xóa tất cả vaccine
-                    var oldVaccines = pet.UserPetVaccines.ToList(); 
-                    foreach (var vaccine in oldVaccines)
-                    {
-                        if (vaccine.UserPetVaccineDoses?.Any() == true)
-                        {
-                            _context.UserPetVaccineDoses.RemoveRange(vaccine.UserPetVaccineDoses);
-                        }
-                        _context.UserPetVaccines.Remove(vaccine);
-                    }
-                    await _context.SaveChangesAsync();
+                    await _petRepository.RemoveAllPetVaccinesAsync(petDto.Id);
+                    Console.WriteLine($"Removed all vaccines for pet: {petDto.Id}");
                 }
                 else if (petDto.VaccineIds != null && petDto.VaccineIds.Any())
                 {
                     // Nếu có vaccine mới, xóa vaccine cũ và thêm vaccine mới
-                    await _petRepository.RemoveAllPetVaccinesAsync(pet.Id);
-                    await _petRepository.AddPetVaccinesAsync(pet.Id, petDto.VaccineIds);
+                    await _petRepository.UpdatePetVaccinesAsync(petDto.Id, petDto.VaccineIds);
+                    Console.WriteLine($"Updated vaccines for pet: {petDto.Id}");
                 }
 
                 result.IsSuccess = true;
@@ -347,7 +343,7 @@ namespace PetManagementAPI.Services
             }
             catch (Exception ex)
             {
-                 result.IsSuccess = false;
+                result.IsSuccess = false;
                 result.Code = 500; // Internal server error
                 result.ResponseFailed = ex.InnerException != null
                     ? ex.InnerException.Message + "\n" + ex.StackTrace

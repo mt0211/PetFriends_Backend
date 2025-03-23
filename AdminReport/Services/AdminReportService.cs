@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using AdminReport.DTO.ResultModel;
+using AdminReport.DTOs.ResultModel.VaccineDTOs;
 using AdminReport.Repositories;
 using AdminReport.Utilities;
 
@@ -159,6 +160,12 @@ namespace AdminReport.Services
             try
             {
                 var UsageLimit = await _repository.GetTopVaccine();
+                UsageLimit = new TopVaccineResModel
+                {
+                    Name = UsageLimit.Name,
+                    Count = UsageLimit.NumberOfDoses
+                };
+                
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = UsageLimit;
