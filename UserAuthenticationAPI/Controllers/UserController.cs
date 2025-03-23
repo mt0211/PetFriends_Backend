@@ -11,7 +11,7 @@ namespace UserAuthenticationAPI.Controllers
     {
         private readonly IUserService _userService;
         private readonly IVerifyService _verifyService;
-        public UserController(UserService userService, IVerifyService verifyService)
+        public UserController(IUserService userService, IVerifyService verifyService)
         {
             _userService = userService;
             _verifyService = verifyService;
