@@ -4,18 +4,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RealTimeCommunicationAPI.Hubs;
+using RealTimeCommunicationAPI.Repositories;
+using RealTimeCommunicationAPI.Services;
 using System.Text;
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-// Add services to the container.
 
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 // Configure Swagger/OpenAPI
 builder.Services.AddSwaggerGen(c =>
 {
-
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
@@ -47,6 +50,7 @@ builder.Services.AddSwaggerGen(c =>
             }
     });
 });
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -58,6 +62,7 @@ builder.Services.AddCors(options =>
                    .AllowAnyMethod();
         });
 });
+
 builder.Services.AddDbContext<PetfriendsContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking),
@@ -74,12 +79,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key is not configured.")))
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                
+                if (!string.IsNullOrEmpty(accessToken) && 
+                    (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/videoHub")))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
-
+//Add SignalR
 builder.Services.AddSignalR();
-app.MapHub<ChatHub>("/chatHub");
-app.MapHub<VideoHub>("/videoHub");
+
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+});
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
@@ -87,23 +110,22 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
    serverOptions.ListenAnyIP(3000);
 });
 
-
 //Register Dependency Injection here:
 ///////////////////////
-
-
-
+builder.Services.AddScoped<RealTimeCommunicationService>();
+builder.Services.AddScoped<IRealTimeCommunicationService, RealTimeCommunicationService>();
+builder.Services.AddScoped<IRealTimeCommunicationRepository, RealTimeCommunicationRepository>();
 //////////////////////
+
+// Xây dựng ứng dụng SAU KHI đăng ký tất cả các dịch vụ
+var app = builder.Build();
+
 // Configure the HTTP request pipeline.
-
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -112,6 +134,22 @@ app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path;
+    if (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/videoHub"))
+    {
+        if (context.Request.Query.TryGetValue("access_token", out var token))
+        {
+            context.Request.Headers["Authorization"] = "Bearer " + token;
+        }
+    }
+    await next.Invoke();
+});
+
+app.MapHub<ChatHub>("/chatHub");
+app.MapHub<VideoHub>("/videoHub");
 
 app.MapControllers();
 

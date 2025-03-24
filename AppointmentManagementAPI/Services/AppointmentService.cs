@@ -61,7 +61,7 @@ namespace AppointmentManagementAPI.Services
                 }).ToList();
 
                 // Paginate the result
-                var paginatedResult = await Pagination.GetPagination(appointmentList, page, 1000);
+                var paginatedResult = await Pagination.GetPagination(appointmentList, page, 10);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = paginatedResult;
