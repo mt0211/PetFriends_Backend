@@ -64,6 +64,7 @@ namespace ProfileManagementAppAPI.Repositories
             _context.Feedbacks.Attach(reviewUpdateModel);
             _context.Entry(reviewUpdateModel).Property(c => c.Content).IsModified = true;
             _context.Entry(reviewUpdateModel).Property(c => c.Rating).IsModified = true;
+            _context.Entry(reviewUpdateModel).Property(c => c.CreatedAt).IsModified = true;
             await _context.SaveChangesAsync();
         }
         public async Task<dynamic> GetClinicInformation()

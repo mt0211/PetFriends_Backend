@@ -11,6 +11,7 @@
         public int TotalComment {  get; set; }
         public int LikeCount { get; set; }
         public int DislikeCount { get; set; }
+        public string UserReaction { get; set; }
     }
 
     public class PostReactionReqModel
@@ -40,5 +41,12 @@
         public Guid CommentId { get; set; }
         public string CommentContent { get; set; }
     }
+    public class PostReactionResModel
+{
+    public Guid PostId { get; set; }
+    public int? LikeCount { get; set; }
+    public int? DislikeCount { get; set; }
+    public string UserReaction { get; set; }
+}
 
 }

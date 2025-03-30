@@ -6,7 +6,7 @@ namespace AppointmentManagementAPI.Services
 {
     public interface IAppointmentService
     {
-        Task<ResultModel> GetAllAppointment(string token, int page);
+        Task<ResultModel> GetAllAppointment(string token, int page, int size);
         Task<ResultModel> UpdateAppointmentStatus(string token, AppointmentUpdateStatusModel appointmentstatusmodel);
         Task<ResultModel> GetListClinicservice(string token);
         Task<ResultModel> CheckUserByPhoneNumber(string token, string phonenumber);

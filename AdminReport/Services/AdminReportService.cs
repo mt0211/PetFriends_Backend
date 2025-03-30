@@ -159,16 +159,16 @@ namespace AdminReport.Services
 
             try
             {
-                var UsageLimit = await _repository.GetTopVaccine();
-                UsageLimit = new TopVaccineResModel
-                {
-                    Name = UsageLimit.Name,
-                    Count = UsageLimit.NumberOfDoses
-                };
+                // var UsageLimit = await _repository.GetTopVaccine();
+                // UsageLimit = new TopVaccineResModel
+                // {
+                //     Name = UsageLimit.Name,
+                //     Count = UsageLimit.NumberOfDoses
+                // };
                 
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = UsageLimit;
+              //  result.Data = UsageLimit;
                 result.Message = "Successfully get vaccine usage statistics";
             }
             catch (Exception ex)

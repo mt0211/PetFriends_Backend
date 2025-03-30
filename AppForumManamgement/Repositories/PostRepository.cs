@@ -11,7 +11,7 @@ namespace AppForumManamgement.Repositories
         {
             _context = context;
         }
-        public async Task<IEnumerable<dynamic>> GetListPost()
+        public async Task<IEnumerable<dynamic>> GetListPost(Guid userId)
         {
            return await _context.ForumPosts
                 .Include(p=>p.User)
@@ -28,6 +28,10 @@ namespace AppForumManamgement.Repositories
                     TotalComment = p.ForumComments.Count(),
                     LikeCount = p.LikeCount,
                     DislikeCount = p.DislikeCount,
+                     UserReaction = _context.UserPostReactions
+                .Where(r => r.UserId == userId && r.PostId == p.Id)
+                .Select(r => r.IsLike ? "like" : "dislike")
+                .FirstOrDefault()
                 }).ToListAsync();
                 
         }
@@ -51,7 +55,7 @@ namespace AppForumManamgement.Repositories
             await _context.SaveChangesAsync();
             return post;
         }
-        public async Task<dynamic> GetPostByID(Guid id)
+        public async Task<dynamic> GetPostByID(Guid id, Guid userId)
         {
             var postDetail = await _context.ForumPosts
                 .Where(p=>p.Id == id)
@@ -68,6 +72,10 @@ namespace AppForumManamgement.Repositories
                    LikeCount = p.LikeCount,
                    DisLikeCount = p.DislikeCount,
                    TotalComment = p.ForumComments.Count(),
+                   UserReaction = _context.UserPostReactions
+                    .Where(r => r.UserId == userId && r.PostId == p.Id)
+                    .Select(r => r.IsLike ? "like" : "dislike")
+                    .FirstOrDefault(),
                     Comments = p.ForumComments.Select(c => new
                     {
                         CommentId = c.Id,
@@ -100,9 +108,27 @@ namespace AppForumManamgement.Repositories
             _context.Entry(post).Property(p => p.UpdatedAt).IsModified = true;
             await _context.SaveChangesAsync();
         }
-        public async Task<List<ForumPost>> GetListPostByUserId(Guid id)
+        public async Task<IEnumerable<dynamic>> GetListPostByUserId(Guid userId)
         {
-            return await _context.ForumPosts.Where(p=>p.UserId == id).ToListAsync();
+            return await _context.ForumPosts
+                .Where(p => p.UserId == userId)
+                .Select(p => new
+                {
+                    Id = p.Id,
+                    UserId = p.UserId,
+                    PostContent = p.PostContent,
+                    ImageUrl = p.ImageUrl,
+                    Status = p.Status,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt,
+                    LikeCount = p.LikeCount,
+                    DislikeCount = p.DislikeCount,
+                    UserReaction = _context.UserPostReactions
+                        .Where(r => r.UserId == userId && r.PostId == p.Id)
+                        .Select(r => r.IsLike ? "like" : "dislike")
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
         }
 
 
@@ -127,6 +153,36 @@ namespace AppForumManamgement.Repositories
             _context.Entry(comment).Property(p => p.UpdatedAt).IsModified = true;
             await _context.SaveChangesAsync();
             return comment;
+        }
+        public async Task<UserPostReaction> GetUserReactionToPost(Guid userId, Guid postId)
+        {
+            return await _context.UserPostReactions
+                .FirstOrDefaultAsync(r => r.UserId == userId && r.PostId == postId);
+        }
+
+        public async Task AddUserReaction(UserPostReaction reaction)
+        {
+            await _context.UserPostReactions.AddAsync(reaction);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveUserReaction(UserPostReaction reaction)
+        {
+            _context.UserPostReactions.Remove(reaction);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> HasUserReactedToPost(Guid userId, Guid postId, bool? isLike = null)
+        {
+            var query = _context.UserPostReactions
+                .Where(r => r.UserId == userId && r.PostId == postId);
+                
+            if (isLike.HasValue)
+            {
+                query = query.Where(r => r.IsLike == isLike.Value);
+            }
+            
+            return await query.AnyAsync();
         }
         
     }
