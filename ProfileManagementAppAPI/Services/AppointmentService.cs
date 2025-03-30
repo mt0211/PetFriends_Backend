@@ -57,7 +57,7 @@ namespace ProfileManagementAppAPI.Services
                     Rating = reviewModel.Rating,
                     UserId = id,
                     AppointmentId = reviewModel.AppointmentId,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow.AddHours(7),
                 };
                 if (reviewModel.Rating > 5 || reviewModel.Rating < 0)
                 {
@@ -236,7 +236,7 @@ namespace ProfileManagementAppAPI.Services
 
                 existingReview.Content = reviewUpdateModel.Content;
                 existingReview.Rating = reviewUpdateModel.Rating;
-                //CreatedAt = DateTime.UtcNow
+                existingReview.CreatedAt = DateTime.UtcNow.AddHours(7);
 
                 await _repository.UpdateReview(existingReview);
 

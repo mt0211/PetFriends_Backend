@@ -23,7 +23,7 @@ namespace RealTimeCommunicationAPI.Controllers
         public async Task<IActionResult> SendMessage([FromBody] SendMessageReqMdel model)
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            ResultModel result = await _service.SendMessage(token, model.SenderId, model.ReceiverId, model.Content, model.MessageType, model.MediaUrl);
+            ResultModel result = await _service.SendMessage(token, model.ReceiverId, model.Content, model.MessageType, model.MediaUrl);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         
@@ -37,6 +37,19 @@ namespace RealTimeCommunicationAPI.Controllers
             }
             
             ResultModel result = await _service.GetChatHistory(token, otherUserId, page, pageSize);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
+
+         [HttpGet("app-chat-history/{otherClinicId}")]
+        public async Task<IActionResult> GetAppChatHistory(Guid otherClinicId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+            
+            ResultModel result = await _service.GetAppChatHistory(token, otherClinicId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         

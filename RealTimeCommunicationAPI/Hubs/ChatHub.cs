@@ -1,52 +1,48 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using RealTimeCommunicationAPI.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using RealTimeCommunicationAPI.Services;
-using RealTimeCommunicationAPI.DTOs.MessageDTOs;
 
 namespace RealTimeCommunicationAPI.Hubs
 {
+    
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ChatHub : Hub
     {
         private readonly IRealTimeCommunicationService _service;
-        
-        public ChatHub(IRealTimeCommunicationService service)
-        {
-            _service = service;
-        }
-        
+
+    public ChatHub(IRealTimeCommunicationService service)
+    {
+        _service = service;
+    }
         // Gửi tin nhắn trực tiếp đến một người dùng cụ thể
-        public async Task SendMessage(string receiverId, string message, string messageType = "text", string mediaUrl = null)
+        public async Task SendMessage(string receiverId, string message)
         {
             var senderId = Context.UserIdentifier;
             
-            if (Guid.TryParse(senderId, out Guid senderGuid) && Guid.TryParse(receiverId, out Guid receiverGuid))
-            {
-                // Lấy token từ context
-                string token = Context.GetHttpContext().Request.Headers["Authorization"].ToString().Split(" ")[1];
-                
-                // Lưu tin nhắn vào database
-                var result = await _service.SendMessage(token, senderGuid, receiverGuid, message, messageType, mediaUrl);
-                
-                if (result.IsSuccess)
-                {
-                    // Gửi tin nhắn đến người nhận
-                    await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, message, messageType, mediaUrl);
-                    
-                    // Phản hồi lại cho người gửi để xác nhận tin nhắn đã được gửi
-                    await Clients.Caller.SendAsync("MessageSent", receiverId, message, messageType, mediaUrl);
-                }
-            }
+            // Gửi tin nhắn đến người nhận
+            await Clients.User(receiverId).SendAsync("ReceiveMessage", senderId, message);
+            
+            // Phản hồi lại cho người gửi để xác nhận tin nhắn đã được gửi
+            await Clients.Caller.SendAsync("MessageSent", receiverId, message);
         }
         
         // Thông báo khi người dùng online/offline
-        public override async Task OnConnectedAsync()
+         public override async Task OnConnectedAsync()
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId != null)
         {
-            await Clients.Others.SendAsync("UserOnline", Context.UserIdentifier);
-            await base.OnConnectedAsync();
+            await Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            await Clients.Others.SendAsync("UserOnline", userId);
         }
+        await base.OnConnectedAsync();
+    }
         
         public override async Task OnDisconnectedAsync(Exception exception)
         {
@@ -63,16 +59,21 @@ namespace RealTimeCommunicationAPI.Hubs
         // Đánh dấu tin nhắn đã đọc
         public async Task MarkAsRead(string senderId)
         {
-            if (Guid.TryParse(senderId, out Guid senderGuid))
-            {
-                string token = Context.GetHttpContext().Request.Headers["Authorization"].ToString().Split(" ")[1];
-                var result = await _service.MarkMessagesAsRead(token, senderGuid);
-                
-                if (result.IsSuccess)
-                {
-                    await Clients.User(senderId).SendAsync("MessagesRead", Context.UserIdentifier);
-                }
-            }
+            await Clients.User(senderId).SendAsync("MessagesRead", Context.UserIdentifier);
+        }
+        
+        // Thông báo khi một tin nhắn bị xóa
+        public async Task NotifyMessageDeleted(string receiverId, string messageId)
+        {
+            var senderId = Context.UserIdentifier;
+            await Clients.User(receiverId).SendAsync("MessageDeleted", senderId, messageId);
+        }
+        
+        // Thông báo khi toàn bộ cuộc trò chuyện bị xóa
+        public async Task NotifyConversationDeleted(string receiverId)
+        {
+            var senderId = Context.UserIdentifier;
+            await Clients.User(receiverId).SendAsync("ConversationDeleted", senderId);
         }
     }
 }

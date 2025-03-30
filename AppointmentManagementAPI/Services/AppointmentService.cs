@@ -18,7 +18,7 @@ namespace AppointmentManagementAPI.Services
         {
             _appointmentrepository = appointmentrepository;
         }
-        public async Task<ResultModel> GetAllAppointment(string token, int page)
+        public async Task<ResultModel> GetAllAppointment(string token, int page, int size)
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
@@ -61,7 +61,7 @@ namespace AppointmentManagementAPI.Services
                 }).ToList();
 
                 // Paginate the result
-                var paginatedResult = await Pagination.GetPagination(appointmentList, page, 10);
+                var paginatedResult = await Pagination.GetPagination(appointmentList, page, size);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = paginatedResult;
@@ -101,7 +101,13 @@ namespace AppointmentManagementAPI.Services
                     Result.Message = "Appointment not found";
                     return Result;
                 }
-
+                if (appointment.Status == "Completed")
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400; // Bad request
+                    Result.Message = "Cannot update completed appointment";
+                    return Result;
+                }
                 if (appointmentstatusmodel.Status == "Completed")
                 {
                     // Cập nhật trạng thái và thời gian hoàn thành
@@ -668,45 +674,76 @@ namespace AppointmentManagementAPI.Services
                     result.Message = "Appointment not found.";
                     return result;
                 }
+                if (appointment.Status == "Completed")
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400; // Bad request
+                    result.Message = "Cannot update completed appointment.";
+                    return result;
+                }
                 
                 // Xử lý cho người dùng hệ thống
                 if (appointment.UserId != null)
                 {
-                    var user = await _appointmentrepository.GetUserByPhoneNumber(appointmentUpdate.PhoneNumber);
+                    // Kiểm tra xem người dùng có đang cố gắng thay đổi thông tin cá nhân không
+                    var user = await _appointmentrepository.GetUserByID(appointment.UserId);
                     var pet = await _appointmentrepository.GetPetByID(appointment.PetId);
-                    if (user.PhoneNumber != appointmentUpdate.PhoneNumber || user.Email != appointmentUpdate.Email || user.Address != appointmentUpdate.Address
-                    || pet.Name != appointmentUpdate.PetName || pet.DateOfBirth != appointmentUpdate.DataOfBirth || pet.Gender != appointmentUpdate.Gender || pet.Species != appointmentUpdate.Species)
+                    
+                    // Kiểm tra nếu thông tin cá nhân bị thay đổi
+                    bool personalInfoChanged = false;
+                    string changedFields = "";
+                    
+                    if (user != null && (
+                        (appointmentUpdate.FullName != null && user.FullName != appointmentUpdate.FullName) ||
+                        (appointmentUpdate.PhoneNumber != null && user.PhoneNumber != appointmentUpdate.PhoneNumber) ||
+                        (appointmentUpdate.Email != null && user.Email != appointmentUpdate.Email) ||
+                        (appointmentUpdate.Address != null && user.Address != appointmentUpdate.Address)))
+                    {
+                        personalInfoChanged = true;
+                        changedFields += "User information (name, phone, email, address)";
+                    }
+                    
+                    if (pet != null && (
+                        (appointmentUpdate.PetName != null && pet.Name != appointmentUpdate.PetName) ||
+                        (appointmentUpdate.DataOfBirth != null && pet.DateOfBirth != appointmentUpdate.DataOfBirth) ||
+                        (appointmentUpdate.Gender != null && pet.Gender != appointmentUpdate.Gender) ||
+                        (appointmentUpdate.Species != null && pet.Species != appointmentUpdate.Species)))
+                    {
+                        personalInfoChanged = true;
+                        changedFields += (changedFields.Length > 0 ? ", " : "") + "Pet information (name, date of birth, gender, species)";
+                    }
+                    
+                    if (personalInfoChanged)
                     {
                         result.IsSuccess = false;
                         result.Code = 400; // Bad request
-                        result.Message = "Cannot update appointment with user's system.";
+                        result.Message = $"Cannot update personal information for system users. Changed fields: {changedFields}. Only note, start time, status and services can be updated.";
                         return result;
                     }
                     
-                    // Cập nhật thông tin cuộc hẹn cơ bản
-                    await _appointmentrepository.UpdateAppointmentBasicInfo(
-                        appointment.Id,
-                        appointmentUpdate.Status,
-                        appointmentUpdate.StartAt,
-                        appointmentUpdate.Note
-                    );
                     
-                    // Cập nhật dịch vụ
-                    var existingServices = appointment.AppointmentClinicServices.ToList();
-                    var updatedServiceIds = appointmentUpdate.ServiceIds;
-                    var servicesToRemove = existingServices
+                    // 4. Cập nhật dịch vụ
+                    var existingServices = appointment.AppointmentClinicServices?.ToList() ?? new List<AppointmentClinicService>();
+                    var updatedServiceIds = appointmentUpdate.ServiceIds ?? new List<Guid>();
+
+                    // Xác định các dịch vụ cần xóa
+                    var serviceIdsToRemove = existingServices
                         .Where(service => !updatedServiceIds.Contains(service.ClinicServiceId))
+                        .Select(service => service.Id)
                         .ToList();
 
-                    foreach (var service in servicesToRemove)
+                    // Xóa các dịch vụ không còn trong danh sách cập nhật
+                    foreach (var serviceId in serviceIdsToRemove)
                     {
-                        await _appointmentrepository.RemoveAppointmentClinicService(service);
+                        await _appointmentrepository.RemoveAppointmentClinicServiceById(serviceId);
                     }
-                    
+
+                    // Xác định các dịch vụ mới cần thêm
                     var newServiceIds = updatedServiceIds
                         .Where(serviceId => !existingServices.Any(existing => existing.ClinicServiceId == serviceId))
                         .ToList();
-                        
+
+                    // Thêm các dịch vụ mới
                     foreach (var serviceId in newServiceIds)
                     {
                         var newService = new AppointmentClinicService
@@ -719,6 +756,99 @@ namespace AppointmentManagementAPI.Services
                         };
                         await _appointmentrepository.InsertAppointmentClinicService(newService);
                     }
+                   // 3. Cập nhật thông tin cuộc hẹn cơ bản
+                    DateTime? endAt = null;
+                    if (appointmentUpdate.Status == "Completed")
+                    {
+                        endAt = DateTime.Now.AddHours(7);
+                    }
+
+                    await _appointmentrepository.UpdateAppointmentBasicInfo(
+                        appointment.Id,
+                        appointmentUpdate.Status,
+                        appointmentUpdate.StartAt,
+                        appointmentUpdate.Note,
+                        endAt
+                    );
+
+                    
+                    
+                    // 5. Xử lý các trạng thái đặc biệt
+                    if (appointmentUpdate.Status == "Completed")
+                    {
+                        // Sử dụng FinalAmount đã được tính sẵn
+                        var totalAmount = appointment.FinalAmount ?? 0;
+                        // Cập nhật bảng UserBookingSummary
+                        if (appointment.UserId.HasValue)
+                        {
+                            await UpdateUserBookingSummary(appointment.UserId.Value, totalAmount);
+                        }
+                        await _appointmentrepository.UpdateDailyRevenue(totalAmount);
+                        var services = await _appointmentrepository.GetAppointmentServices(appointment.Id);
+                        foreach (var service in services)
+                        {
+                            await _appointmentrepository.UpdateServiceRevenue(service.ClinicServiceId, service.Price ?? 0);
+                        }
+                        
+                        // Lấy appointment mới sau khi đã cập nhật
+                        var updatedAppointment = await _appointmentrepository.GetAppointmentByID(appointment.Id);
+                        await UpdatePetVaccineInfo(updatedAppointment, services);
+
+                        result.Data = new AppointmentStatusResultModel
+                        {
+                            Status = appointmentUpdate.Status,
+                            Services = services,
+                            TotalPrice = totalAmount
+                        };
+                    }
+                    else if (appointmentUpdate.Status == "Confirmed")
+                    {
+                        // UPDATE USAGE LIMIT PROMOTION
+                        var appointmentPromotions = await _appointmentrepository.GetAppointmentPromotions(appointment.Id);
+                        foreach (var appointmentPromotion in appointmentPromotions)
+                        {
+                            if (appointmentPromotion.Promotion != null && appointmentPromotion.Promotion.UsageLimit > 0)
+                            {
+                                appointmentPromotion.Promotion.UsageLimit -= 1;
+                                await _appointmentrepository.UpdatePromotion(appointmentPromotion.Promotion);
+                            }
+                        }
+                        if (!string.IsNullOrWhiteSpace(appointments.Email))
+                        {
+                            string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ConfirmAppointment.html");
+                            string Html = File.ReadAllText(FilePath);
+                            Html = Html.Replace("{{CustomerName}}", appointments.FullName);
+                            Html = Html.Replace("{{StartAt}}", appointments.CreatedAt?.ToString("dd/MM") ?? "N/A");
+                            Html = Html.Replace("{{StartAt}}", appointments.StartAt?.ToString("HH:mm") ?? "N/A");
+                            Html = Html.Replace("{{EndAt}}", appointments.EndAt?.ToString("HH:mm") ?? "N/A");
+                            bool EmailSent = await Email.SendEmail(appointments.Email, "Confirm appointment", Html);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Email does not exist. Skipping email notification.");
+                        }
+                    }
+                    else if (appointmentUpdate.Status == "Canceled")
+                    {
+                        if (!string.IsNullOrWhiteSpace(appointments.Email))
+                        {
+                            string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "CancelAppointment.html");
+                            string Html = File.ReadAllText(FilePath);
+                            Html = Html.Replace("{{CustomerName}}", appointments.FullName);
+                            Html = Html.Replace("{{StartAt}}", appointments.CreatedAt?.ToString("dd/MM") ?? "N/A");
+                            Html = Html.Replace("{{StartAt}}", appointments.StartAt?.ToString("HH:mm") ?? "N/A");
+                            Html = Html.Replace("{{EndAt}}", appointments.EndAt?.ToString("HH:mm") ?? "N/A");
+                            bool EmailSent = await Email.SendEmail(appointments.Email, "Cancel appointment", Html);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Email does not exist. Skipping email notification.");
+                        }
+                    }
+                    
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Message = "Appointment updated successfully.";
                 }
                 // Xử lý cho khách
                 else if (appointment.UserId == null)
@@ -768,7 +898,7 @@ namespace AppointmentManagementAPI.Services
                             await _appointmentrepository.UpdateGuestPet(guestPet);
                         }
                     }
-                    
+                   
                     // 3. Cập nhật thông tin cuộc hẹn cơ bản
                     DateTime? endAt = null;
                     if (appointmentUpdate.Status == "Completed")
@@ -784,22 +914,28 @@ namespace AppointmentManagementAPI.Services
                         endAt
                     );
                     
-                    // 4. Cập nhật dịch vụ
-                    var existingServices = appointment.AppointmentClinicServices.ToList();
-                    var updatedServiceIds = appointmentUpdate.ServiceIds;
-                    var servicesToRemove = existingServices
+                   // 4. Cập nhật dịch vụ
+                    var existingServices = appointment.AppointmentClinicServices?.ToList() ?? new List<AppointmentClinicService>();
+                    var updatedServiceIds = appointmentUpdate.ServiceIds ?? new List<Guid>();
+
+                    // Xác định các dịch vụ cần xóa
+                    var serviceIdsToRemove = existingServices
                         .Where(service => !updatedServiceIds.Contains(service.ClinicServiceId))
+                        .Select(service => service.Id)
                         .ToList();
 
-                    foreach (var service in servicesToRemove)
+                    // Xóa các dịch vụ không còn trong danh sách cập nhật
+                    foreach (var serviceId in serviceIdsToRemove)
                     {
-                        await _appointmentrepository.RemoveAppointmentClinicService(service);
+                        await _appointmentrepository.RemoveAppointmentClinicServiceById(serviceId);
                     }
-                    
+
+                    // Xác định các dịch vụ mới cần thêm
                     var newServiceIds = updatedServiceIds
                         .Where(serviceId => !existingServices.Any(existing => existing.ClinicServiceId == serviceId))
                         .ToList();
-                        
+
+                    // Thêm các dịch vụ mới
                     foreach (var serviceId in newServiceIds)
                     {
                         var newService = new AppointmentClinicService
@@ -843,16 +979,6 @@ namespace AppointmentManagementAPI.Services
                     }
                     else if (appointmentUpdate.Status == "Confirmed")
                     {
-                        // UPDATE USAGE LIMIT PROMOTION
-                        var appointmentPromotions = await _appointmentrepository.GetAppointmentPromotions(appointment.Id);
-                        foreach (var appointmentPromotion in appointmentPromotions)
-                        {
-                            if (appointmentPromotion.Promotion != null && appointmentPromotion.Promotion.UsageLimit > 0)
-                            {
-                                appointmentPromotion.Promotion.UsageLimit -= 1;
-                                await _appointmentrepository.UpdatePromotion(appointmentPromotion.Promotion);
-                            }
-                        }
                         if (!string.IsNullOrWhiteSpace(appointments.Email))
                         {
                             string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ConfirmAppointment.html");

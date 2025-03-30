@@ -218,6 +218,16 @@ namespace AppointmentManagementAPI.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task RemoveAppointmentClinicServiceById(Guid serviceId)
+        {
+            // Sử dụng lệnh SQL trực tiếp hoặc tìm entity trước
+            var service = await _context.AppointmentClinicServices.FindAsync(serviceId);
+            if (service != null)
+            {
+                _context.AppointmentClinicServices.Remove(service);
+                await _context.SaveChangesAsync();
+            }
+        }
 
         public async Task<List<AppointmentServiceDetailModel>> GetAppointmentServices(Guid appointmentId)
         {
@@ -471,27 +481,44 @@ namespace AppointmentManagementAPI.Repository
         {
             return await _context.Pets.FindAsync(id);
         }
-        public async Task<GuestUser> GetGuestUserByEmail(string email)
-        {
-           return await _context.GuestUsers.FirstOrDefaultAsync(u => u.Email == email);
-        }
+       
         public async Task UpdateAppointmentBasicInfo(Guid appointmentId, string status, DateTime? startAt, string note, DateTime? endAt = null)
         {
-            var appointment = await _context.Appointments.FindAsync(appointmentId);
-            if (appointment != null)
+            // Kiểm tra xem entity đã được theo dõi chưa
+            var existingEntity = _context.ChangeTracker.Entries<Appointment>()
+                .FirstOrDefault(e => e.Entity.Id == appointmentId);
+            
+            if (existingEntity != null)
             {
-                appointment.Status = status;
-                appointment.StartAt = startAt;
-                appointment.Note = note;
-                
-                if (endAt.HasValue)
-                {
-                    appointment.EndAt = endAt;
-                }
-                
-                await _context.SaveChangesAsync();
+                // Nếu đã theo dõi, detach nó
+                existingEntity.State = EntityState.Detached;
             }
+            
+            // Tiếp tục với cách tiếp cận hiện tại
+            var appointment = new Appointment
+            {
+                Id = appointmentId,
+                Status = status,
+                StartAt = startAt,
+                Note = note
+            };
+            
+            if (endAt.HasValue)
+            {
+                appointment.EndAt = endAt;
+            }
+            
+            _context.Appointments.Attach(appointment);
+            _context.Entry(appointment).Property(x => x.Status).IsModified = true;
+            _context.Entry(appointment).Property(x => x.StartAt).IsModified = true;
+            _context.Entry(appointment).Property(x => x.Note).IsModified = true;
+            
+            if (endAt.HasValue)
+            {
+                _context.Entry(appointment).Property(x => x.EndAt).IsModified = true;
+            }
+            
+            await _context.SaveChangesAsync();
         }
     }
-
 }

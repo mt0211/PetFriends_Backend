@@ -18,7 +18,7 @@ namespace RealTimeCommunicationAPI.Services
             _repository = repository;
         }
         
-        public async Task<ResultModel> SendMessage(string token, Guid senderId, Guid receiverId, string content, string messageType = "text", string mediaUrl = null)
+        public async Task<ResultModel> SendMessage(string token, Guid receiverId, string content, string messageType = "text", string mediaUrl = null)
         {
             var Result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
@@ -40,7 +40,7 @@ namespace RealTimeCommunicationAPI.Services
             {
                 var message = new ChatMessage
                 {
-                    SenderId = senderId,
+                    SenderId = id,
                     ReceiverId = receiverId,
                     Content = content,
                     SentTime = DateTime.UtcNow.AddHours(7),
@@ -79,6 +79,38 @@ namespace RealTimeCommunicationAPI.Services
             {
                 var skip = (page - 1) * pageSize;
                 var messages = await _repository.GetChatHistory(id, otherUserId, skip, pageSize);
+                
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = messages;
+                Result.Message = "Chat history retrieved successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            
+            return Result;
+        }
+
+        public async Task<ResultModel> GetAppChatHistory(string token, Guid otherClinicId)
+        {
+            var Result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid id))
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "Invalid user ID";
+                return Result;
+            }
+            
+            try
+            {
+                
+                var messages = await _repository.GetAppChatHistory(id, otherClinicId);
                 
                 Result.IsSuccess = true;
                 Result.Code = 200;

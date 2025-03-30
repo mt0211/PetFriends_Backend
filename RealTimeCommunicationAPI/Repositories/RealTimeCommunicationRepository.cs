@@ -33,11 +33,22 @@ namespace RealTimeCommunicationAPI.Repositories
             .Where(m => 
                 (m.SenderId == senderId && m.ReceiverId == receiverId) || 
                 (m.SenderId == receiverId && m.ReceiverId == senderId))
-            .OrderByDescending(m => m.SentTime)
+            .OrderBy(m => m.SentTime)
             .Skip(skip)
             .Take(take)
             .ToListAsync();
         }
+
+        public async Task<List<ChatMessage>> GetAppChatHistory(Guid senderId, Guid receiverId)
+        {
+            return await _context.ChatMessages
+            .Where(m => 
+                (m.SenderId == senderId && m.ReceiverId == receiverId) || 
+                (m.SenderId == receiverId && m.ReceiverId == senderId))
+            .OrderBy(m => m.SentTime)
+            .ToListAsync();
+        }
+
         public async Task MarkMessageAsRead(Guid senderId, Guid receiverId)
         {
             var unreadMessages = await _context.ChatMessages

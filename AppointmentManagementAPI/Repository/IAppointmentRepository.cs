@@ -43,7 +43,7 @@ namespace AppointmentManagementAPI.Repository
         Task UpdateGuestPet(GuestPet guestPet);
         Task<User> GetUserByID(Guid? id);
         Task<Pet> GetPetByID(Guid? id);
-        Task<GuestUser> GetGuestUserByEmail(string email);
+        Task RemoveAppointmentClinicServiceById(Guid serviceId);
         Task UpdateAppointmentBasicInfo(Guid appointmentId, string status, DateTime? startAt, string note, DateTime? endAt = null);
     }
 }
