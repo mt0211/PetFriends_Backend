@@ -34,7 +34,7 @@ namespace AppForumManamgement.Services
             }
             try
             {
-                var post = await _repository.GetListPost();
+                var post = await _repository.GetListPost(id);
                 if (post == null || !post.Any())
                 {
                     result.IsSuccess = false;
@@ -53,6 +53,7 @@ namespace AppForumManamgement.Services
                     TotalComment = p.TotalComment,
                     LikeCount = p.LikeCount,
                     DislikeCount = p.DislikeCount,
+                    UserReaction = p.UserReaction
                 }).ToList();
 
 
@@ -86,25 +87,134 @@ namespace AppForumManamgement.Services
 
             try
             {
-                var updatedPost = await _repository.UpdatePostReaction(request.PostId, request.IsLike, request.IsAdd);
+                // Kiểm tra xem người dùng đã reaction bài viết này chưa
+                var existingReaction = await _repository.GetUserReactionToPost(id, request.PostId);
                 
-                if (updatedPost == null)
+                // Nếu đã reaction và yêu cầu là thêm reaction mới
+                if (existingReaction != null && request.IsAdd)
+                {
+                    // Nếu loại reaction khác với yêu cầu hiện tại (ví dụ: đã like nhưng giờ muốn dislike)
+                    if (existingReaction.IsLike != request.IsLike)
+                    {
+                        // Xóa reaction cũ
+                        await _repository.RemoveUserReaction(existingReaction);
+                        
+                        // Tạo reaction mới
+                        var newReaction = new UserPostReaction
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = id,
+                            PostId = request.PostId,
+                            IsLike = request.IsLike,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await _repository.AddUserReaction(newReaction);
+                        
+                        // Cập nhật số lượng like/dislike của bài viết
+                        var updatedPost = await _repository.UpdatePostReaction(request.PostId, request.IsLike, true);
+                        // Giảm số lượng reaction đối lập
+                        updatedPost = await _repository.UpdatePostReaction(request.PostId, !request.IsLike, false);
+                        
+                        if (updatedPost == null)
+                        {
+                            result.IsSuccess = false;
+                            result.Code = 404;
+                            result.Message = "Post not found";
+                            return result;
+                        }
+                        
+                        result.IsSuccess = true;
+                        result.Code = 200;
+                        result.Data = new
+                        {
+                            PostId = updatedPost.Id,
+                            LikeCount = updatedPost.LikeCount,
+                            DislikeCount = updatedPost.DislikeCount,
+                            UserReaction = request.IsLike ? "like" : "dislike"
+                        };
+                        result.Message = $"Successfully changed from {(request.IsLike ? "dislike to like" : "like to dislike")}";
+                    }
+                    else
+                    {
+                        // Nếu loại reaction giống với yêu cầu hiện tại, không làm gì cả
+                        result.IsSuccess = true;
+                        result.Code = 200;
+                        result.Message = "You have already reacted to this post";
+                        return result;
+                    }
+                }
+                // Nếu đã reaction và yêu cầu là xóa reaction
+                else if (existingReaction != null && !request.IsAdd)
+                {
+                    // Xóa reaction
+                    await _repository.RemoveUserReaction(existingReaction);
+                    
+                    // Cập nhật số lượng like/dislike của bài viết
+                    var updatedPost = await _repository.UpdatePostReaction(request.PostId, existingReaction.IsLike, false);
+                    
+                    if (updatedPost == null)
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 404;
+                        result.Message = "Post not found";
+                        return result;
+                    }
+                    
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = new PostReactionResModel
+                    {
+                        PostId = updatedPost.Id,
+                        LikeCount = updatedPost.LikeCount,
+                        DislikeCount = updatedPost.DislikeCount,
+                        UserReaction = null
+                    };
+                    result.Message = $"Successfully removed {(existingReaction.IsLike ? "like" : "dislike")}";
+                }
+                // Nếu chưa reaction và yêu cầu là thêm reaction
+                else if (existingReaction == null && request.IsAdd)
+                {
+                    // Tạo reaction mới
+                    var newReaction = new UserPostReaction
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = id,
+                        PostId = request.PostId,
+                        IsLike = request.IsLike,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _repository.AddUserReaction(newReaction);
+                    
+                    // Cập nhật số lượng like/dislike của bài viết
+                    var updatedPost = await _repository.UpdatePostReaction(request.PostId, request.IsLike, true);
+                    
+                    if (updatedPost == null)
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 404;
+                        result.Message = "Post not found";
+                        return result;
+                    }
+                    
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = new
+                    {
+                        PostId = updatedPost.Id,
+                        LikeCount = updatedPost.LikeCount,
+                        DislikeCount = updatedPost.DislikeCount,
+                        UserReaction = request.IsLike ? "like" : "dislike"
+                    };
+                    result.Message = $"Successfully added {(request.IsLike ? "like" : "dislike")}";
+                }
+                // Nếu chưa reaction và yêu cầu là xóa reaction (trường hợp không hợp lệ)
+                else
                 {
                     result.IsSuccess = false;
-                    result.Code = 404;
-                    result.Message = "Post not found";
+                    result.Code = 400;
+                    result.Message = "You have not reacted to this post yet";
                     return result;
                 }
-
-                result.IsSuccess = true;
-                result.Code = 200;
-                result.Data = new
-                {
-                    PostId = updatedPost.Id,
-                    LikeCount = updatedPost.LikeCount,
-                    DislikeCount = updatedPost.DislikeCount
-                };
-                result.Message = $"Successfully {(request.IsAdd ? "added" : "removed")} {(request.IsLike ? "like" : "dislike")}";
             }
             catch (Exception ex)
             {
@@ -136,7 +246,7 @@ namespace AppForumManamgement.Services
             }
             try
             {
-               var post = await _repository.GetPostByID(pid);
+               var post = await _repository.GetPostByID(pid, id);
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = post;
@@ -384,7 +494,7 @@ namespace AppForumManamgement.Services
             {
                 var post = await _repository.GetUserPostByUserID(id, pid);
                 if(post){
-               var postDetail = await _repository.Get(pid);
+               var postDetail = await _repository.GetPostByID(pid, id);
                result.IsSuccess = true;
                result.Code = 200;
                result.Data = postDetail;

@@ -82,8 +82,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.Configure<GoogleOAuthOptions>(
-    builder.Configuration.GetSection("GoogleOAuth"));
+builder.Services.Configure<GoogleOAuthOptions>
+(
+    builder.Configuration.GetSection("GoogleOAuth")
+);
     
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {

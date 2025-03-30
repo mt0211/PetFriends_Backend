@@ -63,6 +63,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<UserPetVaccineDose> UserPetVaccineDoses { get; set; }
 
+    public virtual DbSet<UserPostReaction> UserPostReactions { get; set; }
+
     public virtual DbSet<Vaccine> Vaccines { get; set; }
 
     public virtual DbSet<VaccineDose> VaccineDoses { get; set; }
@@ -80,6 +82,22 @@ public partial class PetfriendsContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC0796C4125D");
 
             entity.ToTable("Appointment");
+
+            entity.HasIndex(e => e.CreatedAt, "IX_Appointment_CreatedAt").IsDescending();
+
+            entity.HasIndex(e => e.GuestPetId, "IX_Appointment_GuestPetId");
+
+            entity.HasIndex(e => e.GuestUserId, "IX_Appointment_GuestUserId");
+
+            entity.HasIndex(e => e.PetId, "IX_Appointment_PetId");
+
+            entity.HasIndex(e => e.StartAt, "IX_Appointment_StartAt");
+
+            entity.HasIndex(e => e.Status, "IX_Appointment_Status");
+
+            entity.HasIndex(e => new { e.Status, e.CreatedAt }, "IX_Appointment_StatusAndCreatedAt").IsDescending(false, true);
+
+            entity.HasIndex(e => e.UserId, "IX_Appointment_UserId");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
@@ -112,6 +130,10 @@ public partial class PetfriendsContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC0751FA4516");
 
             entity.ToTable("AppointmentClinicService");
+
+            entity.HasIndex(e => e.AppointmentId, "IX_AppointmentClinicService_AppointmentId");
+
+            entity.HasIndex(e => e.ClinicServiceId, "IX_AppointmentClinicService_ClinicServiceId");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.DateGiven).HasColumnType("datetime");
@@ -553,6 +575,24 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.UserPetVaccine).WithMany(p => p.UserPetVaccineDoses)
                 .HasForeignKey(d => d.UserPetVaccineId)
                 .HasConstraintName("FK__UserPetVa__UserP__32767D0B");
+        });
+
+        modelBuilder.Entity<UserPostReaction>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserPost__3214EC0706AD0336");
+
+            entity.ToTable("UserPostReaction");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Post).WithMany(p => p.UserPostReactions)
+                .HasForeignKey(d => d.PostId)
+                .HasConstraintName("FK_UserPostReaction_Post");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserPostReactions)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_UserPostReaction_User");
         });
 
         modelBuilder.Entity<Vaccine>(entity =>

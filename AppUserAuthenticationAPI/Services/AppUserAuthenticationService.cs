@@ -229,10 +229,7 @@ namespace AppUserAuthenticationAPI.Services
             return otp.ToString();
         }
 
-        public Task<object?> GetUserProfile(Guid userId)
-        {
-            throw new NotImplementedException();
-        }
+        
         public async Task<ResultModel> LoginWithGoogle(string googleToken)
         {
             ResultModel result = new();
@@ -241,10 +238,10 @@ namespace AppUserAuthenticationAPI.Services
                 // Xác thực token Google
                 var settings = new GoogleJsonWebSignature.ValidationSettings
                 {
-                    Audience = new List<string> { _googleOAuthOptions.ClientId }
+                    Audience = _googleOAuthOptions.AllowedClientIds.ToList()
                 };
                 
-                var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
+                 var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
                 
                 // Kiểm tra xem người dùng đã tồn tại trong hệ thống chưa
                 var user = await _appUserAuthenticationRepository.GetUserByEmail(payload.Email);
@@ -318,7 +315,7 @@ namespace AppUserAuthenticationAPI.Services
                 // Xác thực token Google
                 var settings = new GoogleJsonWebSignature.ValidationSettings
                 {
-                    Audience = new List<string> { _googleOAuthOptions.ClientId }
+                    Audience = _googleOAuthOptions.AllowedClientIds.ToList()
                 };
                 
                 var payload = await GoogleJsonWebSignature.ValidateAsync(googleToken, settings);
