@@ -43,6 +43,7 @@ namespace ProfileManagementAppAPI.Services
             try
             {
                 var checkReview = await _repository.CheckReview(reviewModel.AppointmentId);
+                var appointment = await _repository.GetAppointmentById(reviewModel.AppointmentId);
                 if(checkReview)
                 {
                     result.IsSuccess = false;
@@ -64,6 +65,13 @@ namespace ProfileManagementAppAPI.Services
                     result.IsSuccess = false;
                     result.Code = 403;
                     result.Message = "Rating less than 5 and more than 0";
+                    return result;
+                }
+                if ( reviewEntity.CreatedAt - appointment.EndAt> TimeSpan.FromDays(30))
+                {
+                    result.IsSuccess = false;
+                    result.Code = 403;
+                    result.Message = "Review edits are limited to one time within 30 days of the appointment. Further changes are not allowed.";
                     return result;
                 }
                 await _repository.AddReview(reviewEntity);
@@ -209,7 +217,7 @@ namespace ProfileManagementAppAPI.Services
             try
             {
                 var existingReview = await _repository.GetReviewByAppointmentId(reviewUpdateModel.AppointmentId);
-
+                var appointment = await _repository.GetAppointmentById(reviewUpdateModel.AppointmentId);
                 if (existingReview == null)
                 {
                     result.IsSuccess = false;
@@ -217,7 +225,7 @@ namespace ProfileManagementAppAPI.Services
                     result.Message = "Review not found";
                     return result;
                 }
-
+                
                 if (existingReview.UserId.ToString() != userId)
                 {
                     result.IsSuccess = false;
@@ -234,10 +242,23 @@ namespace ProfileManagementAppAPI.Services
                     return result;
                 }
 
+                if(existingReview.UpdatedAt!= null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 403; // Forbidden
+                    result.Message = "Review only update once time";
+                    return result;
+                }
                 existingReview.Content = reviewUpdateModel.Content;
                 existingReview.Rating = reviewUpdateModel.Rating;
-                existingReview.CreatedAt = DateTime.UtcNow.AddHours(7);
-
+                existingReview.UpdatedAt = DateTime.UtcNow.AddHours(7);
+                if (existingReview.CreatedAt - appointment.EndAt > TimeSpan.FromDays(30))
+                {
+                    result.IsSuccess = false;
+                    result.Code = 403;
+                    result.Message = "Review edits are limited to one time within 30 days of the appointment. Further changes are not allowed.";
+                    return result;
+                }
                 await _repository.UpdateReview(existingReview);
 
 

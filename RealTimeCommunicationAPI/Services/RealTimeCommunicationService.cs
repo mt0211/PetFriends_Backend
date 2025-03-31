@@ -325,5 +325,93 @@ namespace RealTimeCommunicationAPI.Services
             
             return Result;
         }
+
+        public async Task<ResultModel> SendMessageInternal(string senderId, string receiverId, string message)
+        {
+            Console.WriteLine($"[Service] SendMessageInternal called with senderId={senderId}, receiverId={receiverId}, message={message}");
+            
+            var result = new ResultModel();
+            try
+            {
+                // Kiểm tra senderId trực tiếp
+                if (string.IsNullOrEmpty(senderId) || !Guid.TryParse(senderId, out Guid senderGuid))
+                {
+                    Console.WriteLine($"[Service] Invalid sender id: {senderId}");
+                    result.IsSuccess = false;
+                    result.Message = "Invalid sender id";
+                    return result;
+                }
+
+                // Chuyển đổi receiverId sang Guid
+                Console.WriteLine($"[Service] Parsing receiverId: {receiverId}");
+                if (!Guid.TryParse(receiverId, out Guid receiverGuid))
+                {
+                    Console.WriteLine($"[Service] Invalid receiver id: {receiverId}");
+                    result.IsSuccess = false;
+                    result.Message = "Invalid receiver id";
+                    return result;
+                }
+
+                // Tạo đối tượng ChatMessage
+                var chatMessage = new ChatMessage
+                {
+                    Id = Guid.NewGuid(),
+                    SenderId = senderGuid,
+                    ReceiverId = receiverGuid,
+                    Content = message,
+                    SentTime = DateTime.UtcNow.AddHours(7),
+                    IsRead = false,
+                    MessageType = "text",
+                    CreatedAt = DateTime.UtcNow.AddHours(7)
+                };
+                Console.WriteLine($"[Service] Created ChatMessage with Id={chatMessage.Id}, SenderId={chatMessage.SenderId}, ReceiverId={chatMessage.ReceiverId}");
+
+                // Lưu tin nhắn qua repository
+                Console.WriteLine($"[Service] Saving message to repository");
+                var savedMessage = await _repository.SaveMessage(chatMessage);
+                Console.WriteLine($"[Service] Message saved successfully with Id={savedMessage.Id}");
+
+                result.IsSuccess = true;
+                result.Code = 200;
+                result.Data = savedMessage;
+                result.Message = "Message sent and saved successfully";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Service] Exception: {ex.Message}");
+                Console.WriteLine($"[Service] Stack trace: {ex.StackTrace}");
+                
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Error sending message";
+                result.ResponseFailed = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            }
+
+            Console.WriteLine($"[Service] Returning result: IsSuccess={result.IsSuccess}, Message={result.Message}");
+            return result;
+        }
+
+        public async Task<ResultModel> GetAppChatHistoryInternal(Guid userId, Guid otherUserId)
+        {
+            var Result = new ResultModel();
+            
+            try
+            {
+                var messages = await _repository.GetAppChatHistory(userId, otherUserId);
+                
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = messages;
+                Result.Message = "Chat history retrieved successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            
+            return Result;
+        }
     }
 }
