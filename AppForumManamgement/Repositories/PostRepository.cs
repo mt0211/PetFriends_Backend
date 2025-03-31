@@ -70,7 +70,7 @@ namespace AppForumManamgement.Repositories
                     ImageUrl = p.ImageUrl,
                    CreatedAt = p.CreatedAt,
                    LikeCount = p.LikeCount,
-                   DisLikeCount = p.DislikeCount,
+                   DislikeCount = p.DislikeCount,
                    TotalComment = p.ForumComments.Count(),
                    UserReaction = _context.UserPostReactions
                     .Where(r => r.UserId == userId && r.PostId == p.Id)
@@ -116,6 +116,7 @@ namespace AppForumManamgement.Repositories
                 {
                     Id = p.Id,
                     UserId = p.UserId,
+                    UserName = p.User.FullName,
                     PostContent = p.PostContent,
                     ImageUrl = p.ImageUrl,
                     Status = p.Status,

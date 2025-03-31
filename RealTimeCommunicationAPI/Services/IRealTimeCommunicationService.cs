@@ -16,5 +16,7 @@ namespace RealTimeCommunicationAPI.Services
         Task<ResultModel> GetRecentChats(string token);
         Task<ResultModel> DeleteMessage(string token, Guid messageId);
         Task<ResultModel> DeleteConversation(string token, Guid otherUserId);
+        Task<ResultModel> SendMessageInternal(string senderId, string receiverId, string message);
+        Task<ResultModel> GetAppChatHistoryInternal(Guid userId, Guid otherUserId);
     }
 }

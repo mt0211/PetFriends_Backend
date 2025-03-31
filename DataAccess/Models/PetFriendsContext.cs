@@ -282,6 +282,7 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Sentiment).HasMaxLength(8);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Appointment).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.AppointmentId)

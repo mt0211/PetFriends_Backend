@@ -19,6 +19,8 @@ public partial class Feedback
 
     public string? Sentiment { get; set; }
 
+    public DateTime? UpdatedAt { get; set; }
+
     public virtual Appointment? Appointment { get; set; }
 
     public virtual User User { get; set; } = null!;

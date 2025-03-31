@@ -1,5 +1,6 @@
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,20 +8,21 @@ using Microsoft.OpenApi.Models;
 using RealTimeCommunicationAPI.Hubs;
 using RealTimeCommunicationAPI.Repositories;
 using RealTimeCommunicationAPI.Services;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Cấu hình Kestrel Web Server
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenAnyIP(80); // HTTP port
-     serverOptions.ListenAnyIP(3000);
+// builder.WebHost.ConfigureKestrel(serverOptions =>
+// {
+//     serverOptions.ListenAnyIP(80); // HTTP port
+//      serverOptions.ListenAnyIP(3000);
     
-    // Tối ưu cho WebSocket
-    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
-    serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
-});
+//     // Tối ưu cho WebSocket
+//     serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
+//     serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
+// });
 // 2. Thêm services vào container
 builder.Services.AddControllers();
 
@@ -91,7 +93,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"])),
+                 NameClaimType = "userid"
         };
 
         // Xử lý token cho SignalR
@@ -175,8 +178,9 @@ app.Use(async (context, next) =>
 });
 
 // 15. Map SignalR Hubs
-app.MapHub<ChatHub>("/chatHub");
+app.MapHub<ChatHub>("/chatHub").RequireCors("AllowClient");
 app.MapHub<VideoHub>("/videoHub");
+
 
 // 16. Map Controllers
 app.MapControllers();
