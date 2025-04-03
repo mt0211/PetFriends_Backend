@@ -2,6 +2,7 @@ using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using RealTimeCommunicationAPI.Repositories;
 using RealTimeCommunicationAPI.Services;
 using System;
 using System.Collections.Generic;
@@ -15,48 +16,52 @@ namespace RealTimeCommunicationAPI.Hubs
     public class ChatHub : Hub
     {
         private readonly IRealTimeCommunicationService _service;
+        private readonly IRealTimeCommunicationRepository _repository;
 
-        public ChatHub(IRealTimeCommunicationService service)
+        public ChatHub(IRealTimeCommunicationService service, IRealTimeCommunicationRepository repository)
         {
             _service = service;
+            _repository = repository;
         }
 
         // Gửi tin nhắn trực tiếp đến một người dùng cụ thể
-        public async Task SendMessage(string receiverId, string message)
-        {
-            // Log tham số nhận được
-            Console.WriteLine($"[ChatHub] Received parameters: receiverId={receiverId}, message={message}");
-            
-            // Lấy sender id từ claim "userid"
-            var senderId = Context.User?.FindFirst("userid")?.Value;
-            Console.WriteLine($"[ChatHub] Extracted sender ID: {senderId}");
-            
-            if (senderId == null)
+        public async Task<object> SendMessage(string receiverId, string message)
             {
-                Console.WriteLine("[ChatHub] ERROR: senderId is null");
-                await Clients.Caller.SendAsync("MessageError", "Invalid sender id");
-                return;
+                // Log tham số nhận được
+                Console.WriteLine($"[ChatHub] Received parameters: receiverId={receiverId}, message={message}");
+                
+                // Lấy sender id từ claim "userid"
+                var senderId = Context.User?.FindFirst("userid")?.Value;
+                Console.WriteLine($"[ChatHub] Extracted sender ID: {senderId}");
+                
+                if (senderId == null)
+                {
+                    Console.WriteLine("[ChatHub] ERROR: senderId is null");
+                    await Clients.Caller.SendAsync("MessageError", "Invalid sender id");
+                    return null; // Trả về null khi senderId là null
+                }
+                
+                // Thay đổi: Truyền senderId trực tiếp thay vì token
+                Console.WriteLine($"[ChatHub] Calling SendMessageInternal with senderId={senderId}, receiverId={receiverId}, message={message}");
+                var result = await _service.SendMessageInternal(senderId, receiverId, message);
+                Console.WriteLine($"[ChatHub] SendMessageInternal result: IsSuccess={result.IsSuccess}, Message={result.Message}");
+                
+                if(result.IsSuccess)
+                {
+                    // Phát tin nhắn đến client nhận với sender id
+                    await Clients.Group(receiverId).SendAsync("ReceiveMessage", senderId, message);
+                    // Phản hồi lại cho client gửi
+                    await Clients.Caller.SendAsync("MessageSent", receiverId, message);
+                    Console.WriteLine($"[ChatHub] Message sent successfully from {senderId} to {receiverId}");
+                    return result.Data; // Trả về dữ liệu khi thành công
+                }
+                else
+                {
+                    await Clients.Caller.SendAsync("MessageError", result.Message);
+                    Console.WriteLine($"[ChatHub] Error sending message: {result.Message}");
+                    return null; // Trả về null khi thất bại
+                }
             }
-
-            // Thay đổi: Truyền senderId trực tiếp thay vì token
-            Console.WriteLine($"[ChatHub] Calling SendMessageInternal with senderId={senderId}, receiverId={receiverId}, message={message}");
-            var result = await _service.SendMessageInternal(senderId, receiverId, message);
-            Console.WriteLine($"[ChatHub] SendMessageInternal result: IsSuccess={result.IsSuccess}, Message={result.Message}");
-            
-            if(result.IsSuccess)
-            {
-                // Phát tin nhắn đến client nhận với sender id
-                await Clients.Group(receiverId).SendAsync("ReceiveMessage", senderId, message);
-                // Phản hồi lại cho client gửi
-                await Clients.Caller.SendAsync("MessageSent", receiverId, message);
-                Console.WriteLine($"[ChatHub] Message sent successfully from {senderId} to {receiverId}");
-            }
-            else
-            {
-                await Clients.Caller.SendAsync("MessageError", result.Message);
-                Console.WriteLine($"[ChatHub] Error sending message: {result.Message}");
-            }
-        }
 
         //Chat history
         public async Task<List<ChatMessage>> GetChatHistory(string otherUserId)
@@ -207,5 +212,174 @@ namespace RealTimeCommunicationAPI.Hubs
                 await Clients.Group(receiverId).SendAsync("ConversationDeleted", userId);
             }
         }
+        // Xóa tin nhắn đơn lẻ
+    public async Task DeleteMessage(string messageId)
+    {
+        // Log tham số nhận được
+        Console.WriteLine($"[ChatHub] DeleteMessage called with messageId={messageId}");
+        
+        // Lấy sender id từ claim "userid"
+        var userId = Context.User?.FindFirst("userid")?.Value;
+        Console.WriteLine($"[ChatHub] Extracted user ID: {userId}");
+        
+        if (userId == null)
+        {
+            Console.WriteLine("[ChatHub] ERROR: userId is null");
+            await Clients.Caller.SendAsync("DeleteMessageError", "Invalid user id");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(messageId) || !Guid.TryParse(messageId, out Guid messageGuid))
+        {
+            Console.WriteLine("[ChatHub] ERROR: Invalid messageId");
+            await Clients.Caller.SendAsync("DeleteMessageError", "Invalid message ID");
+            return;
+        }
+
+        try
+        {
+            // Lấy thông tin tin nhắn trước khi xóa để biết receiverId
+            var message = await _repository.GetMessageById(messageGuid);
+            if (message == null)
+            {
+                await Clients.Caller.SendAsync("DeleteMessageError", "Message not found");
+                return;
+            }
+
+            // Xác định receiverId (người nhận tin nhắn)
+            string receiverId = message.ReceiverId.ToString();
+            if (message.SenderId.ToString() != userId)
+            {
+                // Nếu người xóa không phải người gửi, thì không cho phép
+                await Clients.Caller.SendAsync("DeleteMessageError", "You don't have permission to delete this message");
+                return;
+            }
+
+            // Gọi service để xóa tin nhắn
+            var result = await _service.DeleteMessageInternal(messageGuid, Guid.Parse(userId));
+            
+            if (result.IsSuccess)
+            {
+                // Thông báo cho người gửi
+                await Clients.Caller.SendAsync("MessageDeleted", messageId);
+                
+                // Thông báo cho người nhận
+                await Clients.Group(receiverId).SendAsync("MessageDeleted", userId, messageId);
+                
+                Console.WriteLine($"[ChatHub] Message {messageId} deleted successfully by {userId}");
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("DeleteMessageError", result.Message);
+                Console.WriteLine($"[ChatHub] Error deleting message: {result.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ChatHub] Exception in DeleteMessage: {ex.Message}");
+            await Clients.Caller.SendAsync("DeleteMessageError", "Error processing delete request");
+        }
     }
+
+    // Xóa toàn bộ cuộc trò chuyện
+    public async Task DeleteConversation(string otherUserId)
+
+    {
+        // Log tham số nhận được
+        Console.WriteLine($"[ChatHub] DeleteConversation called with otherUserId={otherUserId}");
+        
+        // Lấy sender id từ claim "userid"
+        var userId = Context.User?.FindFirst("userid")?.Value;
+        Console.WriteLine($"[ChatHub] Extracted user ID: {userId}");
+        
+        if (userId == null)
+        {
+            Console.WriteLine("[ChatHub] ERROR: userId is null");
+            await Clients.Caller.SendAsync("DeleteConversationError", "Invalid user id");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(otherUserId) || !Guid.TryParse(otherUserId, out Guid otherUserGuid))
+        {
+            Console.WriteLine("[ChatHub] ERROR: Invalid otherUserId");
+            await Clients.Caller.SendAsync("DeleteConversationError", "Invalid other user ID");
+            return;
+        }
+
+        try
+        {
+            // Gọi service để xóa cuộc trò chuyện
+            var result = await _service.DeleteConversationInternal(Guid.Parse(userId), otherUserGuid);
+            
+            if (result.IsSuccess)
+            {
+                // Thông báo cho người gửi
+                await Clients.Caller.SendAsync("ConversationDeleted", otherUserId);
+                
+                // Thông báo cho người nhận
+                await Clients.Group(otherUserId).SendAsync("ConversationDeleted", userId);
+                
+                Console.WriteLine($"[ChatHub] Conversation between {userId} and {otherUserId} deleted successfully");
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("DeleteConversationError", result.Message);
+                Console.WriteLine($"[ChatHub] Error deleting conversation: {result.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ChatHub] Exception in DeleteConversation: {ex.Message}");
+            await Clients.Caller.SendAsync("DeleteConversationError", "Error processing delete request");
+        }
+    }
+
+
+    // Xóa tin nhắn phia' người gửi
+    public async Task DeleteMessageForSender(string messageId)
+    {
+        Console.WriteLine($"[ChatHub] DeleteMessageForSender called with messageId={messageId}");
+        
+        var userId = Context.User?.FindFirst("userid")?.Value;
+        Console.WriteLine($"[ChatHub] Extracted user ID: {userId}");
+        
+        if (userId == null)
+        {
+            Console.WriteLine("[ChatHub] ERROR: userId is null");
+            await Clients.Caller.SendAsync("DeleteMessageError", "Invalid user id");
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(messageId) || !Guid.TryParse(messageId, out Guid messageGuid))
+        {
+            Console.WriteLine("[ChatHub] ERROR: Invalid messageId");
+            await Clients.Caller.SendAsync("DeleteMessageError", "Invalid message ID");
+            return;
+        }
+        
+        try
+        {
+            // Gọi service để xóa tin nhắn chỉ cho người gửi
+            var result = await _service.DeleteMessageForSenderInternal(messageGuid, Guid.Parse(userId));
+            
+            if (result.IsSuccess)
+            {
+                // Thông báo cho người gửi
+                await Clients.Caller.SendAsync("MessageDeletedForSender", messageId);
+                
+                Console.WriteLine($"[ChatHub] Message {messageId} deleted for sender {userId} successfully");
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("DeleteMessageError", result.Message);
+                Console.WriteLine($"[ChatHub] Error deleting message: {result.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ChatHub] Exception in DeleteMessageForSender: {ex.Message}");
+            await Clients.Caller.SendAsync("DeleteMessageError", "Error processing delete request");
+        }
+    }
+}
 }

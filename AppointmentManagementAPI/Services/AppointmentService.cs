@@ -343,7 +343,7 @@ namespace AppointmentManagementAPI.Services
                     PetId = appointment.PetId,
                     GuestUserId = guestUserId,
                     GuestPetId = guestPetId,
-                    CreatedAt = DateTimeOffset.Now.DateTime,
+                    CreatedAt = DateTime.Now.AddHours(7),
                     StartAt = appointment.StartAt,
                     Status = appointment.Status,
                     Note = appointment.Note,
@@ -360,7 +360,7 @@ namespace AppointmentManagementAPI.Services
                         Id = Guid.NewGuid(),
                         AppointmentId = newAppointment.Id,
                         ClinicServiceId = serviceId,
-                        DateGiven = DateTimeOffset.Now.DateTime,
+                        DateGiven = DateTime.Now.AddHours(7),
                         Notes = "Add successfully"
                     };
                     await _appointmentrepository.InsertAppointmentClinicService(appointmentService);

@@ -23,6 +23,10 @@ public partial class ChatMessage
 
     public DateTime CreatedAt { get; set; }
 
+    public bool? IsDeleteForSender { get; set; }
+
+    public bool? IsDeleteForReceiver { get; set; }
+
     public virtual User Receiver { get; set; } = null!;
 
     public virtual User Sender { get; set; } = null!;
