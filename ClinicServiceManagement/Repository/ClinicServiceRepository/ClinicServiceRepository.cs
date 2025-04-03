@@ -87,7 +87,7 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
             _context.Entry(service).Property(s => s.DiscountFrom).IsModified = true;
             _context.Entry(service).Property(s => s.DiscountTo).IsModified = true;
             _context.Entry(service).Property(s => s.Image).IsModified = true;
-
+           
             await _context.SaveChangesAsync();
         }
 

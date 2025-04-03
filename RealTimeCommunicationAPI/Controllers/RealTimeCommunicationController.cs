@@ -27,20 +27,7 @@ namespace RealTimeCommunicationAPI.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         
-        [HttpGet("chat-history/{otherUserId}")]
-        public async Task<IActionResult> GetChatHistory(Guid otherUserId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-        {
-            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            if (string.IsNullOrEmpty(token))
-            {
-                return BadRequest("Unable to retrieve user ID");
-            }
-            
-            ResultModel result = await _service.GetChatHistory(token, otherUserId, page, pageSize);
-            return result.IsSuccess ? Ok(result) : BadRequest(result);
-        }
-
-         [HttpGet("app-chat-history/{otherClinicId}")]
+        [HttpGet("app-chat-history/{otherClinicId}")]
         public async Task<IActionResult> GetAppChatHistory(Guid otherClinicId)
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
