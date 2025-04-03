@@ -63,37 +63,7 @@ namespace RealTimeCommunicationAPI.Services
         return Result;
         }
         
-        public async Task<ResultModel> GetChatHistory(string token, Guid otherUserId, int page, int pageSize)
-        {
-            var Result = new ResultModel();
-            var userId = Encoder.DecodeToken(token, "userid");
-            if (!Guid.TryParse(userId, out Guid id))
-            {
-                Result.IsSuccess = false;
-                Result.Code = 400;
-                Result.Message = "Invalid user ID";
-                return Result;
-            }
-            
-            try
-            {
-                var skip = (page - 1) * pageSize;
-                var messages = await _repository.GetChatHistory(id, otherUserId, skip, pageSize);
-                
-                Result.IsSuccess = true;
-                Result.Code = 200;
-                Result.Data = messages;
-                Result.Message = "Chat history retrieved successfully";
-            }
-            catch (Exception e)
-            {
-                Result.IsSuccess = false;
-                Result.Code = 400;
-                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
-            }
-            
-            return Result;
-        }
+        
 
         public async Task<ResultModel> GetAppChatHistory(string token, Guid otherClinicId)
         {
@@ -412,6 +382,144 @@ namespace RealTimeCommunicationAPI.Services
             }
             
             return Result;
+        }
+        public async Task<ResultModel> DeleteMessageInternal(Guid messageId, Guid userId)
+        {
+            var result = new ResultModel();
+            
+            try
+            {
+                // Kiểm tra xem tin nhắn có tồn tại không
+                var message = await _repository.GetMessageById(messageId);
+                if (message == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "Message not found";
+                    return result;
+                }
+                
+                // Kiểm tra xem người dùng có quyền xóa tin nhắn không
+                if (message.SenderId != userId)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 403;
+                    result.Message = "You don't have permission to delete this message";
+                    return result;
+                }
+                
+                // Thực hiện xóa tin nhắn
+                var success = await _repository.DeleteMessage(messageId, userId);
+                
+                if (success)
+                {
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Message = "Message deleted successfully";
+                }
+                else
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Failed to delete message";
+                }
+            }
+            catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Error deleting message";
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            
+            return result;
+        }
+
+        // Thêm phương thức xóa cuộc trò chuyện internal
+        public async Task<ResultModel> DeleteConversationInternal(Guid userId, Guid otherUserId)
+        {
+            var result = new ResultModel();
+            
+            try
+            {
+                // Kiểm tra xem người dùng kia có tồn tại không
+                var otherUser = await _repository.GetUserById(otherUserId);
+                if (otherUser == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "User not found";
+                    return result;
+                }
+                
+                // Thực hiện xóa cuộc trò chuyện
+                var success = await _repository.DeleteConversation(userId, otherUserId);
+                
+                if (success)
+                {
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Message = "Conversation deleted successfully";
+                }
+                else
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "No messages found or failed to delete conversation";
+                }
+            }
+            catch (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Error deleting conversation";
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            
+            return result;
+        }
+        public async Task<ResultModel> DeleteMessageForSenderInternal(Guid messageId, Guid userId)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var message = await _repository.GetMessageById(messageId);
+                if (message == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404;
+                    result.Message = "Message not found";
+                }
+                else if (message.SenderId != userId && message.ReceiverId != userId)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 403;
+                    result.Message = "You don't have permission to delete this message";
+                }
+
+              var success =   await _repository.MarkMessageForDelete(messageId, userId);
+                  if (success)
+                  {
+                      result.IsSuccess = true;
+                      result.Code = 200;
+                      result.Message = "Message deleted successfully";
+                  }
+                  else
+                  {
+                      result.IsSuccess = false;
+                      result.Code = 400;
+                      result.Message = "Failed to delete message";
+                  }
+            }
+            catch  (Exception e)
+            {
+                result.IsSuccess = false;
+                result.Code = 400;
+                result.Message = "Error deleting message";
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            
+            return result;
         }
     }
 }
