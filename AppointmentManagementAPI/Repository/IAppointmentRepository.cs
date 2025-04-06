@@ -6,7 +6,7 @@ namespace AppointmentManagementAPI.Repository
 {
     public interface IAppointmentRepository : IRepository<Appointment>
     {
-        Task<IEnumerable<dynamic>> GetAllApointment();
+        Task<IEnumerable<dynamic>> GetAllApointment(int page, int pageSize);
         Task<(string Email, string FullName, string status, DateTime? CreatedAt, DateTime? StartAt, DateTime? EndAt)> GetAppointmentAndUserEmail(Guid AppointmentID);
         Task<IEnumerable<ClinicService>> GetListClinicservices();
         Task<User> GetUserByPhoneNumber(string phonenumber);
@@ -45,5 +45,7 @@ namespace AppointmentManagementAPI.Repository
         Task<Pet> GetPetByID(Guid? id);
         Task RemoveAppointmentClinicServiceById(Guid serviceId);
         Task UpdateAppointmentBasicInfo(Guid appointmentId, string status, DateTime? startAt, string note, DateTime? endAt = null);
+        Task<int> GetAppointmentCount();
+        Task<List<Pet>> GetPetsByPhoneOrEmail(string? phone, string? email);
     }
 }

@@ -15,5 +15,6 @@ namespace AppointmentManagementAPI.Services
         Task<ResultModel> GetAppointmentDetail(string token, Guid guid);
         Task<ResultModel> DeleteAppointment(string token, Guid appointmentID);
         Task<ResultModel> UpdateAppointment(string token, AppointmentUpdateModel appointmentUpdate);
+        Task<ResultModel> GetPetsByPhoneOrEmail(string? phone, string? email);
     }
 }

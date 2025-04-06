@@ -54,7 +54,6 @@ namespace AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs
         public string? Gender { get; set; }
         public string? Species { get; set; }
         public List<ServiceModel>? services { get; set; }
-
         public string? Status { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? StartAt { get; set; }
