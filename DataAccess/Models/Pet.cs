@@ -27,6 +27,8 @@ public partial class Pet
 
     public string? Description { get; set; }
 
+    public virtual ICollection<Activity> Activities { get; set; } = new List<Activity>();
+
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
     public virtual ICollection<PetVaccine> PetVaccines { get; set; } = new List<PetVaccine>();

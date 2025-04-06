@@ -95,9 +95,8 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 // Register DI
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<VerifyService>();
-
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddTransient<IVerifyService, VerifyService>(); // Registering IVerifyService
-
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IOtpRepository, OtpRepository>();
 

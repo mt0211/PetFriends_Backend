@@ -15,6 +15,8 @@ public partial class PetfriendsContext : DbContext
     {
     }
 
+    public virtual DbSet<Activity> Activities { get; set; }
+
     public virtual DbSet<Appointment> Appointments { get; set; }
 
     public virtual DbSet<AppointmentClinicService> AppointmentClinicServices { get; set; }
@@ -77,6 +79,40 @@ public partial class PetfriendsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Activity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Activity__3214EC07D750EB9D");
+
+            entity.ToTable("Activity");
+
+            entity.HasIndex(e => e.CreatedAt, "IX_Activity_CreatedAt").IsDescending();
+
+            entity.HasIndex(e => e.UserId, "IX_Activity_UserId");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(255);
+            entity.Property(e => e.Type).HasMaxLength(50);
+
+            entity.HasOne(d => d.Appointment).WithMany(p => p.Activities)
+                .HasForeignKey(d => d.AppointmentId)
+                .HasConstraintName("FK_Activity_Appointment");
+
+            entity.HasOne(d => d.ClinicService).WithMany(p => p.Activities)
+                .HasForeignKey(d => d.ClinicServiceId)
+                .HasConstraintName("FK_Activity_ClinicService");
+
+            entity.HasOne(d => d.Pet).WithMany(p => p.Activities)
+                .HasForeignKey(d => d.PetId)
+                .HasConstraintName("FK_Activity_Pet");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Activities)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_Activity_User");
+        });
+
         modelBuilder.Entity<Appointment>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Appointm__3214EC0796C4125D");

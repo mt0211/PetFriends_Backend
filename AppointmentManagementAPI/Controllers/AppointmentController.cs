@@ -88,6 +88,11 @@ namespace AppointmentManagementAPI.Controllers
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
 
+        [HttpGet("user-pets")]
+        public async Task<IActionResult> GetUserPets([FromQuery] string? phone, [FromQuery] string? email)
+        {
+            var result = await _appointmentService.GetPetsByPhoneOrEmail(phone, email);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
-
 }

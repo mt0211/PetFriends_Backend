@@ -1,28 +1,183 @@
-﻿
-using AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs;
+﻿using AppointmentManagementAPI.DTOs.ResultModel.AppointmentDTOs;
 using AutoMapper;
 using DataAccess.Models;
 using DataAccess.Repositories;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using System.Text;
 
 namespace AppointmentManagementAPI.Repository
 {
+    // Lớp định nghĩa entry trong cache, lưu dữ liệu và thời gian tạo 
+    public class CacheEntry<T>
+    {
+        public T Data { get; set; }
+        public long Created { get; set; }
+    }
+
     public class AppointmentRepository : Repository<Appointment>, IAppointmentRepository
     {
         private readonly PetfriendsContext _context;
-        public AppointmentRepository(PetfriendsContext context) : base(context)
+        private readonly ILogger<AppointmentRepository> _logger;
+        private readonly IMemoryCache _cache;
+
+        public AppointmentRepository(PetfriendsContext context, ILogger<AppointmentRepository> logger, IMemoryCache cache) : base(context)
         {
             _context = context;
+            _logger = logger;
+            _cache = cache;
         }
-        public async Task<IEnumerable<dynamic>> GetAllApointment()
+
+        public async Task<IEnumerable<dynamic>> GetAllApointment(int page, int pageSize)
         {
-            // Bước 1: Lấy thông tin cơ bản của tất cả appointment
-            var appointments = await _context.Appointments
-                .AsNoTracking()
-                .OrderByDescending(a => a.CreatedAt) // Sử dụng index IX_Appointment_CreatedAt
-                .Select(a => new
+            string cacheKey = $"appointments_page{page}_size{pageSize}";
+            
+            // Kiểm tra timestamp vô hiệu hóa cache
+            long? invalidationTimestamp = null;
+            _cache.TryGetValue("appointment_cache_invalidation_timestamp", out invalidationTimestamp);
+            
+            // Kiểm tra cache trước
+            if (_cache.TryGetValue(cacheKey, out CacheEntry<IEnumerable<dynamic>> cachedEntry))
+            {
+                // So sánh timestamp entry cache với timestamp vô hiệu hóa
+                if (invalidationTimestamp == null || cachedEntry.Created > invalidationTimestamp)
+                {
+                    _logger.LogInformation("Returning cached appointment list for page {Page}, size {Size}", page, pageSize);
+                    return cachedEntry.Data;
+                }
+                
+                _logger.LogInformation("Cache entry found but invalidated, fetching fresh data");
+            }
+            
+            try
+            {
+                _logger.LogInformation("Cache miss. Fetching appointment list from database for page {Page}, size {Size}", page, pageSize);
+                
+                // Tối ưu: Tách truy vấn thành 2 phần riêng biệt
+                
+                // 1. Truy vấn chính - chỉ lấy thông tin appointments cơ bản
+                var appointmentsQuery = _context.Appointments
+                    .AsNoTracking()
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .TagWith("GetAllAppointments_Main_Query") // Thêm tag cho dễ theo dõi trong logs
+                    .Select(a => new 
+                    {
+                        a.Id,
+                        a.CreatedAt,
+                        a.StartAt,
+                        a.EndAt,
+                        a.Status,
+                        a.Note,
+                        UserId = a.UserId,
+                        GuestUserId = a.GuestUserId,
+                        PetId = a.PetId,
+                        GuestPetId = a.GuestPetId
+                    });
+                
+                var appointments = await appointmentsQuery.ToListAsync();
+                
+                // Nếu không có appointments, trả về danh sách rỗng sớm
+                if (!appointments.Any())
+                {
+                    return new List<dynamic>();
+                }
+                
+                // Lấy danh sách các ID của appointments đã tìm thấy
+                var appointmentIds = appointments.Select(a => a.Id).ToList();
+                
+                // 2. Truy vấn user/pet names và services trong một lần gộp
+                
+                // 2.1 Lấy user names và pet names
+                var userIds = appointments.Where(a => a.UserId.HasValue).Select(a => a.UserId.Value).ToList();
+                var guestUserIds = appointments.Where(a => a.GuestUserId.HasValue).Select(a => a.GuestUserId.Value).ToList();
+                var petIds = appointments.Where(a => a.PetId.HasValue).Select(a => a.PetId.Value).ToList();
+                var guestPetIds = appointments.Where(a => a.GuestPetId.HasValue).Select(a => a.GuestPetId.Value).ToList();
+                
+                // Dictionary để lưu trữ tên
+                var userNameDict = new Dictionary<Guid, string>();
+                var petNameDict = new Dictionary<Guid, string>();
+                
+                // Chỉ truy vấn nếu có dữ liệu
+                if (userIds.Any())
+                {
+                    var users = await _context.Users
+                        .Where(u => userIds.Contains(u.Id))
+                        .Select(u => new { u.Id, u.FullName })
+                        .ToDictionaryAsync(u => u.Id, u => u.FullName);
+                    
+                    foreach (var user in users)
+                    {
+                        userNameDict[user.Key] = user.Value;
+                    }
+                }
+                
+                if (guestUserIds.Any())
+                {
+                    var guestUsers = await _context.GuestUsers
+                        .Where(gu => guestUserIds.Contains(gu.Id))
+                        .Select(gu => new { gu.Id, gu.FullName })
+                        .ToDictionaryAsync(gu => gu.Id, gu => gu.FullName);
+                    
+                    foreach (var guestUser in guestUsers)
+                    {
+                        userNameDict[guestUser.Key] = guestUser.Value;
+                    }
+                }
+                
+                if (petIds.Any())
+                {
+                    var pets = await _context.Pets
+                        .Where(p => petIds.Contains(p.Id))
+                        .Select(p => new { p.Id, p.Name })
+                        .ToDictionaryAsync(p => p.Id, p => p.Name);
+                    
+                    foreach (var pet in pets)
+                    {
+                        petNameDict[pet.Key] = pet.Value;
+                    }
+                }
+                
+                if (guestPetIds.Any())
+                {
+                    var guestPets = await _context.GuestPets
+                        .Where(gp => guestPetIds.Contains(gp.Id))
+                        .Select(gp => new { gp.Id, gp.Name })
+                        .ToDictionaryAsync(gp => gp.Id, gp => gp.Name);
+                    
+                    foreach (var guestPet in guestPets)
+                    {
+                        petNameDict[guestPet.Key] = guestPet.Value;
+                    }
+                }
+                
+                // 2.2 Lấy service names cho mỗi appointment
+                var serviceNameDict = new Dictionary<Guid, List<string>>();
+                
+                var serviceQuery = await _context.AppointmentClinicServices
+                    .Where(acs => appointmentIds.Contains(acs.AppointmentId))
+                    .Select(acs => new 
+                    {
+                        acs.AppointmentId,
+                        ServiceName = acs.ClinicService.Name
+                    })
+                    .ToListAsync();
+                
+                foreach (var service in serviceQuery)
+                {
+                    if (!serviceNameDict.ContainsKey(service.AppointmentId))
+                    {
+                        serviceNameDict[service.AppointmentId] = new List<string>();
+                    }
+                    serviceNameDict[service.AppointmentId].Add(service.ServiceName);
+                }
+                
+                // 3. Kết hợp kết quả
+                var result = appointments.Select(a => new
                 {
                     Id = a.Id,
                     CreatedAt = a.CreatedAt,
@@ -30,90 +185,85 @@ namespace AppointmentManagementAPI.Repository
                     EndAt = a.EndAt,
                     Status = a.Status,
                     Note = a.Note,
-                    UserId = a.UserId,
-                    GuestUserId = a.GuestUserId,
-                    PetId = a.PetId,
-                    GuestPetId = a.GuestPetId
-                })
-                .ToListAsync();
+                    UserName = GetName(a.UserId, a.GuestUserId, userNameDict),
+                    PetName = GetName(a.PetId, a.GuestPetId, petNameDict),
+                    ServiceNames = serviceNameDict.ContainsKey(a.Id) ? serviceNameDict[a.Id] : new List<string>()
+                }).ToList<dynamic>();
 
-            if (!appointments.Any())
-                return new List<dynamic>();
-
-            // Bước 2: Lấy thông tin người dùng và thú cưng
-            var userIds = appointments.Where(a => a.UserId.HasValue).Select(a => a.UserId.Value).Distinct().ToList();
-            var guestUserIds = appointments.Where(a => a.GuestUserId.HasValue).Select(a => a.GuestUserId.Value).Distinct().ToList();
-            var petIds = appointments.Where(a => a.PetId.HasValue).Select(a => a.PetId.Value).Distinct().ToList();
-            var guestPetIds = appointments.Where(a => a.GuestPetId.HasValue).Select(a => a.GuestPetId.Value).Distinct().ToList();
-
-            // Lấy thông tin người dùng
-            var users = userIds.Any() ? await _context.Users
-                .AsNoTracking()
-                .Where(u => userIds.Contains(u.Id))
-                .Select(u => new { u.Id, u.FullName })
-                .ToDictionaryAsync(u => u.Id, u => u.FullName) : new Dictionary<Guid, string>();
-
-            var guestUsers = guestUserIds.Any() ? await _context.GuestUsers
-                .AsNoTracking()
-                .Where(gu => guestUserIds.Contains(gu.Id))
-                .Select(gu => new { gu.Id, gu.FullName })
-                .ToDictionaryAsync(gu => gu.Id, gu => gu.FullName) : new Dictionary<Guid, string>();
-
-            // Lấy thông tin thú cưng
-            var pets = petIds.Any() ? await _context.Pets
-                .AsNoTracking()
-                .Where(p => petIds.Contains(p.Id))
-                .Select(p => new { p.Id, p.Name })
-                .ToDictionaryAsync(p => p.Id, p => p.Name) : new Dictionary<Guid, string>();
-
-            var guestPets = guestPetIds.Any() ? await _context.GuestPets
-                .AsNoTracking()
-                .Where(gp => guestPetIds.Contains(gp.Id))
-                .Select(gp => new { gp.Id, gp.Name })
-                .ToDictionaryAsync(gp => gp.Id, gp => gp.Name) : new Dictionary<Guid, string>();
-
-            // Bước 3: Lấy thông tin dịch vụ
-            var appointmentIds = appointments.Select(a => a.Id).ToList();
-            var servicesByAppointment = await _context.AppointmentClinicServices
-                .AsNoTracking()
-                .Where(acs => appointmentIds.Contains(acs.AppointmentId))
-                .Join(_context.ClinicServices,
-                    acs => acs.ClinicServiceId,
-                    cs => cs.Id,
-                    (acs, cs) => new
-                    {
-                        AppointmentId = acs.AppointmentId,
-                        ServiceName = cs.Name
-                    })
-                .GroupBy(x => x.AppointmentId)
-                .ToDictionaryAsync(g => g.Key, g => g.Select(x => x.ServiceName).ToList());
-
-            // Bước 4: Kết hợp tất cả thông tin
-            var result = appointments.Select(a => new
+                // Lưu vào cache với thời gian sống là 2 phút
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(2))
+                    .SetPriority(CacheItemPriority.High);
+                
+                // Lưu dữ liệu kèm timestamp tạo
+                var entry = new CacheEntry<IEnumerable<dynamic>>
+                {
+                    Data = result,
+                    Created = DateTime.Now.Ticks
+                };
+                
+                _cache.Set(cacheKey, entry, cacheOptions);
+                
+                return result;
+            }
+            catch (Exception ex)
             {
-                Id = a.Id,
-                CreatedAt = a.CreatedAt,
-                StartAt = a.StartAt,
-                EndAt = a.EndAt,
-                Status = a.Status,
-                Note = a.Note,
-                UserName = a.UserId.HasValue && users.ContainsKey(a.UserId.Value) 
-                    ? users[a.UserId.Value] 
-                    : (a.GuestUserId.HasValue && guestUsers.ContainsKey(a.GuestUserId.Value) 
-                        ? guestUsers[a.GuestUserId.Value] 
-                        : null),
-                PetName = a.PetId.HasValue && pets.ContainsKey(a.PetId.Value) 
-                    ? pets[a.PetId.Value] 
-                    : (a.GuestPetId.HasValue && guestPets.ContainsKey(a.GuestPetId.Value) 
-                        ? guestPets[a.GuestPetId.Value] 
-                        : null),
-                ServiceNames = servicesByAppointment.ContainsKey(a.Id) 
-                    ? servicesByAppointment[a.Id] 
-                    : new List<string>()
-            }).ToList<dynamic>();
+                // Log exception
+                _logger.LogError($"Error in GetAllApointment: {ex.Message}");
+                throw;
+            }
+        }
+        
+        // Helper method để lấy tên từ dictionary
+        private string GetName(Guid? regularId, Guid? guestId, Dictionary<Guid, string> nameDict)
+        {
+            if (regularId.HasValue && nameDict.TryGetValue(regularId.Value, out string regularName))
+                return regularName;
+                
+            if (guestId.HasValue && nameDict.TryGetValue(guestId.Value, out string guestName))
+                return guestName;
+                
+            return null;
+        }
 
-            return result;
-                }
+        // Xóa cache khi có thay đổi dữ liệu
+        public void InvalidateAppointmentCache()
+        {
+            // Vì không thể liệt kê tất cả cache keys trong IMemoryCache,
+            // chúng ta sẽ sử dụng một regex pattern để xóa cache trên đầu mỗi lần
+            var cacheEntriesPattern = "appointments_page*";
+            
+            // Ghi log
+            _logger.LogInformation("Invalidating appointment cache with pattern: {Pattern}", cacheEntriesPattern);
+            
+            // Đối với IMemoryCache, không có cách trực tiếp để xóa bằng pattern
+            // Vì vậy ta cần tạo một cache key mới để đánh dấu thời điểm cache trở nên không hợp lệ
+            var timestamp = DateTime.Now.Ticks;
+            _cache.Set("appointment_cache_invalidation_timestamp", timestamp);
+            
+            _logger.LogInformation("Appointment cache invalidated at {Timestamp}", timestamp);
+        }
+
+        // Ghi đè phương thức Insert
+        public new async Task Insert(Appointment entity)
+        {
+            await base.Insert(entity);
+            InvalidateAppointmentCache();
+        }
+
+        // Ghi đè phương thức Update
+        public new async Task Update(Appointment entity)
+        {
+            await base.Update(entity);
+            InvalidateAppointmentCache();
+        }
+
+        // Ghi đè phương thức Remove
+        public new async Task Remove(Appointment entity)
+        {
+            await base.Remove(entity);
+            InvalidateAppointmentCache();
+        }
 
         public async Task<(string Email, string FullName, string status, DateTime? CreatedAt, DateTime? StartAt, DateTime? EndAt)> GetAppointmentAndUserEmail(Guid AppointmentID)
         {
@@ -210,12 +360,14 @@ namespace AppointmentManagementAPI.Repository
         {
             _context.AppointmentClinicServices.Add(appointmentClinicService);
             await _context.SaveChangesAsync();
+            InvalidateAppointmentCache();
         }
 
         public async Task RemoveAppointmentClinicService(AppointmentClinicService appointmentClinicService)
         {
             _context.AppointmentClinicServices.Remove(appointmentClinicService);
             await _context.SaveChangesAsync();
+            InvalidateAppointmentCache();
         }
 
         public async Task RemoveAppointmentClinicServiceById(Guid serviceId)
@@ -226,6 +378,7 @@ namespace AppointmentManagementAPI.Repository
             {
                 _context.AppointmentClinicServices.Remove(service);
                 await _context.SaveChangesAsync();
+                InvalidateAppointmentCache();
             }
         }
 
@@ -315,7 +468,7 @@ namespace AppointmentManagementAPI.Repository
 
                 await _context.ServiceRevenues.AddAsync(newRevenueEntry);
             }
-            await   _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<AppointmentPromotion>> GetAppointmentPromotions(Guid appointmentId)
@@ -332,12 +485,12 @@ namespace AppointmentManagementAPI.Repository
             _context.Entry(promotion).Property(p => p.UsageLimit).IsModified = true;
             await _context.SaveChangesAsync();
         }
-       
-       public async Task<List<ClinicService>> GetVaccinationServices(List<Guid> serviceIds)
+
+        public async Task<List<ClinicService>> GetVaccinationServices(List<Guid> serviceIds)
         {
             return await _context.ClinicServices
                 .Include(cs => cs.CategoryNavigation)
-                .Where(cs => serviceIds.Contains(cs.Id) && 
+                .Where(cs => serviceIds.Contains(cs.Id) &&
                     cs.CategoryNavigation.Name.ToLower() == "Vaccination")
                 .ToListAsync();
         }
@@ -472,7 +625,7 @@ namespace AppointmentManagementAPI.Repository
             _context.GuestPets.Update(guestPet);
             await _context.SaveChangesAsync();
         }
-        
+
         public async Task<User> GetUserByID(Guid? id)
         {
             return await _context.Users.FindAsync(id);
@@ -481,19 +634,19 @@ namespace AppointmentManagementAPI.Repository
         {
             return await _context.Pets.FindAsync(id);
         }
-       
+
         public async Task UpdateAppointmentBasicInfo(Guid appointmentId, string status, DateTime? startAt, string note, DateTime? endAt = null)
         {
             // Kiểm tra xem entity đã được theo dõi chưa
             var existingEntity = _context.ChangeTracker.Entries<Appointment>()
                 .FirstOrDefault(e => e.Entity.Id == appointmentId);
-            
+
             if (existingEntity != null)
             {
                 // Nếu đã theo dõi, detach nó
                 existingEntity.State = EntityState.Detached;
             }
-            
+
             // Tiếp tục với cách tiếp cận hiện tại
             var appointment = new Appointment
             {
@@ -502,23 +655,123 @@ namespace AppointmentManagementAPI.Repository
                 StartAt = startAt,
                 Note = note
             };
-            
+
             if (endAt.HasValue)
             {
                 appointment.EndAt = endAt;
             }
-            
+
             _context.Appointments.Attach(appointment);
             _context.Entry(appointment).Property(x => x.Status).IsModified = true;
             _context.Entry(appointment).Property(x => x.StartAt).IsModified = true;
             _context.Entry(appointment).Property(x => x.Note).IsModified = true;
-            
+
             if (endAt.HasValue)
             {
                 _context.Entry(appointment).Property(x => x.EndAt).IsModified = true;
             }
-            
+
             await _context.SaveChangesAsync();
+            
+            // Vô hiệu hóa cache sau khi cập nhật
+            InvalidateAppointmentCache();
+        }
+        
+        public async Task<int> GetAppointmentCount()
+        {
+            string cacheKey = "appointment_total_count";
+            
+            // Kiểm tra timestamp vô hiệu hóa cache
+            long? invalidationTimestamp = null;
+            _cache.TryGetValue("appointment_cache_invalidation_timestamp", out invalidationTimestamp);
+            
+            // Kiểm tra cache trước
+            if (_cache.TryGetValue(cacheKey, out CacheEntry<int> cachedEntry))
+            {
+                // So sánh timestamp entry cache với timestamp vô hiệu hóa
+                if (invalidationTimestamp == null || cachedEntry.Created > invalidationTimestamp)
+                {
+                    _logger.LogInformation("Returning cached appointment count");
+                    return cachedEntry.Data;
+                }
+                
+                _logger.LogInformation("Cache count entry found but invalidated, fetching fresh data");
+            }
+            
+            try
+            {
+                _logger.LogInformation("Cache miss for count. Counting appointments from database");
+                
+                // Sử dụng truy vấn tối ưu hơn chỉ đếm ID thay vì COUNT(*)
+                var count = await _context.Appointments
+                    .AsNoTracking() // Không theo dõi entity
+                    .Select(a => a.Id) // Chỉ lấy ID, không lấy các cột khác 
+                    .CountAsync();
+                
+                // Lưu vào cache với thời gian sống dài hơn vì count thay đổi chậm hơn
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
+                    .SetPriority(CacheItemPriority.High);
+                
+                // Lưu dữ liệu kèm timestamp tạo
+                var entry = new CacheEntry<int>
+                {
+                    Data = count,
+                    Created = DateTime.Now.Ticks
+                };
+                
+                _cache.Set(cacheKey, entry, cacheOptions);
+                
+                return count;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in GetAppointmentCount: {ex.Message}");
+                throw;
+            }
+        }
+
+        
+
+        public async Task<List<Pet>> GetPetsByPhoneOrEmail(string? phone, string? email)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(phone) && string.IsNullOrEmpty(email))
+                {
+                    return new List<Pet>();
+                }
+
+                // Tìm user dựa trên phone hoặc email
+                var user = await _context.Users
+                    .Where(u => (!string.IsNullOrEmpty(phone) && u.PhoneNumber == phone)
+                           || (!string.IsNullOrEmpty(email) && u.Email == email))
+                    .FirstOrDefaultAsync();
+
+                if (user == null)
+                {
+                    return new List<Pet>();
+                }
+
+                // Lấy danh sách pet của user
+                return await _context.Pets
+                    .Where(p => p.UserId == user.Id)
+                    .AsNoTracking()
+                    .Select(p => new Pet
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        DateOfBirth = p.DateOfBirth,
+                        Gender = p.Gender,
+                        Species = p.Species,
+                    })
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in GetPetsByPhoneOrEmail: {ex.Message}");
+                throw;
+            }
         }
     }
 }
