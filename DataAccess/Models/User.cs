@@ -35,6 +35,8 @@ public partial class User
 
     public string? TypeGroup { get; set; }
 
+    public virtual ICollection<Activity> Activities { get; set; } = new List<Activity>();
+
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
     public virtual ICollection<ChatMessage> ChatMessageReceivers { get; set; } = new List<ChatMessage>();

@@ -31,6 +31,8 @@ public partial class Appointment
 
     public decimal? FinalAmount { get; set; }
 
+    public virtual ICollection<Activity> Activities { get; set; } = new List<Activity>();
+
     public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();
 
     public virtual ICollection<AppointmentPromotion> AppointmentPromotions { get; set; } = new List<AppointmentPromotion>();

@@ -30,7 +30,7 @@ public class VerifyService : IVerifyService
             {
                 Result.IsSuccess = false;
                 Result.Code = 400;
-                Result.Message = "The User with this email is invalid";
+                Result.Message = "Please enter a valid email!";
                 return Result;
             }
             var GetOTP = await _otpRepository.GetOTPByUserId(User.Id);
