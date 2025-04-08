@@ -773,5 +773,23 @@ namespace AppointmentManagementAPI.Repository
                 throw;
             }
         }
+
+        //Delete appointment
+             public async Task DeleteAppointment(Appointment entity)
+            {
+                // First delete related activities
+                var activities = await _context.Activities
+                    .Where(a => a.AppointmentId == entity.Id)
+                    .ToListAsync();
+                
+                _context.Activities.RemoveRange(activities);
+                await _context.SaveChangesAsync();
+
+                // Then delete the appointment
+                _context.Appointments.Remove(entity);
+                await _context.SaveChangesAsync();
+                
+                InvalidateAppointmentCache();
+            }
     }
 }
