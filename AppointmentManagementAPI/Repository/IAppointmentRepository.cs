@@ -47,5 +47,8 @@ namespace AppointmentManagementAPI.Repository
         Task UpdateAppointmentBasicInfo(Guid appointmentId, string status, DateTime? startAt, string note, DateTime? endAt = null);
         Task<int> GetAppointmentCount();
         Task<List<Pet>> GetPetsByPhoneOrEmail(string? phone, string? email);
+
+        //Delete Appointment
+        Task DeleteAppointment(Appointment entity);
     }
 }
