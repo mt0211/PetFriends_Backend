@@ -14,9 +14,11 @@ namespace AppointmentManagementAPI.Services
     public class AppointmentService : IAppointmentService
     {
         private readonly IAppointmentRepository _appointmentrepository;
-        public AppointmentService(IAppointmentRepository appointmentrepository)
+        private readonly IMessageBus _messageBus;
+        public AppointmentService(IAppointmentRepository appointmentrepository, IMessageBus messageBus)
         {
             _appointmentrepository = appointmentrepository;
+            _messageBus = messageBus;
         }
         public async Task<ResultModel> GetAllAppointment(string token, int page, int size)
         {
@@ -395,6 +397,9 @@ namespace AppointmentManagementAPI.Services
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Message = "Successfully added new appointment";
+                 _messageBus.PublishAppointmentActivity(
+                "APPOINTMENT_CREATED", 
+                newAppointment.Id);
             }
             catch (Exception ex)
             {
@@ -587,7 +592,7 @@ namespace AppointmentManagementAPI.Services
                 }
 
                 // Xóa appointment
-                await _appointmentrepository.Remove(appointment);
+                await _appointmentrepository.DeleteAppointment(appointment);
 
                 result.IsSuccess = true;
                 result.Code = 200;
