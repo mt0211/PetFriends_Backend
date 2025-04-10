@@ -1,15 +1,15 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
 # Install required library
 RUN apt-get update && apt-get install -y libkrb5-dev
 
 WORKDIR /src
-COPY AppAppointmentManagementAPI.csproj .
+COPY RealTimeActivityAPI.csproj .
 RUN dotnet restore
 COPY . .
 RUN dotnet publish -c release -o /app
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
 
 # Install required library
 RUN apt-get update && apt-get install -y libkrb5-dev
@@ -24,4 +24,4 @@ EXPOSE 80
 ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-ENTRYPOINT ["dotnet", "AppAppointmentManagementAPI.dll"]
+ENTRYPOINT ["dotnet", "RealTimeActivityAPI.dll"]

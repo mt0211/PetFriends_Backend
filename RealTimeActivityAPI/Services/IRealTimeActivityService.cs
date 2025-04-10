@@ -9,6 +9,8 @@ namespace RealTimeActivityAPI.Services
     public interface IRealTimeActivityService
     {
         Task<ActivityDTO> CreateAppointmentActivity(string type, Guid appointmentId);
-        Task<List<ActivityDTO>> GetRecentActivities(int count = 10);
+        Task<ActivityDTO> CreateFeedbackActivity(string type, Guid feedbackId);
+        Task<List<ActivityDTO>> GetRecentActivities();
+        Task<ActivityDTO> CreateClinicServiceActivity(string type, Guid clinicServiceId);
     }
 }

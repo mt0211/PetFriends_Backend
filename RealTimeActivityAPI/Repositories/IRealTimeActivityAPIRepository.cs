@@ -9,7 +9,9 @@ namespace RealTimeActivityAPI.Repositories
     public interface IRealTimeActivityAPIRepository
     {
         Task<Activity> CreateActivity(Activity activity);
-        Task<List<Activity>> GetRecentActivities(int count = 10);
+        Task<List<Activity>> GetRecentActivities();
         Task<Appointment> GetAppointmentById(Guid appointmentId);
+        Task<Feedback> GetFeedbackById(Guid feedbackId);
+        Task<ClinicService> GetClinicServiceById(Guid clinicServiceId);
     }
 }

@@ -201,24 +201,24 @@ namespace PetManagementAPI.Services
                 //    result.Message = "Not found";
                 //    return result;
                 //}
-                var petDetail =  new PetModel
-                {
-                    Id = pet.Id,
-                    Name = pet.Name,
-                    Gender = pet.Gender,
-                    Species = pet.Species,
-                    Breed = pet.Breed,
-                    DateOfBirth = pet.DateOfBirth,
-                    OwnerName = pet.OwnerName,
-                    OwnerPhoneNumber = pet.OwnerPhoneNumber,
-                    Vaccinated = pet.Vaccinated,
-                    VaccineNames = pet.VaccineNames
-                };
+                // var petDetail =  new PetModel
+                // {
+                //     Id = pet.Id,
+                //     Name = pet.Name,
+                //     Gender = pet.Gender,
+                //     Species = pet.Species,
+                //     Breed = pet.Breed,
+                //     DateOfBirth = pet.DateOfBirth,
+                //     OwnerName = pet.OwnerName,
+                //     OwnerPhoneNumber = pet.OwnerPhoneNumber,
+                //     Vaccinated = pet.Vaccinated,
+                //     VaccineNames = pet.VaccineNames
+                // };
 
                 //Success response
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = petDetail;
+                result.Data = pet;
                 result.Message = "Successfully get pet detail";
             }
             catch (Exception ex)
