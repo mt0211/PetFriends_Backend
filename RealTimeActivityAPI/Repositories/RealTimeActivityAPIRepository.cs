@@ -24,11 +24,10 @@ namespace RealTimeActivityAPI.Repositories
             return activity;
         }
 
-        public async Task<List<Activity>> GetRecentActivities(int count = 10)
+        public async Task<List<Activity>> GetRecentActivities()
         {
             return await _context.Activities
                 .OrderByDescending(a => a.CreatedAt)
-                .Take(count)
                 .ToListAsync();
         }
         public async Task<Appointment> GetAppointmentById(Guid appointmentId)
@@ -39,6 +38,18 @@ namespace RealTimeActivityAPI.Repositories
                 .Include(a => a.GuestUser)
                 .Include(a => a.GuestPet)
                 .FirstOrDefaultAsync(a => a.Id == appointmentId);
+        }
+        public async Task<Feedback> GetFeedbackById(Guid feedbackId)
+        {
+            return await _context.Feedbacks
+            .Include(a => a.User)
+            .FirstOrDefaultAsync(a => a.Id == feedbackId);
+        }
+
+        public async Task<ClinicService> GetClinicServiceById(Guid clinicServiceId)
+        {
+            return await _context.ClinicServices
+            .FirstOrDefaultAsync(a => a.Id == clinicServiceId);
         }
         
     }
