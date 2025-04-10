@@ -13,10 +13,12 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
     public class ClinicServiceService : IClinicServiceService
     {
         private readonly IClinicServiceRepository _clinicServiceRepository;
+        private readonly IMessageBus _messageBus;
         // private readonly PetfriendsContext _context;
-        public ClinicServiceService(IClinicServiceRepository clinicServiceRepository)
+        public ClinicServiceService(IClinicServiceRepository clinicServiceRepository, IMessageBus messageBus)
         {
             _clinicServiceRepository = clinicServiceRepository;
+            _messageBus = messageBus;
         }
         public async Task<ResultModel> GetAllService(string token)
         {
@@ -135,6 +137,11 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     result.Code = 200;
                     result.Data = newService;
                     result.Message = "Successfully added new service";
+                    _messageBus.PublishClinicServiceActivity
+                    (
+                        "CLINIC_SERVICE_CREATED",
+                        newService.Id
+                    );
             }
             catch (Exception ex)
             {

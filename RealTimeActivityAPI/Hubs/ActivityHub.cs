@@ -24,7 +24,7 @@ namespace RealTimeActivityAPI.Hubs
         public async Task<List<Activity>> GetRecentActivities()
         {
             // Lấy danh sách activities gần đây từ service hoặc repository
-            return await _repository.GetRecentActivities(10); // 10 là số lượng activities muốn lấy
+            return await _repository.GetRecentActivities(); // 10 là số lượng activities muốn lấy
         }
         public override async Task OnConnectedAsync()
         {

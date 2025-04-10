@@ -4,15 +4,15 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RealTimeActivityAPI.Services;
 
-public class AppointmentEventConsumer : BackgroundService
+public class FeedbackEventConsumer : BackgroundService
 {
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private readonly IServiceProvider _serviceProvider;
     private readonly string _queueName;
-    private const string ExchangeName = "appointment_events";
+    private const string ExchangeName = "feedback_events";
 
-    public AppointmentEventConsumer(IServiceProvider serviceProvider)
+    public FeedbackEventConsumer(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
         // var factory = new ConnectionFactory() 
@@ -22,7 +22,7 @@ public class AppointmentEventConsumer : BackgroundService
         //     Password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "admin123",
         //     Port = int.Parse(Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672")
         // };
-        var factory = new ConnectionFactory() { HostName = "localhost" };
+       var factory = new ConnectionFactory() { HostName = "localhost" };
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
 
@@ -34,28 +34,26 @@ public class AppointmentEventConsumer : BackgroundService
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var consumer = new EventingBasicConsumer(_channel);
-        
+
         consumer.Received += async (model, ea) =>
         {
             Console.WriteLine("Received message from RabbitMQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
             using (var scope = _serviceProvider.CreateScope())
             {
                 var activityService = scope.ServiceProvider.GetRequiredService<IRealTimeActivityService>();
-                
+
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                var appointmentEvent = JsonSerializer.Deserialize<AppointmentEvent>(message);
-
-                await activityService.CreateAppointmentActivity(
-                    appointmentEvent.Type, 
-                    appointmentEvent.AppointmentId);
+                var feedbackEvents = JsonSerializer.Deserialize<FeedbackEvent>(message);
+                await activityService.CreateFeedbackActivity(
+                    feedbackEvents.Type,
+                    feedbackEvents.FeedbackId);
             }
         };
 
         _channel.BasicConsume(queue: _queueName,
-                            autoAck: true,
-                            consumer: consumer);
-
+        autoAck: true,
+        consumer: consumer);
         return Task.CompletedTask;
     }
 }

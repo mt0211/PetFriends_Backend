@@ -17,9 +17,11 @@ namespace ProfileManagementAppAPI.Services
     public class AppointmentService : IAppointmentService
     {
         private readonly IAppointmentRepository _repository;
-        public AppointmentService(IAppointmentRepository repository)
+        private readonly IMessageBus _messageBus;
+        public AppointmentService(IAppointmentRepository repository, IMessageBus messageBus)
         {
             _repository = repository;
+            _messageBus = messageBus;
         }
 
         public async Task<ResultModel> AddReview(string token, ReviewModel reviewModel)
@@ -81,6 +83,11 @@ namespace ProfileManagementAppAPI.Services
                 result.Code = 200;
                 result.Data = reviewModel;
                 result.Message = "Successfully added new review";
+                _messageBus.PublishFeedbacktActivity
+                (
+                    "FEEDBACK_RECEIVED", reviewEntity.Id
+                );
+
             }
             catch (Exception ex)
             {
@@ -392,9 +399,7 @@ namespace ProfileManagementAppAPI.Services
 
             }
             return result;
-        }
-        
-
+        }       
         //BOOK APPOINTMENT
         public async Task<ResultModel> AddToCart(string token, AddToCartDTO addToCartDTO)
         {
@@ -654,7 +659,7 @@ namespace ProfileManagementAppAPI.Services
                     Id = Guid.NewGuid(),
                     UserId = id,
                     PetId = cart.UserCartItems.FirstOrDefault()?.PetId,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow.AddHours(7),
                     StartAt = appointmentDateTime,
                     Status = "Pending",
                     Note = updateCartDTO.Notes,
@@ -734,6 +739,11 @@ namespace ProfileManagementAppAPI.Services
                 result.Code = 200;
                 result.Data = bookingResult;
                 result.Message = "Successfully book appointment";
+                _messageBus.PublishAppointmentActivity
+                (
+                    "APP_APPOINTMENT_CREATED",
+                    appointment.Id
+                );
             }
             catch (Exception ex)
             {
@@ -941,27 +951,27 @@ namespace ProfileManagementAppAPI.Services
                 var bookingHistoryDTOs = appointments.Select(a => new BookingHistoryDTO
                 {
                     Id = a.Id,
-                    UserName = a.User.FullName,
-                    UserPhone = a.User.PhoneNumber,
-                    UserEmail = a.User.Email,
-                    UserAvatar = a.User.AvatarUrl,
-                    PetName = a.Pet.Name,
+                    UserName = a.User?.FullName ?? string.Empty,
+                    UserPhone = a.User?.PhoneNumber ?? string.Empty,
+                    UserEmail = a.User?.Email ?? string.Empty,
+                    UserAvatar = a.User?.AvatarUrl ?? string.Empty,
+                    PetName = a.Pet?.Name ?? string.Empty,
                     CreatedAt = a.CreatedAt ?? DateTime.UtcNow,
                     StartAt = a.StartAt ?? DateTime.UtcNow,
-                    Status = a.Status,
-                    Notes = a.Note,
-                    TotalAmount = a.TotalAmount,
-                    DiscountAmount = a.DiscountAmount,
-                    FinalAmount = a.FinalAmount,
-                    ReviewContent = a.Feedbacks.FirstOrDefault()?.Content,
-                    Rating = a.Feedbacks.FirstOrDefault()?.Rating,
-                    Services = a.AppointmentClinicServices.Select(s => new BookingServiceDTO
+                    Status = a.Status ?? string.Empty,
+                    Notes = a.Note ?? string.Empty,
+                    TotalAmount = a.TotalAmount ?? 0,
+                    DiscountAmount = a.DiscountAmount ?? 0,
+                    FinalAmount = a.FinalAmount ?? 0,
+                    ReviewContent = a.Feedbacks?.FirstOrDefault()?.Content ?? string.Empty,
+                    Rating = a.Feedbacks?.FirstOrDefault()?.Rating ?? 0,
+                    Services = a.AppointmentClinicServices?.Select(s => new BookingServiceDTO
                     {
-                        ServiceName = s.ClinicService.Name,
-                        EstimateTime = s.ClinicService.EstimateTime,
-                        Price = s.ClinicService.DiscountedPrice ?? 0,
-                        PetName = a.Pet.Name
-                    }).ToList()
+                        ServiceName = s.ClinicService?.Name ?? string.Empty,
+                        EstimateTime = s.ClinicService?.EstimateTime ?? string.Empty,
+                        Price = s.ClinicService?.DiscountedPrice ?? 0,
+                        PetName = a.Pet?.Name ?? string.Empty
+                    }).ToList() ?? new List<BookingServiceDTO>()
                 }).ToList();
 
                 result.IsSuccess = true;
@@ -1045,6 +1055,11 @@ namespace ProfileManagementAppAPI.Services
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Message = "Successfully cancel appointment";
+                _messageBus.PublishAppointmentActivity
+                (
+                    "APP_APPOINTMENT_CANCELED",
+                    appointment.Id
+                );
             }
             catch (Exception ex)
             {

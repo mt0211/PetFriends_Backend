@@ -149,6 +149,9 @@ namespace AppointmentManagementAPI.Services
                         TotalPrice = totalAmount,
                         EndAt = appointment.EndAt
                     };
+                    _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_COMPLETED", 
+                        appointment.Id);
                 }
                 else if (appointmentstatusmodel.Status == "Confirmed")
                 {
@@ -178,6 +181,9 @@ namespace AppointmentManagementAPI.Services
                     {
                         Console.WriteLine("Email does not exist. Skipping email notification.");
                     }
+                      _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_CONFIRMED", 
+                        appointment.Id);
                 }
                 else if (appointmentstatusmodel.Status == "Canceled")
                 {
@@ -195,6 +201,9 @@ namespace AppointmentManagementAPI.Services
                     {
                         Console.WriteLine("Email does not exist. Skipping email notification.");
                     }
+                     _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_CANCELLED", 
+                        appointment.Id);
                 }
 
                 // Cập nhật trạng thái cuộc hẹn trong DB
@@ -831,6 +840,9 @@ namespace AppointmentManagementAPI.Services
                             Services = services,
                             TotalPrice = totalAmount
                         };
+                         _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_COMPLETED", 
+                        appointment.Id);
                     }
                     else if (appointmentUpdate.Status == "Confirmed")
                     {
@@ -858,6 +870,9 @@ namespace AppointmentManagementAPI.Services
                         {
                             Console.WriteLine("Email does not exist. Skipping email notification.");
                         }
+                          _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_CONFIRMED", 
+                        appointment.Id);
                     }
                     else if (appointmentUpdate.Status == "Canceled")
                     {
@@ -875,6 +890,9 @@ namespace AppointmentManagementAPI.Services
                         {
                             Console.WriteLine("Email does not exist. Skipping email notification.");
                         }
+                          _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_CANCELLED", 
+                        appointment.Id);
                     }
 
                     result.IsSuccess = true;
@@ -1007,6 +1025,9 @@ namespace AppointmentManagementAPI.Services
                             Services = services,
                             TotalPrice = totalAmount
                         };
+                         _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_COMPLETED", 
+                        appointment.Id);
                     }
                     else if (appointmentUpdate.Status == "Confirmed")
                     {
@@ -1024,6 +1045,9 @@ namespace AppointmentManagementAPI.Services
                         {
                             Console.WriteLine("Email does not exist. Skipping email notification.");
                         }
+                         _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_CONFIRMED", 
+                        appointment.Id);
                     }
                     else if (appointmentUpdate.Status == "Canceled")
                     {
@@ -1041,6 +1065,9 @@ namespace AppointmentManagementAPI.Services
                         {
                             Console.WriteLine("Email does not exist. Skipping email notification.");
                         }
+                           _messageBus.PublishAppointmentActivity(
+                        "APPOINTMENT_CANCELLED", 
+                        appointment.Id);
                     }
 
                     result.IsSuccess = true;

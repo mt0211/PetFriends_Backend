@@ -24,17 +24,17 @@ namespace ProfileManagementAppAPI.Repositories
         public async Task<IEnumerable<Category>> GetCategory()
         {
             return await _context.Categories
-            .Where(c => c.Status == 1)
-            .Select(c => new Category
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Status = c.Status,
-                ClinicServices = c.ClinicServices
-                    .Where(cs => cs.IsBlocked == 1 && cs.Status == "ACTIVE")
-                    .ToList()
-            })
-            .ToListAsync();
+                .AsNoTracking()
+                .Where(c => c.Status == 1)
+                .Select(c => new Category
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Status = c.Status,
+                    ClinicServices = c.ClinicServices
+                        .Where(cs => cs.IsBlocked == 1 && cs.Status == "ACTIVE").ToList()
+                })
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<dynamic>> GetReview()
@@ -50,7 +50,9 @@ namespace ProfileManagementAppAPI.Repositories
                 UserName = r.User.FullName,
                 UserAvatar = r.User.AvatarUrl,
                 UserEmail = r.User.Email,
-            }).ToListAsync();
+            })
+            .AsNoTracking()
+            .ToListAsync();
         }
 
         public async Task<Feedback> GetReviewByAppointmentId(Guid appointmentId)

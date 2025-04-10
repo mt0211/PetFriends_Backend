@@ -79,32 +79,26 @@ namespace PetManagementAPI.Repository.PetRepository
         public async Task<dynamic> GetPetById(Guid petId)
         {
             return await _context.Pets
-            .Include(p => p.User)
-            .Include(p => p.UserPetVaccines) // Thay đổi sang UserPetVaccines
-                .ThenInclude(upv => upv.Vaccine) // Include thông tin vaccine từ bảng Vaccine
-            .Where(p => p.Id == petId)
-            .Select(p => new
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Gender = p.Gender,
-                Species = p.Species,
-                Breed = p.Breed,
-                DateOfBirth = p.DateOfBirth,
-                OwnerName = p.User != null ? p.User.FullName : "N/A",
-                OwnerPhoneNumber = p.UserPhoneNumber,
-                Vaccinated = p.UserPetVaccines.Any(),
-                VaccineNames = p.UserPetVaccines != null && p.UserPetVaccines.Any()
-                    ? string.Join(", ",
-                        p.UserPetVaccines.Select(upv =>
-                            upv.VaccineId != null
-                                ? upv.Vaccine.Name  // Vaccine trong hệ thống
-                                : upv.Name + "(outside of system)" // Vaccine ngoài hệ thống
-                        ).Where(name => !string.IsNullOrEmpty(name))
-                    )
-                    : "N/A"
-            })
-            .FirstOrDefaultAsync();
+                .Where(p => p.Id == petId)
+                .Select(p => new
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Gender = p.Gender,
+                    Species = p.Species,
+                    Breed = p.Breed,
+                    DateOfBirth = p.DateOfBirth,
+                    OwnerName = p.User != null ? p.User.FullName : "N/A",
+                    OwnerPhoneNumber = p.UserPhoneNumber,
+                    Vaccinated = p.Vaccinated,
+                    VaccineNames = _context.UserPetVaccines
+                        .Where(upv => upv.PetId == p.Id)
+                        .Select(upv => upv.VaccineId != null ? upv.Vaccine.Name : upv.Name + "(outside of system)")
+                        .Where(name => !string.IsNullOrEmpty(name))
+                        .ToList()
+                })
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
 
         public async Task DeletePetWithVaccinesAsync(Guid petId)

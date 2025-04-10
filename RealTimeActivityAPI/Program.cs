@@ -135,6 +135,8 @@ builder.Services.AddWebSockets(options =>
 
 // Rabbit MQ Consumer
 builder.Services.AddHostedService<AppointmentEventConsumer>();
+builder.Services.AddHostedService<FeedbackEventConsumer>();
+builder.Services.AddHostedService<ClinicServiceEventConsumer>();
 
 // 9. Đăng ký các services
 builder.Services.AddScoped<RealTimeActivityService>();
