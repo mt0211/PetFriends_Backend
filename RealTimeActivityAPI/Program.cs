@@ -14,15 +14,15 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // // 1. Cấu hình Kestrel Web Server
-// builder.WebHost.ConfigureKestrel(serverOptions =>
-// {
-//     serverOptions.ListenAnyIP(80); // HTTP port
-//      serverOptions.ListenAnyIP(3000);
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(80); // HTTP port
+     serverOptions.ListenAnyIP(3000);
     
-//     // Tối ưu cho WebSocket
-//     serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
-//     serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
-// });
+    // Tối ưu cho WebSocket
+    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
+    serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
+});
 // 2. Thêm services vào container
 builder.Services.AddControllers();
 

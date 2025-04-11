@@ -9,7 +9,7 @@ app:
       - "15672:15672"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=160.30.137.29,1433;Database=petfriends;User Id=petfriends;Password=Admin@123;
+      - ConnectionStrings__DefaultConnection=Server=160.250.133.192,1433;Database=petfriends;User Id=petfriends;Password=Admin@123;
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=admin
@@ -17,7 +17,7 @@ app:
     depends_on:
       - rabbitmq
     restart: unless-stopped
-  rabbitmq:
+    rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
