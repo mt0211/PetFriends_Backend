@@ -86,7 +86,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //Google OAuthConfig
 builder.Services.Configure<GoogleOAuthOptions>(
     builder.Configuration.GetSection("GoogleOAuth"));
-// Kestrel chỉ lắng nghe cổng 5000 (HTTP)
+//Kestrel chỉ lắng nghe cổng 5000 (HTTP)
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.ListenAnyIP(80);

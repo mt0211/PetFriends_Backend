@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
 app:
-    image: mt0211/realtimeactivityapi:latest
-    container_name: realtimeactivityapicontainer
+    image: mt0211/clinicservicemanagement:latest
+    container_name: clinicservicemanagementapicontainer
     ports:
       - "5104:5104"
       - "15672:15672"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=160.250.133.192,1433;Database=petfriends;User Id=petfriends;Password=Admin@123;
+      - ConnectionStrings__DefaultConnection=160.250.133.192,1433;Database=petfriends;User Id=petfriends;Password=Admin@123;
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=admin
@@ -17,7 +17,7 @@ app:
     depends_on:
       - rabbitmq
     restart: unless-stopped
-    rabbitmq:
+  rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
