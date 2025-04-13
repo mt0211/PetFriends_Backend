@@ -87,7 +87,8 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     serverOptions.ListenAnyIP(3000);
 });
 
-
+builder.Services.AddSingleton<IMessageBus, RabbitMQService>();
+builder.Services.AddHostedService<PromotionExpiredChecker>();
 //Register Dependency Injection here:
 ///////////////////////
 builder.Services.AddScoped<PromotionService>();

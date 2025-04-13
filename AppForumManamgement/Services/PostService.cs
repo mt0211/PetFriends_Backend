@@ -10,9 +10,11 @@ namespace AppForumManamgement.Services
     public class PostService : IPostService
     {
         private readonly IPostRepository _repository;
-        public PostService(IPostRepository repository)
+        private readonly IMessageBus _messageBus;
+        public PostService(IPostRepository repository, IMessageBus messageBus)
         {
             _repository = repository;
+            _messageBus = messageBus;
         }
         public async Task<ResultModel> GetListPost(string token)
         {
@@ -338,6 +340,11 @@ namespace AppForumManamgement.Services
                result.IsSuccess = true;
                result.Code = 200;
                result.Message = "Successfully add post";
+               _messageBus.PublistPostActivity
+               (
+                "POST_CREATED",
+                newPost.Id
+               );
             }
             catch (Exception ex)
             {

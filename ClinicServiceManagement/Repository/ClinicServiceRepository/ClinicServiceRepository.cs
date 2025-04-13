@@ -17,7 +17,7 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         {
             return await _context.ClinicServices
                 .Include(c => c.CategoryNavigation)
-                .Where(c => c.CategoryNavigation.Status == 1 && c.IsBlocked == 1)
+                .Where(c => c.CategoryNavigation.Status == 1 && c.IsBlocked == 1 && c.Status == "ACTIVE" && c.Status == "INACTIVE")
                 .Select(c => new
                 {
                     c.Id,
@@ -33,7 +33,9 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         }
         public async Task<IEnumerable<Category>> GetAllCategory()
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories
+            .Where(c=>c.Status==1)
+            .ToListAsync();
         }
 
         public async Task<dynamic> GetServiceByID(Guid id)
@@ -87,35 +89,45 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
             _context.Entry(service).Property(s => s.DiscountFrom).IsModified = true;
             _context.Entry(service).Property(s => s.DiscountTo).IsModified = true;
             _context.Entry(service).Property(s => s.Image).IsModified = true;
-           
+            _context.Entry(service).Property(s => s.IsDiscountNotified).IsModified = true;
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateNoti(ClinicService service)
+        {
+            _context.ClinicServices.Attach(service);
+            _context.Entry(service).Property(s => s.IsDiscountNotified).IsModified = true;
             await _context.SaveChangesAsync();
         }
 
         public async Task AddService(ClinicService service)
         {
             var sql = @"INSERT INTO ClinicService (Id, Name, Description, CreateAt, Category, Price, Status, 
-                EstimateTime, DiscountAmount, DiscountFrom, DiscountTo, Image, IsBlocked) 
+                EstimateTime, DiscountAmount, DiscountFrom, DiscountTo, Image, IsBlocked, IsDiscountNotified) 
                 VALUES (@Id, @Name, @Description, @CreateAt, @Category, @Price, @Status,
-                @EstimateTime, @DiscountAmount, @DiscountFrom, @DiscountTo, @Image, @IsBlocked)";
-            var parameters = new[] {
-        new SqlParameter("@Id", service.Id),
-        new SqlParameter("@Name", service.Name),
-        new SqlParameter("@Description", service.Description ?? (object)DBNull.Value),
-        new SqlParameter("@CreateAt", service.CreateAt),
-        new SqlParameter("@Category", service.Category ?? (object)DBNull.Value),
-        new SqlParameter("@Price", service.Price),
-        new SqlParameter("@Status", service.Status),
-        new SqlParameter("@EstimateTime", service.EstimateTime ?? (object)DBNull.Value),
-        new SqlParameter("@DiscountAmount", service.DiscountAmount ?? (object)DBNull.Value),
-        new SqlParameter("@DiscountFrom", service.DiscountFrom ?? (object)DBNull.Value),
-        new SqlParameter("@DiscountTo", service.DiscountTo ?? (object)DBNull.Value),
-        new SqlParameter("@Image", service.Image ?? (object)DBNull.Value),
-         new SqlParameter("@IsBlocked", 1)
-    };
+                @EstimateTime, @DiscountAmount, @DiscountFrom, @DiscountTo, @Image, @IsBlocked, @IsDiscountNotified)";
+            var parameters = new[] 
+            {
+                new SqlParameter("@Id", service.Id),
+                new SqlParameter("@Name", service.Name),
+                new SqlParameter("@Description", service.Description ?? (object)DBNull.Value),
+                new SqlParameter("@CreateAt", service.CreateAt),
+                new SqlParameter("@Category", service.Category ?? (object)DBNull.Value),
+                new SqlParameter("@Price", service.Price),
+                new SqlParameter("@Status", service.Status),
+                new SqlParameter("@EstimateTime", service.EstimateTime ?? (object)DBNull.Value),
+                new SqlParameter("@DiscountAmount", service.DiscountAmount ?? (object)DBNull.Value),
+                new SqlParameter("@DiscountFrom", service.DiscountFrom ?? (object)DBNull.Value),
+                new SqlParameter("@DiscountTo", service.DiscountTo ?? (object)DBNull.Value),
+                new SqlParameter("@Image", service.Image ?? (object)DBNull.Value),
+                new SqlParameter("@IsBlocked", 1),
+                new SqlParameter("@IsDiscountNotified", service.IsDiscountNotified)
+            };
 
-        await _context.Database.ExecuteSqlRawAsync(sql, parameters);
+            await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
-        
+
 
         public async Task<ClinicService> GetServiceByNameAndCategory(string name, Guid? categoryId)
         {
@@ -147,6 +159,18 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         public async Task<List<User>> GetListAdminAccount()
         {
             return await _context.Users.Where(u => u.Role == "ADMIN").ToListAsync();
+        }
+
+        public async Task<List<ClinicService>> GetServicesWithExpiredDiscount(DateTime currentTime)
+        {
+            return await _context.ClinicServices
+            .Where(s => s.DiscountTo != null
+            && s.DiscountTo < currentTime
+            && s.DiscountAmount > 0
+            && s.Status == "ACTIVE"
+            && s.IsBlocked == 1
+            && (s.IsDiscountNotified == null || s.IsDiscountNotified == false))
+            .ToListAsync();
         }
 
     }

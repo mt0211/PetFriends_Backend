@@ -27,8 +27,31 @@ namespace RealTimeActivityAPI.Repositories
         public async Task<List<Activity>> GetRecentActivities()
         {
             return await _context.Activities
+                .Where(a => a.Type == "APP_APPOINTMENT_CANCELED"
+                || a.Type == "APP_APPOINTMENT_CREATED"
+                || a.Type == "APPOINTMENT_CANCELLED"
+                || a.Type == "APPOINTMENT_COMPLETED"
+                || a.Type == "APPOINTMENT_CONFIRMED"
+                || a.Type == "APPOINTMENT_CREATED"
+                || a.Type == "CLINIC_SERVICE_CREATED"
+                || a.Type == "DISCOUNT_ENDED"
+                || a.Type == "FEEDBACK_RECEIVED"
+                || a.Type == "PROMOTION_CREATED"
+                || a.Type == "PROMOTION_EXPIRED"
+                )
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
+        }
+
+        public async Task<List<Activity>> AdminGetRecentActivities()
+        {
+            return await _context.Activities
+            .Where(a => a.Type == "CLINIC_SERVICE_CREATED"
+            || a.Type == "USER_CREATED"
+             || a.Type == "APP_USER_CREATED"
+             || a.Type == "POST_CREATED")
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync();
         }
         public async Task<Appointment> GetAppointmentById(Guid appointmentId)
         {
@@ -50,6 +73,25 @@ namespace RealTimeActivityAPI.Repositories
         {
             return await _context.ClinicServices
             .FirstOrDefaultAsync(a => a.Id == clinicServiceId);
+        }
+
+        public async Task<Promotion> GetPromotionById(Guid promotionId)
+        {
+            return await _context.Promotions
+            .FirstOrDefaultAsync(a => a.Id == promotionId);
+        }
+        
+        public async Task<User> GetUserById(Guid userId)
+        {
+            return await _context.Users
+            .FirstOrDefaultAsync(a => a.Id == userId);
+        }
+        
+        public async Task<ForumPost> GetForumPostById(Guid id)
+        {
+            return await _context.ForumPosts
+            .Include(a => a.User)
+            .FirstOrDefaultAsync(a => a.Id == id);
         }
         
     }

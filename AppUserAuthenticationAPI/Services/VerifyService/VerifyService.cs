@@ -10,11 +10,13 @@ namespace UserAuthenticationAPI.Services;
 public class VerifyService : IVerifyService
 {
     private readonly IOtpRepository _otpRepository;
+    private readonly IMessageBus _messageBus;
     private readonly IAppUserAuthenticationRepository _appUserAuthenticationRepository;
-    public VerifyService(IOtpRepository otpRepository, IAppUserAuthenticationRepository appUserAuthenticationRepository)
+    public VerifyService(IOtpRepository otpRepository, IAppUserAuthenticationRepository appUserAuthenticationRepository, IMessageBus messageBus)
     {
         _otpRepository = otpRepository;
         _appUserAuthenticationRepository = appUserAuthenticationRepository;
+        _messageBus = messageBus;
     }
     private string CreateOTPCode()
     {
@@ -121,6 +123,11 @@ public class VerifyService : IVerifyService
             result.IsSuccess = true;
             result.Message = "OTP verified successfully.";
             result.Code = 200;
+            _messageBus.PublicUserActivity
+                    (
+                        "APP_USER_CREATED",
+                        user.Id
+                    );
         }
         catch (Exception e)
         {

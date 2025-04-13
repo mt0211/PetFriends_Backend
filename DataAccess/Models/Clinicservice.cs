@@ -33,6 +33,8 @@ public partial class ClinicService
 
     public byte? IsBlocked { get; set; }
 
+    public bool? IsDiscountNotified { get; set; }
+
     public virtual ICollection<Activity> Activities { get; set; } = new List<Activity>();
 
     public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();

@@ -133,7 +133,17 @@ public partial class PetfriendsContext : DbContext
 
             entity.HasIndex(e => new { e.Status, e.CreatedAt }, "IX_Appointment_StatusAndCreatedAt").IsDescending(false, true);
 
+            entity.HasIndex(e => new { e.Status, e.CreatedAt }, "IX_Appointment_Status_CreatedAt").IsDescending(false, true);
+
             entity.HasIndex(e => e.UserId, "IX_Appointment_UserId");
+
+            entity.HasIndex(e => new { e.UserId, e.PetId }, "IX_Appointment_UserPet");
+
+            entity.HasIndex(e => e.CreatedAt, "IX_Appointments_CreatedAt").IsDescending();
+
+            entity.HasIndex(e => e.PetId, "IX_Appointments_PetId");
+
+            entity.HasIndex(e => e.UserId, "IX_Appointments_UserId");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
@@ -212,6 +222,8 @@ public partial class PetfriendsContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Category__3214EC07C0C3DB31");
 
             entity.ToTable("Category");
+
+            entity.HasIndex(e => e.Status, "IX_Category_Status");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Name).HasMaxLength(255);
@@ -315,6 +327,10 @@ public partial class PetfriendsContext : DbContext
 
             entity.ToTable("Feedback");
 
+            entity.HasIndex(e => e.AppointmentId, "IX_Feedback_AppointmentId");
+
+            entity.HasIndex(e => e.UserId, "IX_Feedback_UserId");
+
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Sentiment).HasMaxLength(8);
@@ -416,6 +432,10 @@ public partial class PetfriendsContext : DbContext
 
             entity.ToTable("OtpVerify");
 
+            entity.HasIndex(e => new { e.OtpCode, e.IsUsed, e.ExpiredAt }, "IX_OtpVerify_OtpCode_IsUsed_ExpiredAt");
+
+            entity.HasIndex(e => e.UserId, "IX_OtpVerify_UserId");
+
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasPrecision(6);
             entity.Property(e => e.ExpiredAt).HasPrecision(6);
@@ -432,6 +452,8 @@ public partial class PetfriendsContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Pet__3214EC0799932B4D");
 
             entity.ToTable("Pet");
+
+            entity.HasIndex(e => e.UserId, "IX_Pet_UserId");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Breed).HasMaxLength(50);
@@ -515,6 +537,10 @@ public partial class PetfriendsContext : DbContext
 
             entity.ToTable("User");
 
+            entity.HasIndex(e => e.Email, "IX_User_Email");
+
+            entity.HasIndex(e => e.PhoneNumber, "IX_User_PhoneNumber");
+
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
@@ -549,6 +575,8 @@ public partial class PetfriendsContext : DbContext
 
             entity.ToTable("UserCart");
 
+            entity.HasIndex(e => new { e.UserId, e.Status }, "IX_UserCart_UserId_Status");
+
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Datebook).HasColumnType("datetime");
 
@@ -563,6 +591,8 @@ public partial class PetfriendsContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__UserCart__3214EC078D7833F7");
 
             entity.ToTable("UserCartItem");
+
+            entity.HasIndex(e => e.CartId, "IX_UserCartItem_CartId");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
@@ -586,6 +616,8 @@ public partial class PetfriendsContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__UserPetV__3214EC0722618450");
 
             entity.ToTable("UserPetVaccine");
+
+            entity.HasIndex(e => e.PetId, "IX_UserPetVaccine_PetId");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(255);
