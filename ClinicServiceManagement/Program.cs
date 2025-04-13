@@ -1,3 +1,4 @@
+using ClinicServiceManagement.Services.ClinicServiceCheckerService;
 using ClinicServiceManagementAPI.Repository.CategoryRepository;
 using ClinicServiceManagementAPI.Repository.ClinicServiceRepository;
 using ClinicServiceManagementAPI.Services.CategoryServices;
@@ -86,11 +87,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-   serverOptions.ListenAnyIP(80);
-   serverOptions.ListenAnyIP(3000);
+  serverOptions.ListenAnyIP(80);
+  serverOptions.ListenAnyIP(3000);
 });
 
 builder.Services.AddSingleton<IMessageBus, RabbitMQService>();
+builder.Services.AddHostedService<DiscountExpriryChecker>();
 //Register Dependency Injection here:
 ///////////////////////
 builder.Services.AddScoped<ClinicServiceService>();

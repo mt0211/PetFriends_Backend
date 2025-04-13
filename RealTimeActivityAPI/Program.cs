@@ -117,6 +117,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 return Task.CompletedTask;
             }
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/adminActivityHub"))
+                {
+                    context.Token = accessToken;
+                }
+                else if (context.HttpContext.WebSockets.IsWebSocketRequest && 
+                         context.Request.Headers.TryGetValue("Sec-WebSocket-Protocol", out var protocols))
+                {
+                    context.Token = protocols.FirstOrDefault()?.Split(" ").Last();
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 // 7. Cấu hình SignalR
 builder.Services.AddSignalR(options =>
@@ -137,6 +156,9 @@ builder.Services.AddWebSockets(options =>
 builder.Services.AddHostedService<AppointmentEventConsumer>();
 builder.Services.AddHostedService<FeedbackEventConsumer>();
 builder.Services.AddHostedService<ClinicServiceEventConsumer>();
+builder.Services.AddHostedService<PromotionEventConsumer>();
+builder.Services.AddHostedService<UserEventConsumer>();
+builder.Services.AddHostedService<ForumPostEventConsumer>();
 
 // 9. Đăng ký các services
 builder.Services.AddScoped<RealTimeActivityService>();
@@ -183,7 +205,7 @@ app.Use(async (context, next) =>
 
 // 15. Map SignalR Hubs
 app.MapHub<ActivityHub>("/activityHub").RequireCors("AllowClient");
-
+app.MapHub<AdminActivityHub>("/adminActivityHub").RequireCors("AllowClient");
 
 // 16. Map Controllers
 app.MapControllers();

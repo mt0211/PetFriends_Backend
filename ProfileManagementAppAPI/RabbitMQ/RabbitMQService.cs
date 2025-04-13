@@ -8,6 +8,7 @@ public class RabbitMQService : IMessageBus
     private readonly IModel _channel;
     private const string FeedbackExchangeName = "feedback_events";
     private const string AppointmentExchangeName = "appointment_events";
+    
     public RabbitMQService()
     {
         var factory = new ConnectionFactory() 
@@ -59,4 +60,5 @@ public class RabbitMQService : IMessageBus
             basicProperties: null,
             body: body);
     }
+    
 }

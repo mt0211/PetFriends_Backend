@@ -18,5 +18,7 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         Task<Vaccine> GetVaccineByName(string name);
         Task<Category> GetCategoryByID(Guid? id);
         Task<List<User>> GetListAdminAccount();
+        Task<List<ClinicService>> GetServicesWithExpiredDiscount(DateTime currentTime);
+        Task UpdateNoti(ClinicService service);
     }
 }

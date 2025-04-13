@@ -9,9 +9,11 @@ namespace PromotionManagementAPI.Services
     public class PromotionService : IPromotionService
     {
         private readonly IPromotionRepository _promotionRepository;
-        public PromotionService(IPromotionRepository promotionRepository)
+        private readonly IMessageBus _messageBus;
+        public PromotionService(IPromotionRepository promotionRepository, IMessageBus messageBus)
         {
             _promotionRepository = promotionRepository;
+            _messageBus = messageBus;
         }
         public async Task<ResultModel> GetListPromotion(string token, int page)
         {
@@ -175,12 +177,26 @@ namespace PromotionManagementAPI.Services
                     CategoryId = promotionAddDTO.CategoryId,
                     UsageLimit = promotionAddDTO.UsageLimit,
                     Description = promotionAddDTO.Description,
+                    IsExpriedNotified = false,
                 };
+                var check = await _promotionRepository.GetPromotionByName(newPromotion.Name);
+                if (check != null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Promiton already exists";
+                    return result;
+                }
             await _promotionRepository.AddNewPromotion(newPromotion);
             result.IsSuccess = true;
             result.Code = 200;
             result.Data = newPromotion;
             result.Message = "Successfully add new appointment";
+            _messageBus.PublishPromotionActivity
+            (
+                "PROMOTION_CREATED",
+                newPromotion.Id
+            );
         }
             catch (Exception ex)
             {
@@ -227,6 +243,19 @@ namespace PromotionManagementAPI.Services
                     UsageLimit = promotionAddDTO.UsageLimit,
                     Description = promotionAddDTO.Description,
                 };
+                var oldPromotion = await _promotionRepository.GetPromotionById(promotionAddDTO.Id);
+                if (oldPromotion.EndDate < newPromotion.EndDate)
+                {
+                    newPromotion.IsExpriedNotified = false;
+                }
+                var check = await _promotionRepository.GetPromotionByName(newPromotion.Name);
+                if (check!= null &&check.Id != newPromotion.Id)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Promiton name already exists";
+                    return result;
+                }
                 await _promotionRepository.UpdatePromotion(newPromotion);
                 result.IsSuccess = true;
                 result.Code = 200;

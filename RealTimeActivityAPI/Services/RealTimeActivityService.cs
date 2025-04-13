@@ -15,11 +15,13 @@ namespace RealTimeActivityAPI.Services
     {
         private readonly IRealTimeActivityAPIRepository _repository;
         private readonly IHubContext<ActivityHub> _hubContext;
+        private readonly IHubContext<AdminActivityHub> _adminHubContext;
 
-        public RealTimeActivityService(IRealTimeActivityAPIRepository repository, IHubContext<ActivityHub> hubContext)
+        public RealTimeActivityService(IRealTimeActivityAPIRepository repository, IHubContext<ActivityHub> hubContext, IHubContext<AdminActivityHub> adminHubContext)
         {
             _repository = repository;
             _hubContext = hubContext;
+            _adminHubContext = adminHubContext;
         }
 
         //Appointment description
@@ -52,7 +54,6 @@ namespace RealTimeActivityAPI.Services
                 "FEEDBACK_RECEIVED" => $"\"{content}\" {time}",
                 _ => $"Updated feedback for {customerName}"
             };
-
         }
 
         //CliniccService description
@@ -62,10 +63,50 @@ namespace RealTimeActivityAPI.Services
             string time = clinicService.CreateAt?.ToString("HH:mm dd/MM/yyyy") ?? "Not specified";
             return type switch
             {
-                "CLINIC_SERVICE_CREATED" => $"New clinic service created: {clinicServiceName} at {time}",
+                "CLINIC_SERVICE_CREATED" => $"{clinicServiceName} at {time}",
+                "DISCOUNT_ENDED" => $"The discount for service \"{clinicServiceName}\" ended at {time}",
                 _ => $"Updated clinic service: {clinicServiceName}"
             };
+        }
 
+        //Promotion description
+        private string GetPromotionActivityDescription(string type, Promotion promotion)
+        {
+            string description = promotion.Description;
+            string time = DateTime.Now.ToString("HH:mm dd/MM/yyyy") ?? "Not specified";
+            return type switch
+            {
+                "PROMOTION_CREATED" => $"New promotion created: \"{description}\" at {time}",
+                "PROMOTION_EXPIRED" => $"Promotion \"{description}\" expired at {time}",
+                _ => $"Updated promotion: {description}"
+            };
+        }
+
+        //User description
+        private string GetUserActivityDescription(string type, User user)
+        {
+            string userName = user.FullName ?? "Unknown";
+            string email = user.Email ?? "Unknown";
+            string time = DateTime.Now.ToString("HH:mm dd/MM/yyyy") ?? "Not specified";
+            return type switch
+            {
+                "USER_CREATED" => $"New user {userName} at {time}",
+                "APP_USER_CREATED" => $"New user with email \"{email}\" register at {time}",
+                _ => $"Updated user {userName}"
+            };           
+        }
+        
+        //Post description
+        private string GetPostActivityDescription(string type, ForumPost post)
+        {
+            string userName = post.User.FullName ?? "Unknown";
+            string content = post.PostContent;
+            string time = DateTime.Now.ToString("HH:mm dd/MM/yyyy") ?? "Not specified";
+            return type switch
+            {
+                "POST_CREATED" => $"{userName} shared a new forum post at {time}",
+                _ => $"Updated post by {userName}"
+            };
         }
 
         public async Task<ActivityDTO> CreateAppointmentActivity(string type, Guid appointmentId)
@@ -147,9 +188,79 @@ namespace RealTimeActivityAPI.Services
             var createdActivity = await _repository.CreateActivity(activity);
             var activityDto = MapToDTO(createdActivity);
             await _hubContext.Clients.All.SendAsync("ReceiveActivity", activityDto);
+            await _adminHubContext.Clients.All.SendAsync("ReceiveActivity", activityDto);
             return activityDto;
         }
 
+        public async Task<ActivityDTO> CreatePromotionActivity(string type, Guid promotionId)
+        {
+            var promotion = await _repository.GetPromotionById(promotionId);
+            if (promotion == null) return null;
+            var activity = new Activity
+            {
+                Id = Guid.NewGuid(),
+                Type = type,
+                Title = GetPromotionActivityTitle(type, promotion),
+                Description = GetPromotionActivityDescription(type, promotion),
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                Metadata = JsonSerializer.Serialize(new
+                {
+                    promotionId = promotion.Id.ToString(),
+                    name = promotion.Name,
+                })
+            };
+            var createdActivity = await _repository.CreateActivity(activity);
+            var activityDto = MapToDTO(createdActivity);
+            await _hubContext.Clients.All.SendAsync("ReceiveActivity", activityDto);
+            return activityDto;
+        }
+
+        public async Task<ActivityDTO> CreateUserActivity(string type, Guid userId)
+        {
+            var user = await _repository.GetUserById(userId);
+            if (user == null) return null;
+            var activity = new Activity
+            {
+                Id = Guid.NewGuid(),
+                Type = type,
+                Title = GetUserActivityTitle(type, user),
+                Description = GetUserActivityDescription(type, user),
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                Metadata = JsonSerializer.Serialize(new
+                {
+                    userId = user.Id.ToString(),
+                    name = user.FullName,
+                })
+            };
+            var createdActivity = await _repository.CreateActivity(activity);
+            var activityDto = MapToDTO(createdActivity);
+            await _adminHubContext.Clients.All.SendAsync("ReceiveActivity", activityDto);
+            return activityDto;
+        }
+
+        public async Task<ActivityDTO> CreatePostActivity(string type, Guid postId)
+        {
+            var post = await _repository.GetForumPostById(postId);
+            if (post == null) return null;
+            var activity = new Activity
+            {
+                Id = Guid.NewGuid(),
+                Type = type,
+                Title = GetPostActivityTitle(type, post),
+                Description = GetPostActivityDescription(type, post),
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                Metadata = JsonSerializer.Serialize(new
+                {
+                    postuserId = post.Id.ToString(),
+                    content = post.PostContent,
+                })
+            };
+            var createdActivity = await _repository.CreateActivity(activity);
+            var activityDto = MapToDTO(createdActivity);
+            await _adminHubContext.Clients.All.SendAsync("ReceiveActivity", activityDto);
+            return activityDto;
+        }
+        
 
 
         public async Task<List<ActivityDTO>> GetRecentActivities()
@@ -210,7 +321,42 @@ namespace RealTimeActivityAPI.Services
             return type switch
             {
                 "CLINIC_SERVICE_CREATED" => $"New clinic service created named {clinicServiceName}",
+                 "DISCOUNT_ENDED" => $"Discount ended for service {clinicServiceName}",
                 _ => $"Clinic service update: {clinicServiceName}"
+            };
+        }
+
+        //Promotion title
+        private string GetPromotionActivityTitle(string type, Promotion promotion)
+        {
+            string promotionName = promotion.Name;
+            return type switch
+            {
+                "PROMOTION_CREATED" => $"New promotion created {promotionName}",
+                "PROMOTION_EXPIRED" => $"Promotion {promotionName} has expired",
+                _ => $"Promotion update: {promotionName}"
+            };
+        }
+        //User title
+        private string GetUserActivityTitle(string type, User user)
+        {
+            string userName = user.FullName;
+            string email = user.Email;
+            return type switch
+            {
+                "USER_CREATED" => $"{userName} has just signed up",
+                "APP_USER_CREATED" => $"User with email \"{email}\" has just signed up",
+                _ => $"User update: {userName}"
+            };
+        }
+
+        //Post title
+        private string GetPostActivityTitle(string type, ForumPost post)
+        {
+            string userName = post.User.FullName;
+            return type switch
+            {
+                "POST_CREATED" => $"{userName} has just created a new discussion post",
             };
         }
         //icon
@@ -225,6 +371,9 @@ namespace RealTimeActivityAPI.Services
                 "FEEDBACK_RECEIVED" => "📣",
                 "APP_APPOINTMENT_CREATED" => "📝",
                 "APP_APPOINTMENT_CANCELLED" => "❌",
+                "DISCOUNT_ENDED" => "⏳",
+                "PROMOTION_CREATED" => "📣",
+                "PROMOTION_EXPIRED" => "⏳",
                 _ => "ℹ️"
             };
         }

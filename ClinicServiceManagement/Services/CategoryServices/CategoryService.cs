@@ -41,6 +41,14 @@ namespace ClinicServiceManagementAPI.Services.CategoryServices
                     Name = newcategory.Name,
                     Status = 1,
                 };
+                var category = await _categoryRepository.GetCategoryByName(newcategory.Name);
+                if (category != null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Category already exists";
+                    return result;
+                }
 
                 await _categoryRepository.AddCategory(categoryEntity);
 
@@ -86,6 +94,14 @@ namespace ClinicServiceManagementAPI.Services.CategoryServices
                     Name = newcategory.Name,
                     Status = newcategory.Status,
                 };
+                var existingCategory = await _categoryRepository.GetCategoryByName(newcategory.Name);
+                if (existingCategory != null && existingCategory.Id != newcategory.Id)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Category name already exists";
+                    return result;
+                }
 
                 await _categoryRepository.UpdteCategoryName(categoryEntity);
 

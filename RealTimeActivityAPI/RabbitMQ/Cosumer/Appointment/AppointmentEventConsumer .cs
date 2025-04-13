@@ -37,7 +37,7 @@ public class AppointmentEventConsumer : BackgroundService
         
         consumer.Received += async (model, ea) =>
         {
-            Console.WriteLine("Received message from RabbitMQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
+          //  Console.WriteLine("Received message from RabbitMQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
             using (var scope = _serviceProvider.CreateScope())
             {
                 var activityService = scope.ServiceProvider.GetRequiredService<IRealTimeActivityService>();

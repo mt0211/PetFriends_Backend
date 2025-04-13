@@ -12,5 +12,8 @@ namespace RealTimeActivityAPI.Services
         Task<ActivityDTO> CreateFeedbackActivity(string type, Guid feedbackId);
         Task<List<ActivityDTO>> GetRecentActivities();
         Task<ActivityDTO> CreateClinicServiceActivity(string type, Guid clinicServiceId);
+        Task<ActivityDTO> CreatePromotionActivity(string type, Guid promotionId);
+        Task<ActivityDTO> CreateUserActivity(string type, Guid userId);
+        Task<ActivityDTO> CreatePostActivity(string type, Guid postId);
     }
 }
