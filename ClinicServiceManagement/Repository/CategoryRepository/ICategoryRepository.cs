@@ -7,5 +7,6 @@ namespace ClinicServiceManagementAPI.Repository.CategoryRepository
         Task AddCategory(Category category);
         Task UpdteCategoryName(Category category);
         Task<IEnumerable<Category>> GetListCategory();
+        Task<Category> GetCategoryByName(string name);
     }
 }

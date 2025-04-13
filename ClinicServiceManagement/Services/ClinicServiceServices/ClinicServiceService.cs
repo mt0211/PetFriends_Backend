@@ -94,7 +94,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     Id = Guid.NewGuid(),
                     Name = serviceAddDTO.Name,
                     Description = serviceAddDTO.Description,
-                    CreateAt = DateTimeOffset.Now.DateTime,
+                    CreateAt = DateTimeOffset.Now.DateTime.AddHours(7),
                     Category = serviceAddDTO.Category,
                     Price = serviceAddDTO.Price,
                     Status = "ACTIVE",
@@ -104,6 +104,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     DiscountTo = serviceAddDTO.DiscountTo,
                     Image = serviceAddDTO.Image,
                     IsBlocked = 1,
+                    IsDiscountNotified = false,
                 };
                 if (serviceAddDTO.DiscountFrom > serviceAddDTO.DiscountTo)
                 {
@@ -320,6 +321,10 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     result.Message = "Service not found";
                     return result;
                 }
+                if (service.DiscountTo < serviceUpdateDTO.DiscountTo)
+                {
+                    service.IsDiscountNotified = false;
+                }
                 // var existingService = await _clinicServiceRepository.GetServiceByNameAndCategory(serviceUpdateDTO.Name, serviceUpdateDTO.Category);
 
                 // if (existingService != null && existingService.Id != serviceUpdateDTO.Id)
@@ -340,6 +345,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                 service.DiscountFrom = serviceUpdateDTO.DiscountFrom;
                 service.DiscountTo = serviceUpdateDTO.DiscountTo;
                 service.Image = serviceUpdateDTO.Image ?? service.Image;
+                
 
                 if (serviceUpdateDTO.DiscountFrom > serviceUpdateDTO.DiscountTo)
                 {
@@ -356,6 +362,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     result.Message = "A service with this name already exists";
                     return result;
                 }
+              
                 // Gọi repository để cập nhật service
                 await _clinicServiceRepository.UpdateService(service);
 

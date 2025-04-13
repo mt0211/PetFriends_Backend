@@ -87,7 +87,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
    serverOptions.ListenAnyIP(3000);
 });
 
-
+builder.Services.AddSingleton<IMessageBus, RabbitMQService>();
 ////Register Dependency Injection here:
 /////////////////////////
 builder.Services.AddScoped<PostService>();

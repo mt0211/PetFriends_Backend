@@ -11,7 +11,7 @@ using System.Text;
 
 namespace AppointmentManagementAPI.Repository
 {
-    // Lớp định nghĩa entry trong cache, lưu dữ liệu và thời gian tạo 
+    
     public class CacheEntry<T>
     {
         public T Data { get; set; }

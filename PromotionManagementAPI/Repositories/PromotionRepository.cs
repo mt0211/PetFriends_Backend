@@ -37,8 +37,8 @@ namespace PromotionManagementAPI.Repositories
 
         public async Task AddNewPromotion(Promotion promotion)
         {
-            var sql = @"insert into Promotion (Id, Name, Type, StartDate, EndDate, TargetGroup, CategoryId, UsageLimit, Description, DiscountDetail)
-        values(@Id, @Name, @Type, @StartDate, @EndDate, @TargetGroup, @CategoryId, @UsageLimit, @Description, @DiscountDetail)";
+            var sql = @"insert into Promotion (Id, Name, Type, StartDate, EndDate, TargetGroup, CategoryId, UsageLimit, Description, DiscountDetail, IsExpriedNotified)
+        values(@Id, @Name, @Type, @StartDate, @EndDate, @TargetGroup, @CategoryId, @UsageLimit, @Description, @DiscountDetail, @IsExpriedNotified)";
             var parameters = new[]
             {
             new SqlParameter("@Id", promotion.Id),
@@ -51,6 +51,7 @@ namespace PromotionManagementAPI.Repositories
                    new SqlParameter("@UsageLimit", promotion.UsageLimit),
                      new SqlParameter("@Description", promotion.Description),
                      new SqlParameter("@DiscountDetail", promotion.DiscountDetail),
+                     new SqlParameter("@IsExpriedNotified", promotion.IsExpriedNotified),
         };
             await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
@@ -67,7 +68,33 @@ namespace PromotionManagementAPI.Repositories
             _context.Entry(promotion).Property(s => s.UsageLimit).IsModified = true;
             _context.Entry(promotion).Property(s => s.Description).IsModified = true;
             _context.Entry(promotion).Property(s => s.DiscountDetail).IsModified = true;
+            _context.Entry(promotion).Property(s => s.IsExpriedNotified).IsModified = true;
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdateNoti(Promotion promotion)
+        {
+            _context.Promotions.Attach(promotion);
+            _context.Entry(promotion).Property(s => s.IsExpriedNotified).IsModified = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Promotion>> GetExpiredPromotions(DateTime currentTime)
+        {
+            return await _context.Promotions
+            .Where(p => p.EndDate != null
+            && p.EndDate < currentTime
+            && (p.IsExpriedNotified == null || p.IsExpriedNotified == false))
+            .ToListAsync();
+        }
+        public async Task<Promotion> GetPromotionById(Guid id)
+        {
+            return await _context.Promotions.FirstOrDefaultAsync(p => p.Id == id);
+        }
+        public async Task<Promotion> GetPromotionByName(string name)
+        {
+            return await _context.Promotions.FirstOrDefaultAsync(p => p.Name == name);
+        }
+
     }
 }

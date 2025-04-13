@@ -17,14 +17,16 @@ namespace AppUserAuthenticationAPI.Services
 
         private readonly IAppUserAuthenticationRepository _appUserAuthenticationRepository;
         private readonly IOtpRepository _otpRepository;
+        private readonly IMessageBus _messageBus;
          private readonly GoogleOAuthOptions _googleOAuthOptions;
     private readonly ILogger<AppUserAuthenticationService> _logger;
-        public AppUserAuthenticationService(IAppUserAuthenticationRepository appUserAuthenticationRepository, IOtpRepository otpRepository, IOptions<GoogleOAuthOptions> googleOAuthOptions, ILogger<AppUserAuthenticationService> logger)
+        public AppUserAuthenticationService(IAppUserAuthenticationRepository appUserAuthenticationRepository, IOtpRepository otpRepository, IOptions<GoogleOAuthOptions> googleOAuthOptions, ILogger<AppUserAuthenticationService> logger, IMessageBus messageBus)
         {
             _appUserAuthenticationRepository = appUserAuthenticationRepository;
             _otpRepository = otpRepository;
             _googleOAuthOptions = googleOAuthOptions.Value;
             _logger = logger;
+            _messageBus = messageBus;
         }
         public async Task<ResultModel> Login(UserLoginReqModel userLoginReqModel)
         {
@@ -339,9 +341,11 @@ namespace AppUserAuthenticationAPI.Services
                     FullName = payload.Name,
                     AvatarUrl = payload.Picture,
                     Status = "ACTIVE",
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.Now.AddHours(7),
                     Role = "USER",
-                    LastLoggedIn = DateTime.Now
+                    LastLoggedIn = DateTime.Now,
+                    TypeGroup = "First-Time Visitors"
+                    
                 };
                 
                 await _appUserAuthenticationRepository.Insert(newUser);
@@ -368,6 +372,12 @@ namespace AppUserAuthenticationAPI.Services
                 result.Code = 201; // Created
                 result.Message = "Sign up successfully";
                 result.Data = signUpResData;
+                _messageBus.PublicUserActivity
+                    (
+                        "USER_CREATED",
+                        newUser.Id
+                    );
+                
             }
             catch (InvalidJwtException ex)
             {

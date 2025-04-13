@@ -13,9 +13,11 @@ namespace AccountManagementAPI.Services
     public class AccountService : IAccountService
     {
         private readonly IAccountRepository _repository;
-        public AccountService(IAccountRepository repository)
+        private readonly IMessageBus _messageBus;
+        public AccountService(IAccountRepository repository, IMessageBus messageBus)
         {
             _repository = repository;
+            _messageBus = messageBus;
         }
         public async Task<ResultModel> GetAllAccount(string token, int page)
         {
@@ -190,12 +192,18 @@ namespace AccountManagementAPI.Services
                     var HashedPasswordModel = Encoder.CreateHashPassword(userAddModel.Password);
                     NewAccount.Password = HashedPasswordModel.HashedPassword;
                     NewAccount.Salt = HashedPasswordModel.Salt;
-
+                    NewAccount.CreatedAt = DateTime.Now.AddHours(7);
+                    NewAccount.TypeGroup = "First-Time Visitors";
                     _ = await _repository.Insert(NewAccount);
                     Result.IsSuccess = true;
                     Result.Code = 200;
                     Result.Data = NewAccount;
                     Result.Message = "Add new account successfully!";
+                    _messageBus.PublicUserActivity
+                    (
+                        "USER_CREATED",
+                        NewAccount.Id
+                    );
                 }
             }
             catch (Exception e)

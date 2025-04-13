@@ -13,5 +13,9 @@ namespace RealTimeActivityAPI.Repositories
         Task<Appointment> GetAppointmentById(Guid appointmentId);
         Task<Feedback> GetFeedbackById(Guid feedbackId);
         Task<ClinicService> GetClinicServiceById(Guid clinicServiceId);
+        Task<Promotion> GetPromotionById(Guid promotionId);
+        Task<User> GetUserById(Guid userId);
+        Task<List<Activity>> AdminGetRecentActivities();
+        Task<ForumPost> GetForumPostById(Guid id);
     }
 }
