@@ -43,6 +43,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<GuestUser> GuestUsers { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     public virtual DbSet<OtpVerify> OtpVerifies { get; set; }
 
     public virtual DbSet<Pet> Pets { get; set; }
@@ -424,6 +426,28 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PhoneNumber).HasMaxLength(15);
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC076914165E");
+
+            entity.ToTable("Notification");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ExpiresAt).HasColumnType("datetime");
+            entity.Property(e => e.Message).HasMaxLength(500);
+            entity.Property(e => e.ReadAt).HasColumnType("datetime");
+            entity.Property(e => e.RelatedEntityType).HasMaxLength(50);
+            entity.Property(e => e.Title).HasMaxLength(100);
+            entity.Property(e => e.Type).HasMaxLength(50);
+
+            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_Notification_User");
         });
 
         modelBuilder.Entity<OtpVerify>(entity =>

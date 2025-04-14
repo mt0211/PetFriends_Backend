@@ -49,6 +49,8 @@ public partial class User
 
     public virtual ICollection<ForumPost> ForumPosts { get; set; } = new List<ForumPost>();
 
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     public virtual ICollection<OtpVerify> OtpVerifies { get; set; } = new List<OtpVerify>();
 
     public virtual ICollection<Pet> Pets { get; set; } = new List<Pet>();
