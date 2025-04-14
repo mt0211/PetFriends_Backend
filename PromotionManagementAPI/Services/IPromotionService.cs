@@ -5,7 +5,7 @@ namespace PromotionManagementAPI.Services
 {
     public interface IPromotionService
     {
-        Task<ResultModel> GetListPromotion(string token, int page);
+        Task<ResultModel> GetListPromotion(string token);
         Task<ResultModel> GetAllCategory(string token);
         Task<ResultModel> DeletePromotion(string token, Guid pid);
         Task<ResultModel> AddPromotion(string token, PromotionAddModel promotionAddDTO);

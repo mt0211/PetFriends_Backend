@@ -17,7 +17,7 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
         {
             return await _context.ClinicServices
                 .Include(c => c.CategoryNavigation)
-                .Where(c => c.CategoryNavigation.Status == 1 && c.IsBlocked == 1 && c.Status == "ACTIVE" && c.Status == "INACTIVE")
+                .Where(c => c.CategoryNavigation.Status == 1 && c.IsBlocked == 1 && c.Status == "ACTIVE" || c.Status == "INACTIVE")
                 .Select(c => new
                 {
                     c.Id,

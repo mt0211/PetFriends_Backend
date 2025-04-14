@@ -15,7 +15,7 @@ namespace PromotionManagementAPI.Services
             _promotionRepository = promotionRepository;
             _messageBus = messageBus;
         }
-        public async Task<ResultModel> GetListPromotion(string token, int page)
+        public async Task<ResultModel> GetListPromotion(string token)
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
@@ -39,12 +39,6 @@ namespace PromotionManagementAPI.Services
                     result.Message = "No appointments found";
                     return result;
                 }
-
-                if (page == 0)
-                {
-                    page = 1;
-                }
-
                 //// Transform entities to DTO
                 var promotionList = promotions.Select(a => new PromotionListModel
                 {
@@ -57,13 +51,14 @@ namespace PromotionManagementAPI.Services
                     CategoryName = a.CategoryName,
                     UsageLimit = a.UsageLimit,
                     Status = a.Status,
+                    CreatedAt = a.CreatedAt,
                 }).ToList();
 
                 // Paginate the result
-                var paginatedResult = await Pagination.GetPagination(promotionList, page, 10);
+                //var paginatedResult = await Pagination.GetPagination(promotionList, page, 100);
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = paginatedResult;
+                result.Data = promotionList;
                 result.Message = "Successfully retrieved appointments";
             }
             catch (Exception ex)
@@ -178,6 +173,7 @@ namespace PromotionManagementAPI.Services
                     UsageLimit = promotionAddDTO.UsageLimit,
                     Description = promotionAddDTO.Description,
                     IsExpriedNotified = false,
+                    CreatedAt = DateTime.UtcNow.AddHours(7)
                 };
                 var check = await _promotionRepository.GetPromotionByName(newPromotion.Name);
                 if (check != null)

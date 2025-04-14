@@ -495,6 +495,7 @@ public partial class PetfriendsContext : DbContext
             entity.ToTable("Promotion");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Description).HasMaxLength(100);
             entity.Property(e => e.DiscountDetail).HasColumnType("decimal(14, 2)");
             entity.Property(e => e.EndDate).HasColumnType("datetime");
