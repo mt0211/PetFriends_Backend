@@ -5,24 +5,21 @@ using Microsoft.AspNetCore.WebSockets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using RealTimeActivityAPI.Hubs;
-using RealTimeActivityAPI.Repositories;
-using RealTimeActivityAPI.Services;
 using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // // 1. Cấu hình Kestrel Web Server
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenAnyIP(80); // HTTP port
-     serverOptions.ListenAnyIP(3000);
+// builder.WebHost.ConfigureKestrel(serverOptions =>
+// {
+//     serverOptions.ListenAnyIP(80); // HTTP port
+//      serverOptions.ListenAnyIP(3000);
     
-    // Tối ưu cho WebSocket
-    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
-    serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
-});
+//     // Tối ưu cho WebSocket
+//     serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
+//     serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
+// });
 // 2. Thêm services vào container
 builder.Services.AddControllers();
 
@@ -97,47 +94,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                  NameClaimType = "userid"
         };
 
-        // Xử lý token cho SignalR
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Query["access_token"];
-                var path = context.HttpContext.Request.Path;
-
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/activityHub"))
-                {
-                    context.Token = accessToken;
-                }
-                else if (context.HttpContext.WebSockets.IsWebSocketRequest && 
-                         context.Request.Headers.TryGetValue("Sec-WebSocket-Protocol", out var protocols))
-                {
-                    context.Token = protocols.FirstOrDefault()?.Split(" ").Last();
-                }
-                return Task.CompletedTask;
-            }
-        };
+        
 
         // Xử lý token cho SignalR
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Query["access_token"];
-                var path = context.HttpContext.Request.Path;
+        // options.Events = new JwtBearerEvents
+        // {
+        //     OnMessageReceived = context =>
+        //     {
+        //         var accessToken = context.Request.Query["access_token"];
+        //         var path = context.HttpContext.Request.Path;
 
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/adminActivityHub"))
-                {
-                    context.Token = accessToken;
-                }
-                else if (context.HttpContext.WebSockets.IsWebSocketRequest && 
-                         context.Request.Headers.TryGetValue("Sec-WebSocket-Protocol", out var protocols))
-                {
-                    context.Token = protocols.FirstOrDefault()?.Split(" ").Last();
-                }
-                return Task.CompletedTask;
-            }
-        };
+        //         if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/adminActivityHub"))
+        //         {
+        //             context.Token = accessToken;
+        //         }
+        //         else if (context.HttpContext.WebSockets.IsWebSocketRequest && 
+        //                  context.Request.Headers.TryGetValue("Sec-WebSocket-Protocol", out var protocols))
+        //         {
+        //             context.Token = protocols.FirstOrDefault()?.Split(" ").Last();
+        //         }
+        //         return Task.CompletedTask;
+        //     }
+        // };
     });
 // 7. Cấu hình SignalR
 builder.Services.AddSignalR(options =>
@@ -155,17 +133,17 @@ builder.Services.AddWebSockets(options =>
 });
 
 // Rabbit MQ Consumer
-builder.Services.AddHostedService<AppointmentEventConsumer>();
-builder.Services.AddHostedService<FeedbackEventConsumer>();
-builder.Services.AddHostedService<ClinicServiceEventConsumer>();
-builder.Services.AddHostedService<PromotionEventConsumer>();
-builder.Services.AddHostedService<UserEventConsumer>();
-builder.Services.AddHostedService<ForumPostEventConsumer>();
+// builder.Services.AddHostedService<AppointmentEventConsumer>();
+// builder.Services.AddHostedService<FeedbackEventConsumer>();
+// builder.Services.AddHostedService<ClinicServiceEventConsumer>();
+// builder.Services.AddHostedService<PromotionEventConsumer>();
+// builder.Services.AddHostedService<UserEventConsumer>();
+// builder.Services.AddHostedService<ForumPostEventConsumer>();
 
-// 9. Đăng ký các services
-builder.Services.AddScoped<RealTimeActivityService>();
-builder.Services.AddScoped<IRealTimeActivityService, RealTimeActivityService>();
-builder.Services.AddScoped<IRealTimeActivityAPIRepository, RealTimeActivityAPIRepository>();
+// // 9. Đăng ký các services
+// builder.Services.AddScoped<RealTimeActivityService>();
+// builder.Services.AddScoped<IRealTimeActivityService, RealTimeActivityService>();
+// builder.Services.AddScoped<IRealTimeActivityAPIRepository, RealTimeActivityAPIRepository>();
 
 // 10. Build ứng dụng
 var app = builder.Build();
@@ -206,8 +184,8 @@ app.Use(async (context, next) =>
 });
 
 // 15. Map SignalR Hubs
-app.MapHub<ActivityHub>("/activityHub").RequireCors("AllowClient");
-app.MapHub<AdminActivityHub>("/adminActivityHub").RequireCors("AllowClient");
+// app.MapHub<ActivityHub>("/activityHub").RequireCors("AllowClient");
+// app.MapHub<AdminActivityHub>("/adminActivityHub").RequireCors("AllowClient");
 
 // 16. Map Controllers
 app.MapControllers();
