@@ -27,7 +27,9 @@ namespace PromotionManagementAPI.Repositories
                     c.TargetGroup,
                     CategoryName = c.Category.Name,
                     c.UsageLimit,
+                    c.CreatedAt,
                     c.Status,
+                    
                 }).ToListAsync();
         }
         public async Task<IEnumerable<Category>> GetAllCategory()
@@ -37,8 +39,8 @@ namespace PromotionManagementAPI.Repositories
 
         public async Task AddNewPromotion(Promotion promotion)
         {
-            var sql = @"insert into Promotion (Id, Name, Type, StartDate, EndDate, TargetGroup, CategoryId, UsageLimit, Description, DiscountDetail, IsExpriedNotified)
-        values(@Id, @Name, @Type, @StartDate, @EndDate, @TargetGroup, @CategoryId, @UsageLimit, @Description, @DiscountDetail, @IsExpriedNotified)";
+            var sql = @"insert into Promotion (Id, Name, Type, StartDate, EndDate, TargetGroup, CategoryId, UsageLimit, Description, DiscountDetail, IsExpriedNotified, CreatedAt)
+        values(@Id, @Name, @Type, @StartDate, @EndDate, @TargetGroup, @CategoryId, @UsageLimit, @Description, @DiscountDetail, @IsExpriedNotified, @CreatedAt)";
             var parameters = new[]
             {
             new SqlParameter("@Id", promotion.Id),
@@ -52,6 +54,7 @@ namespace PromotionManagementAPI.Repositories
                      new SqlParameter("@Description", promotion.Description),
                      new SqlParameter("@DiscountDetail", promotion.DiscountDetail),
                      new SqlParameter("@IsExpriedNotified", promotion.IsExpriedNotified),
+                     new SqlParameter("@CreatedAt", promotion.CreatedAt),
         };
             await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
@@ -69,6 +72,7 @@ namespace PromotionManagementAPI.Repositories
             _context.Entry(promotion).Property(s => s.Description).IsModified = true;
             _context.Entry(promotion).Property(s => s.DiscountDetail).IsModified = true;
             _context.Entry(promotion).Property(s => s.IsExpriedNotified).IsModified = true;
+            _context.Entry(promotion).Property(s => s.CreatedAt).IsModified = true;
             await _context.SaveChangesAsync();
         }
 

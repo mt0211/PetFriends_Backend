@@ -16,10 +16,10 @@ namespace PromotionManagementAPI.Controllers
             _service = service;
         }
         [HttpGet("promotion-list")]
-        public async Task<IActionResult> GetListPromotion(int page)
+        public async Task<IActionResult> GetListPromotion()
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            ResultModel result = await _service.GetListPromotion(token,page);
+            ResultModel result = await _service.GetListPromotion(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpGet("category-list")]
