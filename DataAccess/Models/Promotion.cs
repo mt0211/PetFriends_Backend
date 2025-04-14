@@ -29,6 +29,8 @@ public partial class Promotion
 
     public bool? IsExpriedNotified { get; set; }
 
+    public DateTime? CreatedAt { get; set; }
+
     public virtual ICollection<AppointmentPromotion> AppointmentPromotions { get; set; } = new List<AppointmentPromotion>();
 
     public virtual Category? Category { get; set; }
