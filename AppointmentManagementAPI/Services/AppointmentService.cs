@@ -152,6 +152,9 @@ namespace AppointmentManagementAPI.Services
                     _messageBus.PublishAppointmentActivity(
                         "APPOINTMENT_COMPLETED", 
                         appointment.Id);
+                    _messageBus.PublishAppointmentReviewReminderNotification(
+                        "APPOINTMENT_REVIEW_REMINDER",
+                        appointment.Id);
                 }
                 else if (appointmentstatusmodel.Status == "Confirmed")
                 {
@@ -842,6 +845,9 @@ namespace AppointmentManagementAPI.Services
                         };
                          _messageBus.PublishAppointmentActivity(
                         "APPOINTMENT_COMPLETED", 
+                        appointment.Id);
+                         _messageBus.PublishAppointmentReviewReminderNotification(
+                        "APPOINTMENT_REVIEW_REMINDER",
                         appointment.Id);
                     }
                     else if (appointmentUpdate.Status == "Confirmed")

@@ -6,6 +6,7 @@ public class RabbitMQService : IMessageBus
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private const string UserExchangeName = "user_events";
+    private const string UserBirthdayExchangeName = "user_birthday_events";
     public RabbitMQService()
     {
         var factory = new ConnectionFactory()
@@ -34,6 +35,24 @@ public class RabbitMQService : IMessageBus
         _channel.BasicPublish
         (
             exchange: UserExchangeName,
+            routingKey: "",
+            basicProperties: null,
+            body: body
+        );
+    }
+    public void PublicUserBirthdayNotification(string type, Guid userId)
+    {
+        Console.WriteLine($"Publishing message: Type={type}, UserIdDDDDDDDDDDDDDDDDDDDDDDD={userId}");
+        var message = JsonSerializer.Serialize(new
+        {
+            Type = type,
+            UserId = userId,
+            Timestamp = DateTime.UtcNow
+        });
+        var body = Encoding.UTF8.GetBytes(message);
+        _channel.BasicPublish
+        (
+            exchange: UserBirthdayExchangeName,
             routingKey: "",
             basicProperties: null,
             body: body

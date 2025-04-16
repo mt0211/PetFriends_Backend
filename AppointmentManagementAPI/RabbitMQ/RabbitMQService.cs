@@ -7,6 +7,7 @@ public class RabbitMQService : IMessageBus
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private const string ExchangeName = "appointment_events";
+    private const string ReviewRemainderExchangeName = "appointment_reminder_events";
 
     public RabbitMQService()
     {
@@ -36,6 +37,23 @@ public class RabbitMQService : IMessageBus
         var body = Encoding.UTF8.GetBytes(message);
         _channel.BasicPublish(
             exchange: ExchangeName,
+            routingKey: "",
+            basicProperties: null,
+            body: body);
+    }
+
+    public void PublishAppointmentReviewReminderNotification(string type, Guid appointmentId)
+    {
+        Console.WriteLine($"Publishing message: Type={type}, AppointmentIdDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD={appointmentId}");
+        var message = JsonSerializer.Serialize(new {
+            Type = type,
+            AppointmentId = appointmentId,
+            Timestamp = DateTime.UtcNow
+        });
+
+        var body = Encoding.UTF8.GetBytes(message);
+        _channel.BasicPublish(
+            exchange: ReviewRemainderExchangeName,
             routingKey: "",
             basicProperties: null,
             body: body);

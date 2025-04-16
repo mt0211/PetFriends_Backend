@@ -103,11 +103,15 @@ namespace PetManagementAPI.Repository.PetRepository
 
         public async Task DeletePetWithVaccinesAsync(Guid petId)
         {
-            //Delete in PetVaccine table
+            // 1. Xóa các activity liên quan đến Pet này
+            var activities = _context.Activities.Where(a => a.PetId == petId);
+            _context.Activities.RemoveRange(activities);
+
+            // 2. Xóa các UserPetVaccines liên quan
             var petVaccines = _context.UserPetVaccines.Where(pv => pv.PetId == petId);
             _context.UserPetVaccines.RemoveRange(petVaccines);
 
-            //Delete in Pet table
+            // 3. Xóa Pet
             var pet = await _context.Pets.FindAsync(petId);
             if (pet != null)
             {

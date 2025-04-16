@@ -308,5 +308,20 @@ namespace ProfileManagementAppAPI.Repositories
         {
             return await _context.UserCartItems.CountAsync(uc => uc.CartId == cartId);
         }
+
+
+        //APPOINTMENT REMINDER
+        public async Task<List<Appointment>> GetAppointmentReminder(DateTime currenntDate)
+        {
+            var nextDay = currenntDate.AddDays(1);
+            return await _context.Appointments
+            .Where(a=>a.StartAt.HasValue &&
+            a.Status == "Pending" &&
+            a.StartAt.Value > currenntDate &&
+            a.StartAt.Value <= nextDay) 
+            .Include(a => a.User)
+            .Include(a => a.Pet)
+            .ToListAsync();
+        }
     }
 }

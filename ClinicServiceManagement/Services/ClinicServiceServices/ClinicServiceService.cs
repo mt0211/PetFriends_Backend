@@ -210,6 +210,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     Name = service.Name,
                     Description = service.Description,
                     CategoryName = service.CategoryName,
+                    CategoryId = service.CategoryId,
                     Price = service.Price,
                     Status = service.Status,
                     EstimateTime = service.EstimateTime,

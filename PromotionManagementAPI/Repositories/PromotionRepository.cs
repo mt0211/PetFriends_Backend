@@ -93,7 +93,9 @@ namespace PromotionManagementAPI.Repositories
         }
         public async Task<Promotion> GetPromotionById(Guid id)
         {
-            return await _context.Promotions.FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Promotions
+            .Include(p => p.Category)
+            .FirstOrDefaultAsync(p => p.Id == id);
         }
         public async Task<Promotion> GetPromotionByName(string name)
         {

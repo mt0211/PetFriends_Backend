@@ -88,6 +88,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // });
 
 builder.Services.AddSingleton<IMessageBus, RabbitMQService>();
+builder.Services.AddHostedService<AppointmentReminderCheckerService>();
 ////Register Dependency Injection here:
 /////////////////////////
 builder.Services.AddScoped<AppointmentService>();

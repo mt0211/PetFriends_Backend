@@ -210,5 +210,38 @@ namespace AppPetManagementAPI.Repositories
             return await _context.Users.Where(u => u.Role == "ADMIN").ToListAsync();
         }
         
+        public async Task RemoveActivitiesByPetId(Guid petId)
+        {
+            var activities = await _context.Activities
+                .Where(a => a.PetId == petId)
+                .ToListAsync();
+
+            _context.Activities.RemoveRange(activities);
+            await _context.SaveChangesAsync();
+        }
+
+        ///NOTIFICATION HELPER METHOD
+        public async Task<List<Pet>> GetPetBirthday(DateTime currentDate)
+        {
+            // Lấy tất cả pet có ngày sinh nhật trùng với ngày hiện tại (chỉ so sánh ngày và tháng)
+            return await _context.Pets
+                .Where(p => p.DateOfBirth.HasValue && 
+                        p.DateOfBirth.Value.Month == currentDate.Month && 
+                        p.DateOfBirth.Value.Day == currentDate.Day)
+                .ToListAsync();
+        } 
+
+        //Fix api
+        public async Task<Pet> GetPetById (Guid? petId)
+        {
+            return await _context.Pets
+                .FirstOrDefaultAsync(p => p.Id == petId);
+        }
+
+        public async Task UpdatePetVaccination(Pet pet)
+        {
+            _context.Pets.Update(pet);
+            await _context.SaveChangesAsync();
+        }
     }
 }

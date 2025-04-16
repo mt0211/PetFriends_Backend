@@ -8,5 +8,6 @@ namespace AccountManagementAPI.Repositories
         Task<IEnumerable<dynamic>> GetAllAccount();
         Task<User> GetUserByPhoneNumber(string phoneNumber);
         Task<User> GetUserByEmail(string email);
+        Task<List<User>> GetUserBithday(DateTime currentTime);
     }
 }
