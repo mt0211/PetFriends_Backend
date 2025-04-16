@@ -44,5 +44,14 @@ namespace AccountManagementAPI.Repositories
             return user;
         }
 
+        public async Task<List<User>> GetUserBithday(DateTime currentTime)
+        {
+            return await _context.Users
+            .Where(u => u.Dob.HasValue &&
+            u.Dob.Value.Month == currentTime.Month &&
+            u.Dob.Value.Day == currentTime.Day
+            ).ToListAsync();
+        }
+
     }
 }

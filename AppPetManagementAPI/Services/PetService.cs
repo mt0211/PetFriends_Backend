@@ -38,9 +38,9 @@ namespace AppPetManagementAPI.Services
                 var pets = await _repository.GetListPetByUserId(id);
                 if (pets == null || !pets.Any())
                 {
-                    result.IsSuccess = false;
-                    result.Code = 404;
-                    result.Message = "Not found pet";
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Message = "Don't have pet! Let's add pet";
                     return result;
                 }
 
@@ -177,8 +177,10 @@ namespace AppPetManagementAPI.Services
             try
             {
                 var pet = await _repository.Get(PetID);
+                await _repository.RemoveActivitiesByPetId(PetID);
                 await _repository.RemoveUserPetVaccinesByPetId(PetID);
                 await _repository.RemovePetVaccinesByPetId(PetID);
+
                 var deletePet = await _repository.Remove(pet);
                 result.IsSuccess = true;
                 result.Code = 200;
@@ -250,6 +252,9 @@ namespace AppPetManagementAPI.Services
                 }
 
                 await _repository.AddUserPetVaccine(newPetVaccine);
+                var updateVaccination = await _repository.GetPetById(newPetVaccine.PetId);
+                updateVaccination.Vaccinated = 1;
+                await _repository.UpdatePetVaccination(updateVaccination);
                 var injectionsDTO = new List<UserPetVaccineDoseDTO>();
                 foreach (var injection in model.Injections)
                 {

@@ -24,5 +24,13 @@ namespace AppPetManagementAPI.Repositories
         Task<UserPetVaccine> CheckVaccineSystem(Guid vaccineId);
         Task<UserPetVaccine> CheckVaccineName(Guid petId, string vaccineName);
         Task<List<User>> GetListAdmin();
+        Task RemoveActivitiesByPetId(Guid petId);
+
+        //Notification helper method
+        Task<List<Pet>> GetPetBirthday(DateTime currentDate);
+
+        //Fix api
+        Task<Pet> GetPetById (Guid? petId);
+        Task UpdatePetVaccination(Pet pet);
     }
 }

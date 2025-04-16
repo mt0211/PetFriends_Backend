@@ -87,6 +87,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 });
 
 builder.Services.AddSingleton<IMessageBus, RabbitMQService>();
+builder.Services.AddHostedService<UserBirthdayCheckerService>();
 //Register Dependency Injection here:
 ///////////////////////
 builder.Services.AddScoped<AccountService>();

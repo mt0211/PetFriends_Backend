@@ -283,7 +283,7 @@ namespace PromotionManagementAPI.Services
 
             try
             {
-              var promotionDetail = await _promotionRepository.Get(promotionId);
+              var promotionDetail = await _promotionRepository.GetPromotionById(promotionId);
 
                 var promotionDetails = new PromotionDetailModel
                 {
@@ -294,7 +294,7 @@ namespace PromotionManagementAPI.Services
                     StartDate = promotionDetail.StartDate,
                     EndDate = promotionDetail.EndDate,
                     TargetGroup = promotionDetail.TargetGroup,
-                    CategoryId = promotionDetail.CategoryId,
+                    CategoryName = promotionDetail.Category.Name,
                     UsageLimit = promotionDetail.UsageLimit,
                     Status = promotionDetail.Status,
                     Description = promotionDetail.Description,

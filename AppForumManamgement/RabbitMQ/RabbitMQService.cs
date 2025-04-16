@@ -38,4 +38,23 @@ public class RabbitMQService : IMessageBus
             basicProperties: null,
             body: body);
     }
+
+   public void PublicPostReactionNotification(string type, Guid postId, Guid reactingUserId, Guid postOwnerId)
+    {
+        Console.WriteLine($"Publishing message: Type={type}, PostId={postId}, ReactingUserId={reactingUserId}, PostOwnerId={postOwnerId}");
+        var message = JsonSerializer.Serialize(new
+        {
+            Type = type,
+            PostId = postId,
+            ReactingUserId = reactingUserId,
+            PostOwnerId = postOwnerId,
+            Timestamp = DateTime.UtcNow
+        });
+        var body = Encoding.UTF8.GetBytes(message);
+        _channel.BasicPublish(
+            exchange: ExchangeName,
+            routingKey: "",
+            basicProperties: null,
+            body: body);
+    }
 }

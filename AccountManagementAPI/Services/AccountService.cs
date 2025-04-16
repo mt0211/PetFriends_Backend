@@ -5,6 +5,7 @@ using AccountManagementAPI.Utilities;
 using AutoMapper;
 using DataAccess.Models;
 using Microsoft.Identity.Client;
+using Org.BouncyCastle.Utilities;
 using System.Security.Principal;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
@@ -189,11 +190,13 @@ namespace AccountManagementAPI.Services
                     NewAccount.Address = userAddModel.Address;
                     NewAccount.Role = userAddModel.Role;
                     NewAccount.AvatarUrl = userAddModel.AvartarURL;
-                    var HashedPasswordModel = Encoder.CreateHashPassword(userAddModel.Password);
-                    NewAccount.Password = HashedPasswordModel.HashedPassword;
-                    NewAccount.Salt = HashedPasswordModel.Salt;
+                    var rawPassword = string.IsNullOrEmpty(userAddModel.Password) ? "123" : userAddModel.Password;
+                    var hashedPasswordModel = Encoder.CreateHashPassword(rawPassword);
+                    NewAccount.Password = hashedPasswordModel.HashedPassword;
+                    NewAccount.Salt = hashedPasswordModel.Salt;
                     NewAccount.CreatedAt = DateTime.Now.AddHours(7);
                     NewAccount.TypeGroup = "First-Time Visitors";
+                    
                     _ = await _repository.Insert(NewAccount);
                     Result.IsSuccess = true;
                     Result.Code = 200;

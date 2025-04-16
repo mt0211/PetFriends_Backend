@@ -10,5 +10,6 @@ namespace AppUserAuthenticationAPI.Services
         Task<ResultModel> Login(UserLoginReqModel userLoginReqModel);
         Task<ResultModel> LoginWithGoogle(string googleToken);
         Task<ResultModel> SignUpWithGoogle(string googleToken);
+        Task<ResultModel> UpdateUserFullNameAndPhoneNumber(UpdateUserFullNameAndPhoneNumber userUpdateFullNameandPhoneNumberModel);
     }
 }

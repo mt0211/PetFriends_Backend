@@ -400,5 +400,43 @@ namespace AppUserAuthenticationAPI.Services
 
             return result;
         }
+        public async Task<ResultModel> UpdateUserFullNameAndPhoneNumber(UpdateUserFullNameAndPhoneNumber userUpdateFullNameandPhoneNumberModel)
+        {
+            ResultModel Result = new();
+            try
+            {
+                var user = await _appUserAuthenticationRepository.Get(userUpdateFullNameandPhoneNumberModel.Id);
+                
+                if (user == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Not found";
+                    return Result;
+                }else if (user.TypeGroup != "First-Time Visitors")
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "This method is only available for first-time visitors";
+                    return Result;
+                }
+                user.FullName = userUpdateFullNameandPhoneNumberModel.FullName;
+                user.PhoneNumber = userUpdateFullNameandPhoneNumberModel.PhoneNumber;
+                _ = await _appUserAuthenticationRepository.Update(user);
+                Result.IsSuccess = true;
+                Result.Data = user;
+                Result.Code = 200;
+                Result.Message = "Updated full name successfully";
+            
+            }
+            catch (Exception ex)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = ex.Message;
+
+            }
+            return Result;
+        }
     }
 }
