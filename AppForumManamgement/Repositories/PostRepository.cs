@@ -117,6 +117,7 @@ namespace AppForumManamgement.Repositories
                     Id = p.Id,
                     UserId = p.UserId,
                     UserName = p.User.FullName,
+                    UserAvatarUrl = p.User.AvatarUrl,
                     PostContent = p.PostContent,
                     ImageUrl = p.ImageUrl,
                     Status = p.Status,

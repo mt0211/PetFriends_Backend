@@ -62,6 +62,22 @@ namespace AppUserAuthenticationAPI.Controllers
             ResultModel result = await _appUserAuthenticationService.SignUpWithGoogle(googleLoginDTO.Token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+        [HttpPut("update-fullname")]
+        public async Task<IActionResult> UpdateUserFullName([FromBody] UpdateUserFullName userUpdateFullNameModel)
+        {
+            var userIdString = User.FindFirst("userid")?.Value;
 
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("Unable to retrieve user ID");
+            }
+
+            if (!Guid.TryParse(userIdString, out Guid userId))
+            {
+                return BadRequest("Invalid user ID format");
+            }
+            ResultModel result = await _appUserAuthenticationService.UpdateUserFullName(userUpdateFullNameModel);
+            return result.IsSuccess ? Ok(result) : BadRequest(result);
+        }
     }
 }

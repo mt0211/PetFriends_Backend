@@ -26,7 +26,7 @@ namespace UserAuthenticationAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> CreateUser([FromBody] UserReqModel Form)
         {
-            
+
             ResultModel result = await _userService.CreateAccount(Form);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
@@ -52,7 +52,7 @@ namespace UserAuthenticationAPI.Controllers
             var result = await _userService.GetUserProfile(userId);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-        
+
 
         [HttpPut("update-profile")]
         public async Task<IActionResult> UpdateUserProfile([FromBody] UserUpdateModel updateModel)
@@ -71,6 +71,7 @@ namespace UserAuthenticationAPI.Controllers
             ResultModel result = await _userService.UpdateUserProfile(updateModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+
 
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordReqModel changePasswordModel)
@@ -116,7 +117,7 @@ namespace UserAuthenticationAPI.Controllers
             ResultModel result = await _verifyService.VerifyEmail(VerifyModel.Email, VerifyModel.OTPCode);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-        
+
         [HttpPost("verify-reset-password")]
         public async Task<IActionResult> VerifyResetPassword([FromBody] UserVerifyOTPResModel VerifyModel)
         {
@@ -143,5 +144,6 @@ namespace UserAuthenticationAPI.Controllers
             ResultModel result = await _userService.SignUpWithGoogle(googleLoginDTO.Token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
+      
     }
 }

@@ -73,7 +73,7 @@
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? TargetGroup { get; set; }
-        public Guid? CategoryId { get; set; }
+        public string CategoryName { get; set; }
         public int UsageLimit { get; set; }
         public string Status { get; set; }
         public string? Description { get; set; }

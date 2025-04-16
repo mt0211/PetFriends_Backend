@@ -208,6 +208,36 @@ namespace AppForumManamgement.Services
                         UserReaction = request.IsLike ? "like" : "dislike"
                     };
                     result.Message = $"Successfully added {(request.IsLike ? "like" : "dislike")}";
+                    // Ví dụ khi người dùng like bài viết:
+                    if (request.IsAdd && request.IsLike)
+                    {
+                        // Lấy thông tin chủ bài viết
+                        var post = await _repository.Get(request.PostId);
+                        if (post != null && post.UserId != id) // Chỉ gửi thông báo nếu người like khác chủ bài viết
+                        {
+                            _messageBus.PublicPostReactionNotification(
+                                "POST_LIKE",
+                                request.PostId,
+                                id, // ID người like
+                                post.UserId.Value // ID chủ bài viết
+                            );
+                        }
+                    }
+
+                    // Tương tự cho dislike:
+                    if (request.IsAdd && !request.IsLike)
+                    {
+                        var post = await _repository.Get(request.PostId);
+                        if (post != null && post.UserId != id)
+                        {
+                            _messageBus.PublicPostReactionNotification(
+                                "POST_DISLIKE",
+                                request.PostId,
+                                id,
+                                post.UserId.Value
+                            );
+                        }
+                    }
                 }
                 // Nếu chưa reaction và yêu cầu là xóa reaction (trường hợp không hợp lệ)
                 else
@@ -292,6 +322,16 @@ namespace AppForumManamgement.Services
                 UpdatedAt = DateTime.UtcNow
                };
                await _repository.AddCommentPost(comment);
+               var post = await _repository.Get(addmodel.PostId);
+               if (post != null)
+               {
+                _messageBus.PublicPostReactionNotification(
+                "POST_COMMENT",
+                addmodel.PostId,
+                id, // ID người comment
+                post.UserId.Value // ID chủ bài viết
+                );
+               }
                result.IsSuccess = true;
                result.Code = 200;
                result.Message = "Successfully add comment";

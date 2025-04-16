@@ -81,11 +81,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 
-// builder.WebHost.ConfigureKestrel(serverOptions =>
-// {
-//     serverOptions.ListenAnyIP(80);
-//     serverOptions.ListenAnyIP(3000);
-// });
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(80);
+    serverOptions.ListenAnyIP(3000);
+});
 
 builder.Services.AddSingleton<IMessageBus, RabbitMQService>();
 builder.Services.AddHostedService<PromotionExpiredChecker>();

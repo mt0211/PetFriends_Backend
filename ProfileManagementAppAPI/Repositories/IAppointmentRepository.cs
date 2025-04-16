@@ -50,5 +50,8 @@ namespace ProfileManagementAppAPI.Repositories
          Task<Appointment> GetAppointmentDetailById(Guid appointmentId);
          Task<bool> CheckReview(Guid appointmentId);
          Task<int> CountService(Guid cartId);
+
+         //APPOINTMENT REMINDER
+         Task<List<Appointment>> GetAppointmentReminder(DateTime currenntDate);
     }
 }

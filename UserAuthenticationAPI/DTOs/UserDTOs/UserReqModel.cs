@@ -72,3 +72,9 @@
         public string OTP { get; set; }
         public string Email { get; set; }
     }
+
+    public class UserUpdateFullNameModel
+    {
+        public Guid Id { get; set; }
+        public  string FullName { get; set; }
+    }
