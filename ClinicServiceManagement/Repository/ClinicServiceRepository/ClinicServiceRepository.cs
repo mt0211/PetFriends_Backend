@@ -49,6 +49,7 @@ namespace ClinicServiceManagementAPI.Repository.ClinicServiceRepository
                     s.Name,
                     s.Description,
                     CategoryName = s.CategoryNavigation.Name,
+                    CategoryId = s.CategoryNavigation.Id,
                     s.Price,
                     s.Status,
                     s.EstimateTime,

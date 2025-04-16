@@ -10,16 +10,17 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// // 1. Cấu hình Kestrel Web Server
-// builder.WebHost.ConfigureKestrel(serverOptions =>
-// {
-//     serverOptions.ListenAnyIP(80); // HTTP port
-//      serverOptions.ListenAnyIP(3000);
+// 1. Cấu hình Kestrel Web Server
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(80); // HTTP port
+    serverOptions.ListenAnyIP(3000);
     
-//     // Tối ưu cho WebSocket
-//     serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
-//     serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
-// });
+    // Tối ưu cho WebSocket
+    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(120);
+    serverOptions.Limits.MaxConcurrentUpgradedConnections = 100;
+});
+
 // 2. Thêm services vào container
 builder.Services.AddControllers();
 
@@ -91,10 +92,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"])),
-                 NameClaimType = "userid"
+            NameClaimType = "userid"
         };
-
-        
 
         // Xử lý token cho SignalR
         options.Events = new JwtBearerEvents
@@ -117,6 +116,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
+
+// Thêm UserIdProvider để SignalR biết cách xác định userId từ token
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+
 // 7. Cấu hình SignalR
 builder.Services.AddSignalR(options =>
 {
@@ -133,15 +136,15 @@ builder.Services.AddWebSockets(options =>
 });
 
 // Rabbit MQ Consumer
-
 builder.Services.AddHostedService<PetEventConsumer>();
 builder.Services.AddHostedService<UserEventConsumer>();
 builder.Services.AddHostedService<AppointmentEventConsumer>();
 builder.Services.AddHostedService<ForumPostEventConsumer>();
 
-// // 9. Đăng ký các services
-// builder.Services.AddScoped<RealTimeActivityService>();
-// builder.Services.AddScoped<IRealTimeActivityAPIRepository, RealTimeActivityAPIRepository>();
+//SignalR service
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+
+// 9. Đăng ký các services
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
@@ -155,8 +158,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-    app.UseSwagger();
-    app.UseSwaggerUI(); 
+app.UseSwagger();
+app.UseSwaggerUI(); 
 app.UseHttpsRedirection();
 
 // 12. Cấu hình middleware theo đúng thứ tự
@@ -185,8 +188,6 @@ app.Use(async (context, next) =>
 });
 
 // 15. Map SignalR Hubs
-// app.MapHub<ActivityHub>("/activityHub").RequireCors("AllowClient");
-// app.MapHub<AdminActivityHub>("/adminActivityHub").RequireCors("AllowClient");
 app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowClient");
 
 // 16. Map Controllers
@@ -194,3 +195,14 @@ app.MapControllers();
 
 // 17. Chạy ứng dụng
 app.Run();
+
+// // Định nghĩa CustomUserIdProvider
+// public class CustomUserIdProvider : IUserIdProvider
+// {
+//     public string GetUserId(HubConnectionContext connection)
+//     {
+//         var userId = connection.User?.FindFirst("userid")?.Value;
+//         Console.WriteLine($"GetUserId called, returning: {userId}");
+//         return userId;
+//     }
+// }

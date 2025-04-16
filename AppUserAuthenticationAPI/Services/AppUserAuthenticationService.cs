@@ -187,7 +187,7 @@ namespace AppUserAuthenticationAPI.Services
                         var HashedPasswordModel = Encoder.CreateHashPassword(RegisterForm.Password);
                         NewUser.Password = HashedPasswordModel.HashedPassword;
                         NewUser.Salt = HashedPasswordModel.Salt;
-
+                        NewUser.PhoneNumber = RegisterForm.PhoneNumber;
                         _ = await _appUserAuthenticationRepository.Insert(NewUser);
 
                         OtpVerify otpVerify = new OtpVerify
@@ -400,7 +400,7 @@ namespace AppUserAuthenticationAPI.Services
 
             return result;
         }
-        public async Task<ResultModel> UpdateUserFullNameAndPhoneNumber(UpdateUserFullNameAndPhoneNumber userUpdateFullNameandPhoneNumberModel)
+        public async Task<ResultModel> UpdateUserFullName(UpdateUserFullName userUpdateFullNameandPhoneNumberModel)
         {
             ResultModel Result = new();
             try
@@ -421,7 +421,6 @@ namespace AppUserAuthenticationAPI.Services
                     return Result;
                 }
                 user.FullName = userUpdateFullNameandPhoneNumberModel.FullName;
-                user.PhoneNumber = userUpdateFullNameandPhoneNumberModel.PhoneNumber;
                 _ = await _appUserAuthenticationRepository.Update(user);
                 Result.IsSuccess = true;
                 Result.Data = user;
