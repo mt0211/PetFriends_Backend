@@ -119,6 +119,7 @@ namespace AppForumManamgement.Repositories
                     UserName = p.User.FullName,
                     UserAvatarUrl = p.User.AvatarUrl,
                     PostContent = p.PostContent,
+                    TotalComment = p.ForumComments.Count(),
                     ImageUrl = p.ImageUrl,
                     Status = p.Status,
                     CreatedAt = p.CreatedAt,
