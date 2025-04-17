@@ -18,6 +18,7 @@ public class AppointmentReminderCheckerService : BackgroundService
             try
             {
                 await CheckAppointmentReminders();
+                await CheckAppointmentReminder1Hours();
 
                 _logger?.LogInformation("Checking appointment reminders...");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
@@ -47,6 +48,28 @@ public class AppointmentReminderCheckerService : BackgroundService
                 bus.PublishAppointmentReminderNotification
                 (
                     "APPOINTMENT_REMINDER",
+                    appointment.Id
+                );
+            }
+        }
+    }
+
+    public async Task CheckAppointmentReminder1Hours()
+    {
+        _logger?.LogInformation("Checking appointment reminders...");
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var repo = scope.ServiceProvider.GetRequiredService<IAppointmentRepository>();
+            var bus = scope.ServiceProvider.GetRequiredService<IMessageBus>();
+               var vietnamTime = DateTime.UtcNow.AddHours(7);
+               var appointmentReminder = await repo.GetAppointmentReminder1hours(vietnamTime);
+               _logger?.LogInformation($"Found {appointmentReminder.Count} appointment reminders");
+               foreach (var appointment in appointmentReminder)
+               {
+                _logger?.LogInformation($"Sending appointment reminder notification for appointment {appointment.Id}");
+                bus.PublishAppointmentReminderNotification
+                (
+                    "APPOINTMENT_REMINDER_1_HOUR",
                     appointment.Id
                 );
             }

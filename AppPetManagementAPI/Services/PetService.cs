@@ -328,7 +328,13 @@ namespace AppPetManagementAPI.Services
                 }
                 var userPetVaccine = await _repository.GetUserPetVaccineById(model.VaccineId);
                 var checkVaccineSystem = await _repository.CheckVaccineSystem(model.VaccineId);
-
+                if (checkVaccineSystem.VaccineId != null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Can't update vaccine system's name";
+                    return result;
+                }
                 if (userPetVaccine == null)
                 {
                     result.IsSuccess = false;
@@ -391,14 +397,7 @@ namespace AppPetManagementAPI.Services
                         await _repository.UpdateUserPetVaccineDose(existingDose);
                         // SaveChange sau khi cập nhật
                     }
-                }
-                if (checkVaccineSystem.VaccineId != null)
-                {
-                    result.IsSuccess = false;
-                    result.Code = 400;
-                    result.Message = "Can't update vaccine system's name";
-                    return result;
-                }
+                }            
                 // 6️⃣ Lưu thay đổi UserPetVaccine
                 await _repository.UpdateUserPetVaccine(userPetVaccine);
 
@@ -414,7 +413,7 @@ namespace AppPetManagementAPI.Services
                         DoseNumber = d.DoseNumber,
                         DateGiven = d.DateGiven ?? DateTime.MinValue
                     })
-        .ToList()
+                    .ToList()
                 };
 
                 // Trả về DTO

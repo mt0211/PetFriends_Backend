@@ -193,6 +193,11 @@ namespace PromotionManagementAPI.Services
                 "PROMOTION_CREATED",
                 newPromotion.Id
             );
+            _messageBus.PublishPormotionNotification
+            (
+                "PROMOTION_CREATED",
+                newPromotion.Id
+            );
         }
             catch (Exception ex)
             {
@@ -244,6 +249,14 @@ namespace PromotionManagementAPI.Services
                 {
                     newPromotion.IsExpriedNotified = false;
                 }
+                if (oldPromotion.StartDate < newPromotion.StartDate || oldPromotion.EndDate < newPromotion.EndDate)
+                {
+                    _messageBus.PublishPormotionNotification
+                    (
+                        "PROMOTION_UPDATED",
+                        newPromotion.Id
+                    );
+                } 
                 var check = await _promotionRepository.GetPromotionByName(newPromotion.Name);
                 if (check!= null &&check.Id != newPromotion.Id)
                 {

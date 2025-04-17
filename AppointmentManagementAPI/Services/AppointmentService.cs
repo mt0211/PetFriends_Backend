@@ -187,6 +187,10 @@ namespace AppointmentManagementAPI.Services
                       _messageBus.PublishAppointmentActivity(
                         "APPOINTMENT_CONFIRMED", 
                         appointment.Id);
+
+                        _messageBus.PublishAppointmentConfirmedNotification(
+                        "APPOINTMENT_CONFIRMATION",
+                        appointment.Id);
                 }
                 else if (appointmentstatusmodel.Status == "Canceled")
                 {

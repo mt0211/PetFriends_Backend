@@ -323,5 +323,18 @@ namespace ProfileManagementAppAPI.Repositories
             .Include(a => a.Pet)
             .ToListAsync();
         }
+
+        public async Task<List<Appointment>> GetAppointmentReminder1hours(DateTime currenntDate)
+        {
+            var nextDay = currenntDate.AddHours(1);
+            return await _context.Appointments
+            .Where(a=>a.StartAt.HasValue &&
+            a.Status == "Pending" &&
+            a.StartAt.Value > currenntDate &&
+            a.StartAt.Value <= nextDay) 
+            .Include(a => a.User)
+            .Include(a => a.Pet)
+            .ToListAsync();
+        }
     }
 }
