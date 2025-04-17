@@ -135,6 +135,9 @@ builder.Services.AddWebSockets(options =>
     options.KeepAliveInterval = TimeSpan.FromSeconds(120);
 });
 
+//HttpClientFactory
+builder.Services.AddHttpClient();
+
 // Rabbit MQ Consumer
 builder.Services.AddHostedService<PetEventConsumer>();
 builder.Services.AddHostedService<UserEventConsumer>();
@@ -148,6 +151,9 @@ builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<PushTokenService>();
+builder.Services.AddScoped<IPushTokenRepository, PushTokenRepository>();
+builder.Services.AddScoped<IPushTokenService, PushTokenService>();
 
 // 10. Build ứng dụng
 var app = builder.Build();
