@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.SignalR;
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _repository;
+    private readonly IPushTokenService _pushTokenService;
     private readonly IHubContext<NotificationHub> _hubContext;
-    public NotificationService(INotificationRepository repository, IHubContext<NotificationHub> hubContext)
+    public NotificationService(INotificationRepository repository, IHubContext<NotificationHub> hubContext, IPushTokenService pushTokenService)
     {
         _repository = repository;
         _hubContext = hubContext;
+        _pushTokenService = pushTokenService;
     }
 
     private NotificationDTO MapToDTO(Notification notification)
@@ -166,6 +168,19 @@ public class NotificationService : INotificationService
         notificationDto.Metadata.Add("userId", notification.UserId.ToString());
         
         await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
+
+        await _pushTokenService.SendPushNotificationAsync(
+            notification.UserId,
+            notification.Title,
+            notification.Message,
+            new Dictionary<string, string> 
+            { 
+                { "type", type }, 
+                { "petId", petId.ToString() },
+                { "notificationId", notification.Id.ToString() }
+            }
+        );
+
         return notificationDto;
     }
 
@@ -192,6 +207,19 @@ public class NotificationService : INotificationService
         var notificationDto = MapToDTO(CreateNotification);
         notificationDto.Metadata.Add("userId", notification.UserId.ToString());
           await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
+
+         await _pushTokenService.SendPushNotificationAsync(
+            notification.UserId,
+            notification.Title,
+            notification.Message,
+            new Dictionary<string, string> 
+            { 
+                { "type", type }, 
+                { "userId", userId.ToString() },
+                { "notificationId", notification.Id.ToString() }
+            }
+        );
+
         return notificationDto;
     }
 
@@ -218,6 +246,19 @@ public class NotificationService : INotificationService
         var notificationDto = MapToDTO(CreateNotification);
         notificationDto.Metadata.Add("userId", notification.UserId.ToString());
         await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
+
+        await _pushTokenService.SendPushNotificationAsync(
+            notification.UserId,
+            notification.Title,
+            notification.Message,
+            new Dictionary<string, string>
+            {
+                { "type", type },
+                { "appointmentId", appointmentId.ToString() },
+                { "notificationId", notification.Id.ToString() }
+            }
+        );
+
         return notificationDto;
     }
 
@@ -259,6 +300,18 @@ public class NotificationService : INotificationService
         
         // Gửi thông báo realtime qua SignalR
         await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
+
+        await _pushTokenService.SendPushNotificationAsync(
+            notification.UserId,
+            notification.Title,
+            notification.Message,
+            new Dictionary<string, string>
+            {
+                { "type", type },
+                { "postId", postId.ToString() },
+                { "notificationId", notification.Id.ToString() }
+            }
+        );
         return notificationDto;
     }
 
