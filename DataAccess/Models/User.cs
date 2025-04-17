@@ -61,6 +61,8 @@ public partial class User
 
     public virtual ICollection<UserPostReaction> UserPostReactions { get; set; } = new List<UserPostReaction>();
 
+    public virtual ICollection<UserPushToken> UserPushTokens { get; set; } = new List<UserPushToken>();
+
     public virtual ICollection<VideoCall> VideoCallCallers { get; set; } = new List<VideoCall>();
 
     public virtual ICollection<VideoCall> VideoCallReceivers { get; set; } = new List<VideoCall>();

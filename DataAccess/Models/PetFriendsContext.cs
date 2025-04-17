@@ -69,6 +69,8 @@ public partial class PetfriendsContext : DbContext
 
     public virtual DbSet<UserPostReaction> UserPostReactions { get; set; }
 
+    public virtual DbSet<UserPushToken> UserPushTokens { get; set; }
+
     public virtual DbSet<Vaccine> Vaccines { get; set; }
 
     public virtual DbSet<VaccineDose> VaccineDoses { get; set; }
@@ -687,6 +689,23 @@ public partial class PetfriendsContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserPostReactions)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_UserPostReaction_User");
+        });
+
+        modelBuilder.Entity<UserPushToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__UserPush__3214EC070EB6CB76");
+
+            entity.ToTable("UserPushToken");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.DeviceType).HasMaxLength(50);
+            entity.Property(e => e.Token).HasMaxLength(255);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserPushTokens)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_UserPushToken_User");
         });
 
         modelBuilder.Entity<Vaccine>(entity =>
