@@ -6,6 +6,8 @@ public class RabbitMQService : IMessageBus
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private const string ExchangeName = "forum_post_events";
+
+    private const string ReactionExchangeName = "forum_post_reaction_events";
     public RabbitMQService()
     {
         var factory = new ConnectionFactory()
@@ -19,6 +21,7 @@ public class RabbitMQService : IMessageBus
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
         _channel.ExchangeDeclare(ExchangeName, ExchangeType.Fanout);
+        _channel.ExchangeDeclare(ReactionExchangeName, ExchangeType.Fanout);
     }
 
     public void PublistPostActivity(string type, Guid postId)
@@ -52,7 +55,7 @@ public class RabbitMQService : IMessageBus
         });
         var body = Encoding.UTF8.GetBytes(message);
         _channel.BasicPublish(
-            exchange: ExchangeName,
+            exchange: ReactionExchangeName,
             routingKey: "",
             basicProperties: null,
             body: body);

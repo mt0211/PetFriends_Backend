@@ -23,6 +23,7 @@ public class RabbitMQService : IMessageBus
         _channel = _connection.CreateModel();
         
         _channel.ExchangeDeclare(ExchangeName, ExchangeType.Fanout);
+        _channel.ExchangeDeclare(ReviewRemainderExchangeName, ExchangeType.Fanout);
     }
 
     public void PublishAppointmentActivity(string type, Guid appointmentId)
@@ -51,6 +52,21 @@ public class RabbitMQService : IMessageBus
             Timestamp = DateTime.UtcNow
         });
 
+        var body = Encoding.UTF8.GetBytes(message);
+        _channel.BasicPublish(
+            exchange: ReviewRemainderExchangeName,
+            routingKey: "",
+            basicProperties: null,
+            body: body);
+    }
+    public void PublishAppointmentConfirmedNotification(string type, Guid appointmentId)
+    {
+        Console.WriteLine($"Publishing message: Type={type}, AppointmentIdDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD={appointmentId}");
+        var message = JsonSerializer.Serialize(new {
+            Type = type,
+            AppointmentId = appointmentId,
+            Timestamp = DateTime.UtcNow
+        });
         var body = Encoding.UTF8.GetBytes(message);
         _channel.BasicPublish(
             exchange: ReviewRemainderExchangeName,

@@ -16,13 +16,13 @@ public class NotificationService : INotificationService
     private NotificationDTO MapToDTO(Notification notification)
     {
         var metadata = new Dictionary<string, string>();
-        
+
         if (notification.RelatedEntityId.HasValue && !string.IsNullOrEmpty(notification.RelatedEntityType))
         {
             metadata.Add("entityId", notification.RelatedEntityId.Value.ToString());
             metadata.Add("entityType", notification.RelatedEntityType);
         }
-        
+
         return new NotificationDTO
         {
             Id = notification.Id,
@@ -36,7 +36,7 @@ public class NotificationService : INotificationService
             Metadata = metadata
         };
     }
-    
+
     //Pet birthday notification message
     private string GetPetBirthdayNotificationMessage(string type, Pet pet)
     {
@@ -45,7 +45,7 @@ public class NotificationService : INotificationService
         {
             "PET_BIRTHDAY" => $"🎉 Happy Birthday, {petName}! Wishing your furry friend a day full of belly rubs, tasty treats, and joyful tail wags. From all of us at PetFriends, thank you for letting us be part of {petName}'s journey. Here's to more healthy, happy years ahead! 🐾💙",
             _ => $"Updated from pet {petName}"
-        };      
+        };
     }
 
     //User birthday notification message
@@ -69,6 +69,8 @@ public class NotificationService : INotificationService
         {
             "APPOINTMENT_REVIEW_REMINDER" => $"🐾 Hey {userName}, just a reminder that your appointment with {petName} on {appointmentDate} has been completed! We'd love to hear your feedback so we can continue improving and make your experience even better 🐕💕",
             "APPOINTMENT_REMINDER" => $"🐾 Hey {userName}, just a reminder that you and your furry friend {petName} have an appointment coming up within 24 hours! Make sure to bring their favorite toy or blanket if they get nervous. See you soon at PetFriends! 🐕💕",
+            "APPOINTMENT_CONFIRMATION" => $"🐾 Hey {userName}, your appointment with {petName} on {appointmentDate} has been confirmed! We're looking forward to seeing you and your furry friend. See you soon at PetFriends! 🐕💕",
+            "APPOINTMENT_REMINDER_1_HOUR" => $"🐾 Hey {userName}, your appointment with {petName} is just 1 hour away! Make sure to bring their favorite toy or blanket if they get nervous. See you soon at PetFriends! 🐕💕",
             _ => $"Updated from appointment",
         };
     }
@@ -79,7 +81,7 @@ public class NotificationService : INotificationService
         string userName = reactingUser?.FullName ?? "Someone";
         string truncatedContent = TruncateContent(post?.PostContent ?? "your post", 50);
         string time = DateTime.UtcNow.AddHours(7).ToString("HH:mm dd/MM/yyyy");
-        
+
         return type switch
         {
             "POST_LIKE" => $"👍 {userName} liked your post: \"{truncatedContent}\" at {time}",
@@ -88,6 +90,54 @@ public class NotificationService : INotificationService
             _ => $"There's new activity on your post: \"{truncatedContent}\" at {time}"
         };
     }
+
+    //Promotion post notification message
+    private string GetPromotionNotificationMessage(string type, Promotion promotion)
+    {
+        string promotionName = promotion.Name;
+        string startDate = promotion.StartDate?.ToString("HH:mm dd/MM/yyyy");
+        string endDate = promotion.EndDate?.ToString("HH:mm dd/MM/yyyy");
+        string targetGroup = promotion.TargetGroup;
+        return type switch
+        {
+            "PROMOTION_UPDATED" => $"🎉 Hey, we just has a new updated for promotion {promotionName} for with users {targetGroup} , start date {startDate} to end date {endDate}. Let's check it out",
+            "PROMOTION_CREATED" => $"🎉 Hey, we just has a new promotion {promotionName} for with users {targetGroup} , start date {startDate} to end date {endDate}. Let's check it out",
+            _ => "Updated from promotion"
+        };
+    }
+
+
+    //Clinic service notification message
+    private string GetClinicServiceNotificationMessage(string type, ClinicService clinicService)
+    {
+        string clinicServiceName = clinicService.Name;
+        string discountFrom = clinicService.DiscountFrom?.ToString("HH:mm dd/MM/yyyy");
+        string discountTo = clinicService.DiscountTo?.ToString("HH:mm dd/MM/yyyy");
+        return type switch
+        {
+            "CLINIC_SERVICE_UPDATED" => $"🎉 Hey, we just has a new updated for clinic service {clinicServiceName} with discount from {discountFrom} to {discountTo}. Let's check it out",
+            "CLINIC_SERVICE_CREATED" => $"🎉 Hey, we just has a new clinic service {clinicServiceName} with discount from {discountFrom} to {discountTo}. Let's check it out",
+            _ => "Updated from clinic service"
+        };
+    }
+
+
+    //Vaccine service notification message
+    private string GetVaccineNotificationMessage(string type, UserPetVaccine vaccineService)
+    {
+        string vaccineName = vaccineService.Name;
+        string petName = vaccineService.Pet.Name;
+        int doseNumber = vaccineService.DoseNumber;
+
+        return type switch
+        {
+            "VACCINE_REMINDER" =>
+                $"🎉 Hey! Your pet {petName} is due for dose {doseNumber} of the {vaccineName} vaccine. Please bring {petName} in for vaccination.",
+            _ => string.Empty
+        };
+    }
+
+
 
     // Helper method để cắt ngắn nội dung bài viết
     private string TruncateContent(string content, int maxLength)
@@ -116,7 +166,7 @@ public class NotificationService : INotificationService
         {
             "USER_BIRTHDAY" => $"Happy Birthday, {userName}!",
             _ => $"Update from user {userName}"
-        };    
+        };
     }
 
     //Appointment notification title
@@ -126,24 +176,163 @@ public class NotificationService : INotificationService
         {
             "APPOINTMENT_REVIEW_REMINDER" => "Appointment Review Reminder!",
             "APPOINTMENT_REMINDER" => "Appointment Reminder!",
-        _ => $"Update from appointment"
+            "APPOINTMENT_CONFIRMATION" => "Appointment Confirmed!",
+            "APPOINTMENT_REMINDER_1_HOUR" => "Appointment Reminder!",
+            _ => $"Update from appointment"
         };
     }
 
     //Forum post notification title
-   private string GetPostInteractionTitle(string type, User reactingUser, ForumPost post)
-{
-    string userName = reactingUser?.FullName ?? "Someone";
-    string truncatedContent = TruncateContent(post?.PostContent ?? "your post", 30);
-    
-    return type switch
+    private string GetPostInteractionTitle(string type, User reactingUser, ForumPost post)
     {
-        "POST_LIKE" => $"{userName} liked your post",
-        "POST_DISLIKE" => $"{userName} disliked your post",
-        "POST_COMMENT" => $"{userName} commented on your post",
-        _ => $"New activity on your post"
-    };
-}
+        string userName = reactingUser?.FullName ?? "Someone";
+        string truncatedContent = TruncateContent(post?.PostContent ?? "your post", 30);
+
+        return type switch
+        {
+            "POST_LIKE" => $"{userName} liked your post",
+            "POST_DISLIKE" => $"{userName} disliked your post",
+            "POST_COMMENT" => $"{userName} commented on your post",
+            _ => $"New activity on your post"
+        };
+    }
+
+    //Promotion notification title
+    private string GetPromotionNotificationTitle(string type, Promotion promotion)
+    {
+        string promotionName = promotion.Name;
+        return type switch
+        {
+            "PROMOTION_UPDATED" => $"New updated for promotion: {promotionName}",
+            "PROMOTION_CREATED" => $"New promotion: {promotionName}",
+            _ => $"Update from promotion"
+        };
+    }
+
+    //Clinic service notification title
+    private string GetClinicServiceNotificationTitlee(string type, ClinicService clinicService)
+    {
+        string clinicServiceName = clinicService.Name;
+        return type switch
+        {
+            "CLINIC_SERVICE_UPDATED" => $"New updated for clinic service: {clinicServiceName}",
+            "CLINIC_SERVICE_CREATED" => $"New clinic service: {clinicServiceName}",
+            _ => $"Update from clinic service"
+        };
+    }
+
+    //Vaccine service notification title
+    private string GetVaccineNotificationTitle(string type, UserPetVaccine vaccineService)
+    {
+        string vaccineName = vaccineService.Name;
+        string petName = vaccineService.Pet.Name;
+        int doseNumber = vaccineService.DoseNumber;
+        return type switch
+        {
+            "VACCINE_REMINDER" => $"Reminder for {petName}'s {doseNumber} dose of {vaccineName} vaccine",
+            _ => $"Update from vaccine service"
+        };
+    }
+
+    public async Task<List<NotificationDTO>> CreatePromotionNotification(string type, Guid promotionId)
+    {
+        var promotion = await _repository.GetPromotionById(promotionId);
+        if (promotion == null) return null;
+        
+        var userList = await _repository.GetListUsers();
+        var notificationDtos = new List<NotificationDTO>();
+        
+        foreach (var user in userList)
+        {
+            // Tạo thông báo riêng cho mỗi người dùng
+            var notification = new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id, // Sử dụng ID của người dùng hiện tại
+                Type = type,
+                Title = GetPromotionNotificationTitle(type, promotion),
+                Message = GetPromotionNotificationMessage(type, promotion),
+                RelatedEntityId = promotion.Id,
+                RelatedEntityType = "Promotion",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                ReadAt = null,
+                ExpiresAt = DateTime.UtcNow.AddHours(2)
+            };
+            
+            // Lưu thông báo vào database
+            var createdNotification = await _repository.CreateNotification(notification);
+            
+            // Chuyển đổi thành DTO
+            var notificationDto = MapToDTO(createdNotification);
+            notificationDto.Metadata.Add("userId", notification.UserId.ToString());
+            notificationDtos.Add(notificationDto);
+            
+            // Gửi thông báo qua SignalR đến đúng người dùng
+            await _hubContext.Clients.User(user.Id.ToString()).SendAsync("ReceiveNotification", notificationDto);
+            
+            // Gửi push notification
+            await _pushTokenService.SendPushNotificationAsync(
+                user.Id,
+                notification.Title,
+                notification.Message,
+                new Dictionary<string, string>
+                {
+                    { "type", type },
+                    { "promotionId", promotionId.ToString() },
+                    { "notificationId", notification.Id.ToString() }
+                }
+            );
+        }
+        
+        Console.WriteLine($"Promotion notifications created and sent to {userList.Count} users");
+        return notificationDtos;
+    }
+
+    public async Task<List<NotificationDTO>> CreateClinicServiceNotification(string type, Guid clinicServiceId)
+    {
+        var clinicservice = await _repository.GetClinicServiceById(clinicServiceId);
+        if (clinicservice == null) return null;
+        var user = await _repository.GetListUsers();
+         var notificationDtos = new List<NotificationDTO>();
+         foreach (var userlist in user)
+         {
+            var notification = new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = userlist.Id, // Sử dụng ID của người dùng hiện tại
+                Type = type,
+                Title = GetClinicServiceNotificationTitlee(type, clinicservice),
+                Message = GetClinicServiceNotificationMessage(type, clinicservice),
+                RelatedEntityId = clinicservice.Id,
+                RelatedEntityType = "ClinicService",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                ReadAt = null,
+                ExpiresAt = DateTime.UtcNow.AddHours(2)
+                
+            };
+             var createdNotification = await _repository.CreateNotification(notification);
+              var notificationDto = MapToDTO(createdNotification);
+            notificationDto.Metadata.Add("userId", notification.UserId.ToString());
+            notificationDtos.Add(notificationDto);
+            await _hubContext.Clients.User(userlist.Id.ToString()).SendAsync("ReceiveNotification", notificationDto);
+             await _pushTokenService.SendPushNotificationAsync(
+                userlist.Id,
+                notification.Title,
+                notification.Message,
+                new Dictionary<string, string>
+                {
+                    { "type", type },
+                    { "clinicserviceId", clinicServiceId.ToString() },
+                    { "notificationId", notification.Id.ToString() }
+                }
+            );
+         }
+          Console.WriteLine($"Clinicservice notifications created and sent to {user.Count} users");
+        return notificationDtos;
+    }
+
     public async Task<NotificationDTO> CreatePetBirthdayNotification(string type, Guid petId)
     {
         var pet = await _repository.GetPetById(petId);
@@ -166,16 +355,16 @@ public class NotificationService : INotificationService
         var CreateNotification = await _repository.CreateNotification(notification);
         var notificationDto = MapToDTO(CreateNotification);
         notificationDto.Metadata.Add("userId", notification.UserId.ToString());
-        
+
         await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
 
         await _pushTokenService.SendPushNotificationAsync(
             notification.UserId,
             notification.Title,
             notification.Message,
-            new Dictionary<string, string> 
-            { 
-                { "type", type }, 
+            new Dictionary<string, string>
+            {
+                { "type", type },
                 { "petId", petId.ToString() },
                 { "notificationId", notification.Id.ToString() }
             }
@@ -183,6 +372,46 @@ public class NotificationService : INotificationService
 
         return notificationDto;
     }
+
+    public async Task<NotificationDTO> CreateVaccineNotification(string type, Guid vaccineId)
+    {
+        var vaccine = await _repository.GetUserPetVaccineById(vaccineId);
+        if (vaccine == null) return null;
+        var notification = new Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = vaccine.UserId,
+            Type = type,
+            Title = GetVaccineNotificationTitle(type, vaccine),
+            Message = GetVaccineNotificationMessage(type, vaccine),
+            RelatedEntityId = vaccine.Id,
+            RelatedEntityType = "Vaccine",
+            IsRead = false,
+            CreatedAt = DateTime.UtcNow.AddHours(7),
+            ReadAt = null,
+            ExpiresAt = DateTime.UtcNow.AddDays(2)
+        };
+          Console.WriteLine("Notification created successfullyYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+           var CreateNotification = await _repository.CreateNotification(notification);
+           var notificationDto = MapToDTO(CreateNotification);
+           notificationDto.Metadata.Add("userId", notification.UserId.ToString());
+            await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
+
+            await _pushTokenService.SendPushNotificationAsync(
+                notification.UserId,
+                notification.Title,
+                notification.Message,
+                new Dictionary<string, string>
+                {
+                    { "type", type },
+                    { "vaccineId", vaccineId.ToString() },
+                    { "notificationId", notification.Id.ToString() }
+                }
+            );
+
+            return notificationDto;
+
+        }
 
     public async Task<NotificationDTO> CreateUserBirthdayNotification(string type, Guid userId)
     {
@@ -206,19 +435,19 @@ public class NotificationService : INotificationService
         var CreateNotification = await _repository.CreateNotification(notification);
         var notificationDto = MapToDTO(CreateNotification);
         notificationDto.Metadata.Add("userId", notification.UserId.ToString());
-          await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
+        await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
 
-         await _pushTokenService.SendPushNotificationAsync(
-            notification.UserId,
-            notification.Title,
-            notification.Message,
-            new Dictionary<string, string> 
-            { 
-                { "type", type }, 
+        await _pushTokenService.SendPushNotificationAsync(
+           notification.UserId,
+           notification.Title,
+           notification.Message,
+           new Dictionary<string, string>
+           {
+                { "type", type },
                 { "userId", userId.ToString() },
                 { "notificationId", notification.Id.ToString() }
-            }
-        );
+           }
+       );
 
         return notificationDto;
     }
@@ -264,18 +493,18 @@ public class NotificationService : INotificationService
 
     public async Task<NotificationDTO> CreateForumPostNotification(string type, Guid postId, Guid reactingUserId, Guid postOwnerId)
     {
-       // Lấy thông tin bài viết
+        // Lấy thông tin bài viết
         var post = await _repository.GetForumPostById(postId);
         if (post == null) return null;
-        
+
         // Lấy thông tin người tương tác
         var reactingUser = await _repository.GetUserById(reactingUserId);
         if (reactingUser == null) return null;
-        
+
         // Tạo tiêu đề và nội dung thông báo
         string title = GetPostInteractionTitle(type, reactingUser, post);
         string message = GetPostInteractionMessage(type, reactingUser, post);
-        
+
         // Tạo thông báo
         var notification = new Notification
         {
@@ -291,13 +520,13 @@ public class NotificationService : INotificationService
             ReadAt = null,
             ExpiresAt = DateTime.UtcNow.AddDays(7)
         };
-        
+
         Console.WriteLine($"Creating notification for post interaction: {type}");
         var createdNotification = await _repository.CreateNotification(notification);
         var notificationDto = MapToDTO(createdNotification);
         notificationDto.Metadata.Add("userId", notification.UserId.ToString());
         notificationDto.Metadata.Add("reactingUserId", reactingUserId.ToString());
-        
+
         // Gửi thông báo realtime qua SignalR
         await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
 

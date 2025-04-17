@@ -207,7 +207,7 @@ namespace PetManagementAPI.Repository.PetRepository
                                 PetId = petId,
                                 VaccineId = vaccineId,
                                 Name = vaccine.Name,
-                                NumberOfDoses = vaccine.NumberOfDoses,
+                                NumberOfDoses = null,
                                 Recommendation = vaccine.Recommendation
                             };
 
