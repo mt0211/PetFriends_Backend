@@ -36,6 +36,32 @@ public class NotificationRepository : INotificationRepository
         .FirstOrDefaultAsync(u => u.Id == forumPostId);
     }
 
+    public async Task<Promotion> GetPromotionById(Guid promotionId)
+    {
+        return await _context.Promotions
+        .FirstOrDefaultAsync(u => u.Id == promotionId);
+    }
+
+    public async Task<UserPetVaccine> GetUserPetVaccineById(Guid vaccineId)
+    {
+        return await _context.UserPetVaccines
+        .Include(a => a.Pet)
+        .FirstOrDefaultAsync(u => u.Id == vaccineId);
+    }
+
+    public async Task<List<User>> GetListUsers()
+    {
+        return await _context.Users
+        .Where(u => u.Role == "USER")
+        .ToListAsync();
+    }
+
+    public async Task<ClinicService> GetClinicServiceById(Guid id)
+    {
+        return await _context.ClinicServices
+        .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
     public async Task<Notification> CreateNotification(Notification notification)
     {
         notification.Id = Guid.NewGuid();

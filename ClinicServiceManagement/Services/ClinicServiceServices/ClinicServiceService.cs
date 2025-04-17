@@ -143,6 +143,11 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                         "CLINIC_SERVICE_CREATED",
                         newService.Id
                     );
+                    _messageBus.PublicClinicServiceNotification
+                    (
+                        "CLINIC_SERVICE_CREATED",
+                        newService.Id
+                    );
             }
             catch (Exception ex)
             {
@@ -326,6 +331,14 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                 {
                     service.IsDiscountNotified = false;
                 }
+                if (service.DiscountFrom < serviceUpdateDTO.DiscountFrom || service.DiscountTo < serviceUpdateDTO.DiscountTo)
+                {
+                    _messageBus.PublicClinicServiceNotification
+                    (
+                        "CLINIC_SERVICE_UPDATED",
+                        service.Id
+                    );
+                }
                 // var existingService = await _clinicServiceRepository.GetServiceByNameAndCategory(serviceUpdateDTO.Name, serviceUpdateDTO.Category);
 
                 // if (existingService != null && existingService.Id != serviceUpdateDTO.Id)
@@ -363,6 +376,7 @@ namespace ClinicServiceManagementAPI.Services.ClinicServiceServices
                     result.Message = "A service with this name already exists";
                     return result;
                 }
+               
               
                 // Gọi repository để cập nhật service
                 await _clinicServiceRepository.UpdateService(service);

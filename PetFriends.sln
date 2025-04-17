@@ -59,8 +59,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealTimeActivityAPI", "Real
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationAPI", "NotificationAPI\NotificationAPI.csproj", "{B454E00C-1249-48C6-9AD8-462A30C5D648}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpoPushTokenAPI", "ExpoPushTokenAPI\ExpoPushTokenAPI.csproj", "{5F44AA57-9000-4387-8EEF-2A41BCC57A29}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -179,10 +177,6 @@ Global
 		{B454E00C-1249-48C6-9AD8-462A30C5D648}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B454E00C-1249-48C6-9AD8-462A30C5D648}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B454E00C-1249-48C6-9AD8-462A30C5D648}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5F44AA57-9000-4387-8EEF-2A41BCC57A29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F44AA57-9000-4387-8EEF-2A41BCC57A29}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F44AA57-9000-4387-8EEF-2A41BCC57A29}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F44AA57-9000-4387-8EEF-2A41BCC57A29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
