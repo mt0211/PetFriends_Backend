@@ -45,7 +45,6 @@ public class PromotionEventConsumer : BackgroundService
                 (
                     promotionEvent.Type,
                     promotionEvent.PromotionId
-
                 );
             }
         };

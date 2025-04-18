@@ -35,7 +35,7 @@ public class UserEventConsumer : BackgroundService
         consumer.Received += async (sender, args) =>
         {
             Console.WriteLine("Received message from RabbitMQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
-          using (var scope = _serviceProvider.CreateScope())
+            using (var scope = _serviceProvider.CreateScope())
             {
                 var activityService = scope.ServiceProvider.GetRequiredService<IRealTimeActivityService>();
                 var body = args.Body.ToArray();

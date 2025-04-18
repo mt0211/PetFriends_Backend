@@ -89,6 +89,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 builder.Services.AddSingleton<IMessageBus, RabbitMQService>();
 builder.Services.AddHostedService<PetBirthdayCheckerService>();
+builder.Services.AddHostedService<PetVaccineReminderService>();
 ////Register Dependency Injection here:
 /////////////////////////
 builder.Services.AddScoped<PetService>();
