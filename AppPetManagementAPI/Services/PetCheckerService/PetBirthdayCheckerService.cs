@@ -55,13 +55,11 @@ public class PetBirthdayCheckerService : BackgroundService
     
     private async Task CheckPetBirthdays()
     {
-        _logger?.LogInformation("Checking for pet birthdays...");
-        
+        _logger?.LogInformation("Checking for pet birthdays...");        
         using (var scope = _serviceProvider.CreateScope())
         {
             var repo = scope.ServiceProvider.GetRequiredService<IPetRepository>();
-            var bus = scope.ServiceProvider.GetRequiredService<IMessageBus>();
-            
+            var bus = scope.ServiceProvider.GetRequiredService<IMessageBus>();           
             // Sử dụng thời gian hiện tại theo múi giờ Việt Nam (UTC+7)
             var vietnamTime = DateTime.UtcNow.AddHours(7);
             var petBirthday = await repo.GetPetBirthday(vietnamTime);

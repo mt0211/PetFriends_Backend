@@ -1,4 +1,4 @@
-﻿using AppPetManagementAPI.DTOs.PetDTOs;
+using AppPetManagementAPI.DTOs.PetDTOs;
 using AppPetManagementAPI.DTOs.ResultModel;
 using AppPetManagementAPI.DTOs.VaccineDTOs;
 using AppPetManagementAPI.Repositories;
@@ -317,6 +317,7 @@ namespace AppPetManagementAPI.Services
                         return result;
                     }
                 }
+                
                 // 1️⃣ Kiểm tra user
                 var userId = Encoder.DecodeToken(token, "userid");
                 if (!Guid.TryParse(userId, out Guid userGuid))
@@ -326,15 +327,8 @@ namespace AppPetManagementAPI.Services
                     result.Message = "Invalid user ID";
                     return result;
                 }
+                
                 var userPetVaccine = await _repository.GetUserPetVaccineById(model.VaccineId);
-                var checkVaccineSystem = await _repository.CheckVaccineSystem(model.VaccineId);
-                if (checkVaccineSystem.VaccineId != null)
-                {
-                    result.IsSuccess = false;
-                    result.Code = 400;
-                    result.Message = "Can't update vaccine system's name";
-                    return result;
-                }
                 if (userPetVaccine == null)
                 {
                     result.IsSuccess = false;
@@ -342,24 +336,36 @@ namespace AppPetManagementAPI.Services
                     result.Message = "UserPetVaccine not found";
                     return result;
                 }
+                
+                // Kiểm tra xem đây có phải là vaccine hệ thống không
+                var checkVaccineSystem = await _repository.CheckVaccineSystem(model.VaccineId);
+                if (checkVaccineSystem.VaccineId != null && userPetVaccine.Name != model.VaccineName)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400;
+                    result.Message = "Can't update vaccine system's name";
+                    return result;
+                }
+                
+                // Cập nhật thông tin vaccine
                 userPetVaccine.Name = model.VaccineName;
                 int oldNumberOfDoses = userPetVaccine.NumberOfDoses ?? 0;
                 int newNumberOfDoses = model.NumberOfDoses;
                 userPetVaccine.NumberOfDoses = newNumberOfDoses;
 
-                // 4️⃣ Xử lý tăng / giảm mũi tiêm
-                if (newNumberOfDoses > oldNumberOfDoses)
+                // Kiểm tra xem có bản ghi dose nào tồn tại chưa
+                if (!userPetVaccine.UserPetVaccineDoses.Any())
                 {
-                    // Thêm (newNumberOfDoses - oldNumberOfDoses) liều
-                    for (int doseNumber = oldNumberOfDoses + 1; doseNumber <= newNumberOfDoses; doseNumber++)
+                    // Nếu chưa có bản ghi dose nào, tạo mới tất cả
+                    for (int doseNumber = 1; doseNumber <= newNumberOfDoses; doseNumber++)
                     {
                         // Tìm injectionDetail trong model.Injections (nếu user có nhập)
                         var injectionDetail = model.Injections
                             .FirstOrDefault(x => x.DoseNumber == doseNumber);
 
                         var dateGiven = injectionDetail != null
-                            ? injectionDetail.DateGiven
-                            : DateTime.UtcNow; // hoặc default
+                            ? (DateTime?)injectionDetail.DateGiven
+                            : null; // Để null nếu chưa có ngày tiêm
 
                         var newDose = new UserPetVaccineDose
                         {
@@ -371,49 +377,77 @@ namespace AppPetManagementAPI.Services
                         await _repository.AddUserPetVaccineDose(newDose);
                     }
                 }
-                else if (newNumberOfDoses < oldNumberOfDoses)
+                else
                 {
-                    // Xoá các liều dư
-                    var removeDoses = userPetVaccine.UserPetVaccineDoses
-                        .Where(d => d.DoseNumber > newNumberOfDoses)
-                        .ToList();
-
-                    foreach (var dose in removeDoses)
+                    // Nếu đã có bản ghi dose, xử lý tăng/giảm số mũi
+                    if (newNumberOfDoses > oldNumberOfDoses)
                     {
-                        await _repository.RemoveUserPetVaccineDose(dose);
+                        // Thêm các liều mới
+                        for (int doseNumber = oldNumberOfDoses + 1; doseNumber <= newNumberOfDoses; doseNumber++)
+                        {
+                            var injectionDetail = model.Injections
+                                .FirstOrDefault(x => x.DoseNumber == doseNumber);
+
+                            var dateGiven = injectionDetail != null
+                                ? (DateTime?)injectionDetail.DateGiven
+                                : null;
+
+                            var newDose = new UserPetVaccineDose
+                            {
+                                Id = Guid.NewGuid(),
+                                UserPetVaccineId = userPetVaccine.Id,
+                                DoseNumber = doseNumber,
+                                DateGiven = dateGiven
+                            };
+                            await _repository.AddUserPetVaccineDose(newDose);
+                        }
+                    }
+                    else if (newNumberOfDoses < oldNumberOfDoses)
+                    {
+                        // Xoá các liều dư
+                        var removeDoses = userPetVaccine.UserPetVaccineDoses
+                            .Where(d => d.DoseNumber > newNumberOfDoses)
+                            .ToList();
+
+                        foreach (var dose in removeDoses)
+                        {
+                            await _repository.RemoveUserPetVaccineDose(dose);
+                        }
+                    }
+
+                    // Cập nhật ngày tiêm cho các liều hiện có
+                    foreach (var injection in model.Injections.Where(i => i.DoseNumber <= newNumberOfDoses))
+                    {
+                        var existingDose = userPetVaccine.UserPetVaccineDoses
+                            .FirstOrDefault(d => d.DoseNumber == injection.DoseNumber);
+                        
+                        if (existingDose != null)
+                        {
+                            existingDose.DateGiven = injection.DateGiven;
+                            await _repository.UpdateUserPetVaccineDose(existingDose);
+                        }
                     }
                 }
-
-                // 5️⃣ Nếu cần cập nhật ngày tiêm cho các liều cũ
-                //    Lặp model.Injections, cập nhật DateGiven
-                foreach (var injection in model.Injections)
-                {
-                    // Tìm liều cũ
-                    var existingDose = userPetVaccine.UserPetVaccineDoses
-                        .FirstOrDefault(d => d.DoseNumber == injection.DoseNumber);
-                    if (existingDose != null)
-                    {
-                        existingDose.DateGiven = injection.DateGiven;
-                        await _repository.UpdateUserPetVaccineDose(existingDose);
-                        // SaveChange sau khi cập nhật
-                    }
-                }            
+                
                 // 6️⃣ Lưu thay đổi UserPetVaccine
-                await _repository.UpdateUserPetVaccine(userPetVaccine);
-
+                 await _repository.UpdateUserPetVaccine(userPetVaccine);
+        
+                // Lấy lại đối tượng userPetVaccine đã cập nhật từ database
+                var updatedUserPetVaccine = await _repository.GetUserPetVaccineById(model.VaccineId);
+                
                 var updatedDto = new UserPetVaccineDTO
                 {
-                    VaccineId = userPetVaccine.Id,
-                    PetID = userPetVaccine.PetId, // hoặc null, tuỳ DB
-                    VaccineName = userPetVaccine.Name,
-                    NumberOfDoses = userPetVaccine.NumberOfDoses,
-                    Injections = userPetVaccine.UserPetVaccineDoses
-                    .Select(d => new UserPetVaccineDoseDTO
-                    {
-                        DoseNumber = d.DoseNumber,
-                        DateGiven = d.DateGiven ?? DateTime.MinValue
-                    })
-                    .ToList()
+                    VaccineId = updatedUserPetVaccine.Id,
+                    PetID = updatedUserPetVaccine.PetId,
+                    VaccineName = updatedUserPetVaccine.Name,
+                    NumberOfDoses = updatedUserPetVaccine.NumberOfDoses,
+                    Injections = updatedUserPetVaccine.UserPetVaccineDoses
+                        .Select(d => new UserPetVaccineDoseDTO
+                        {
+                            DoseNumber = d.DoseNumber,
+                            DateGiven = d.DateGiven ?? DateTime.MinValue
+                        })
+                        .ToList()
                 };
 
                 // Trả về DTO
@@ -431,6 +465,7 @@ namespace AppPetManagementAPI.Services
             }
             return result;
         }
+
         public async Task<ResultModel> GetVaccineDetailByID(string token, Guid VaccineID)
         {
             var result = new ResultModel();
@@ -450,7 +485,6 @@ namespace AppPetManagementAPI.Services
                 result.Message = "Please authorize";
                 return result;
             }
-
             try
             {
                 var userPetVaccine = await _repository.GetVaccineDetailByID(VaccineID);

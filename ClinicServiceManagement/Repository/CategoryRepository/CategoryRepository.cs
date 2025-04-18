@@ -25,7 +25,6 @@ namespace ClinicServiceManagementAPI.Repository.CategoryRepository
         public async Task<IEnumerable<Category>> GetListCategory()
         {
             return await _context.Categories
-            .Where(c=> c.Status == 1)
             .ToListAsync();
         }
         public async Task<Category> GetCategoryByName(string name)

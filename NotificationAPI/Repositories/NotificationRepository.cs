@@ -45,8 +45,53 @@ public class NotificationRepository : INotificationRepository
     public async Task<UserPetVaccine> GetUserPetVaccineById(Guid vaccineId)
     {
         return await _context.UserPetVaccines
-        .Include(a => a.Pet)
-        .FirstOrDefaultAsync(u => u.Id == vaccineId);
+            .Include(upv => upv.Pet)
+                .ThenInclude(p => p.User)
+            .Include(upv => upv.UserPetVaccineDoses)
+            .Include(upv => upv.Vaccine)
+                .ThenInclude(v => v.VaccineDoses)
+            .FirstOrDefaultAsync(upv => upv.Id == vaccineId);
+    }
+
+    public async Task<(DateTime? NextDoseDate, int? NextDoseNumber)> CalculateNextDoseInfo(Guid userPetVaccineId)
+    {
+        var userPetVaccine = await GetUserPetVaccineById(userPetVaccineId);
+        if (userPetVaccine == null)
+            return (null, null);
+            
+        // Lấy liều tiêm cuối cùng
+        var lastDose = userPetVaccine.UserPetVaccineDoses
+            .OrderByDescending(d => d.DoseNumber)
+            .FirstOrDefault();
+            
+        if (lastDose == null || !lastDose.DateGiven.HasValue)
+            return (null, null);
+            
+        // Kiểm tra xem đã tiêm đủ liều chưa
+        if (lastDose.DoseNumber >= userPetVaccine.NumberOfDoses)
+            return (null, null);
+            
+        int nextDoseNumber = (lastDose.DoseNumber ?? 0) + 1;
+        DateTime? nextDoseDate = null;
+        
+        // Nếu là vaccine hệ thống
+        if (userPetVaccine.VaccineId.HasValue && userPetVaccine.Vaccine != null)
+        {
+            var nextDoseInfo = userPetVaccine.Vaccine.VaccineDoses
+                .FirstOrDefault(vd => vd.DoseNumber == nextDoseNumber);
+                
+            if (nextDoseInfo != null && nextDoseInfo.DaysAfterPrevious.HasValue)
+            {
+                nextDoseDate = lastDose.DateGiven.Value.AddDays(nextDoseInfo.DaysAfterPrevious.Value);
+            }
+        }
+        else
+        {
+            // Nếu là vaccine tự thêm, giả sử khoảng cách giữa các liều là 30 ngày
+            nextDoseDate = lastDose.DateGiven.Value.AddDays(30);
+        }
+        
+        return (nextDoseDate, nextDoseNumber);
     }
 
     public async Task<List<User>> GetListUsers()

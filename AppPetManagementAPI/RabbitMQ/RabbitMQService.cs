@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Text.Json;
 using RabbitMQ.Client;
@@ -8,6 +9,7 @@ public class RabbitMQService : IMessageBus
     private readonly IModel _channel;
     private const string ClinicServiceExchangeName = "pet_birthday_events";
     private const string VaccineExchangeName = "vaccine_events";
+    
     public RabbitMQService()
     {
         var factory = new ConnectionFactory()
@@ -16,16 +18,18 @@ public class RabbitMQService : IMessageBus
             UserName = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "admin",
             Password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "admin123",
             Port = int.Parse(Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672")
+            
         };
-       //  var factory = new ConnectionFactory() { HostName = "localhost" };
+         // var factory = new ConnectionFactory() { HostName = "localhost" };
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
         _channel.ExchangeDeclare(ClinicServiceExchangeName, ExchangeType.Fanout);
         _channel.ExchangeDeclare(VaccineExchangeName, ExchangeType.Fanout);
     }
+    
     public void PublishPetBirthdayNotification(string type, Guid petId)
     {
-        Console.WriteLine($"Publishing message: Type={type}, PetIDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD={petId}");
+        Console.WriteLine($"Publishing messageEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE: Type={type}, PetID={petId}");
         var message = JsonSerializer.Serialize(new
         {
             Type = type,
@@ -33,8 +37,7 @@ public class RabbitMQService : IMessageBus
             Timestamp = DateTime.UtcNow
         });
         var body = Encoding.UTF8.GetBytes(message);
-        _channel.BasicPublish
-        (
+        _channel.BasicPublish(
             exchange: ClinicServiceExchangeName,
             routingKey: "",
             basicProperties: null,
@@ -44,17 +47,16 @@ public class RabbitMQService : IMessageBus
 
     public void PublishVaccineReminderNotification(string type, Guid vaccineId)
     {
-        Console.WriteLine($"Publishing message: Type={type}, PetIDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD={vaccineId}");
+        Console.WriteLine($"Publishing vaccine reminderRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR: Type={type}, VaccineId={vaccineId}");
         var message = JsonSerializer.Serialize(new
         {
             Type = type,
-            VaccineId = vaccineId,
+            vaccineId = vaccineId, // Tên trường phải khớp với VaccineEvent.cs
             Timestamp = DateTime.UtcNow
         });
         var body = Encoding.UTF8.GetBytes(message);
-        _channel.BasicPublish
-        (
-            exchange: ClinicServiceExchangeName,
+        _channel.BasicPublish(
+            exchange: VaccineExchangeName,
             routingKey: "",
             basicProperties: null,
             body: body

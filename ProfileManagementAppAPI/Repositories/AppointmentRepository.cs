@@ -63,10 +63,7 @@ namespace ProfileManagementAppAPI.Repositories
 
         public async Task UpdateReview(Feedback reviewUpdateModel)
         {
-            _context.Feedbacks.Attach(reviewUpdateModel);
-            _context.Entry(reviewUpdateModel).Property(c => c.Content).IsModified = true;
-            _context.Entry(reviewUpdateModel).Property(c => c.Rating).IsModified = true;
-            _context.Entry(reviewUpdateModel).Property(c => c.UpdatedAt).IsModified = true;
+            _context.Feedbacks.Update(reviewUpdateModel);
             await _context.SaveChangesAsync();
         }
         public async Task<dynamic> GetClinicInformation()
@@ -213,8 +210,10 @@ namespace ProfileManagementAppAPI.Repositories
             .Include(a => a.Pet)
             .Include(a=> a.Feedbacks)
             .Include(a => a.AppointmentClinicServices)
-            .ThenInclude(a => a.ClinicService)
-            .Where(a => a.UserId == userId).ToListAsync();
+            .ThenInclude(a => a.ClinicService)            
+            .Where(a => a.UserId == userId)      
+            .OrderByDescending(a => a.CreatedAt)     
+            .ToListAsync();
         }
         public async Task<List<AppointmentPromotion>> GetListPromotionByAppointmentId(Guid appointmentId)
         {

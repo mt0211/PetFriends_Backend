@@ -521,5 +521,285 @@ namespace RealTimeCommunicationAPI.Services
             
             return result;
         }
+
+
+        //Call video
+        public async Task<ResultModel> InitiateVideoCall(string token, Guid receiverId, string callType = "video")
+        {
+            var Result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid callerId))
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "Invalid user ID";
+                return Result;
+            }
+
+            try
+            {
+                var call = new VideoCall
+                {
+                    CallerId = callerId,
+                    ReceiverId = receiverId,
+                    CallType = callType,
+                    Status = "INITIATED"
+                };
+
+                var createdCall = await _repository.CreateVideoCall(call);
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = createdCall;
+                Result.Message = "Call initiated successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return Result;
+        }
+
+        public async Task<ResultModel> AcceptVideoCall(string token, Guid callId)
+        {
+            var Result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid receiverId))
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "Invalid user ID";
+                return Result;
+            }
+
+            try
+            {
+                var call = await _repository.GetCallById(callId);
+                if (call == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "Call not found";
+                    return Result;
+                }
+
+                if (call.ReceiverId != receiverId)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 403;
+                    Result.Message = "You don't have permission to accept this call";
+                    return Result;
+                }
+
+                await _repository.AcceptCall(callId);
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Message = "Call accepted successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return Result;
+        }
+
+        public async Task<ResultModel> RejectVideoCall(string token, Guid callId)
+        {
+            var Result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid receiverId))
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "Invalid user ID";
+                return Result;
+            }
+
+            try
+            {
+                var call = await _repository.GetCallById(callId);
+                if (call == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "Call not found";
+                    return Result;
+                }
+
+                if (call.ReceiverId != receiverId)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 403;
+                    Result.Message = "You don't have permission to reject this call";
+                    return Result;
+                }
+
+                await _repository.RejectCall(callId);
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Message = "Call rejected successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return Result;
+        }
+
+        public async Task<ResultModel> EndVideoCall(string token, Guid callId)
+        {
+            var Result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid userIdGuid))
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "Invalid user ID";
+                return Result;
+            }
+
+            try
+            {
+                var call = await _repository.GetCallById(callId);
+                if (call == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "Call not found";
+                    return Result;
+                }
+
+                // Kiểm tra xem người dùng có phải là người gọi hoặc người nhận không
+                if (call.CallerId != userIdGuid && call.ReceiverId != userIdGuid)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 403;
+                    Result.Message = "You don't have permission to end this call";
+                    return Result;
+                }
+
+                await _repository.EndCall(callId);
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Message = "Call ended successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return Result;
+        }
+
+        public async Task<ResultModel> GetCallHistory(string token, int take = 20)
+        {
+            var Result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid userIdGuid))
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "Invalid user ID";
+                return Result;
+            }
+
+            try
+            {
+                var callHistory = await _repository.GetUserCallHistory(userIdGuid, take);
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = callHistory;
+                Result.Message = "Call history retrieved successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return Result;
+        }
+
+        public async Task<ResultModel> GetCallById(string token, Guid callId)
+        {
+            var Result = new ResultModel();
+            var userId = Encoder.DecodeToken(token, "userid");
+            if (!Guid.TryParse(userId, out Guid userIdGuid))
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "Invalid user ID";
+                return Result;
+            }
+
+            try
+            {
+                var call = await _repository.GetCallById(callId);
+                if (call == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404;
+                    Result.Message = "Call not found";
+                    return Result;
+                }
+                else
+                {
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = call;
+                Result.Message = "Call history retrieved successfully";
+                }
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return Result;
+        }
+
+        public async Task<ResultModel> GetActiveCalls(string userId)
+        {
+            var Result = new ResultModel();
+            try
+            {
+                if (!Guid.TryParse(userId, out Guid userIdGuid))
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Invalid user ID";
+                    return Result;
+                }
+
+                var activeCalls = await _repository.GetActiveCalls();
+                var userCalls = activeCalls.Where(c => c.CallerId == userIdGuid || c.ReceiverId == userIdGuid).ToList();
+                
+                Result.IsSuccess = true;
+                Result.Code = 200;
+                Result.Data = userCalls;
+                Result.Message = "Active calls retrieved successfully";
+            }
+            catch (Exception e)
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            
+            return Result;
+        }
     }
 }

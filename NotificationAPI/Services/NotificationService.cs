@@ -123,16 +123,17 @@ public class NotificationService : INotificationService
 
 
     //Vaccine service notification message
-    private string GetVaccineNotificationMessage(string type, UserPetVaccine vaccineService)
+    private string GetVaccineNotificationMessage(string type, UserPetVaccine vaccineService, int nextDoseNumber)
     {
         string vaccineName = vaccineService.Name;
-        string petName = vaccineService.Pet.Name;
-        int doseNumber = vaccineService.DoseNumber;
-
+        string petName = vaccineService.Pet?.Name ?? "your pet";
+        
         return type switch
         {
             "VACCINE_REMINDER" =>
-                $"🎉 Hey! Your pet {petName} is due for dose {doseNumber} of the {vaccineName} vaccine. Please bring {petName} in for vaccination.",
+                $"🎉 Hey! Your pet {petName} is due for dose {nextDoseNumber} of the {vaccineName} vaccine. Please bring {petName} in for vaccination.",
+                "VACCINE_REMINDER_1_DAY" =>
+                $"🎉 Hey! 1 day until your pet {petName} is due for dose {nextDoseNumber} of the {vaccineName} vaccine. Please bring {petName} in for vaccination.",
             _ => string.Empty
         };
     }
@@ -222,14 +223,15 @@ public class NotificationService : INotificationService
     }
 
     //Vaccine service notification title
-    private string GetVaccineNotificationTitle(string type, UserPetVaccine vaccineService)
+    private string GetVaccineNotificationTitle(string type, UserPetVaccine vaccineService, int nextDoseNumber)
     {
         string vaccineName = vaccineService.Name;
-        string petName = vaccineService.Pet.Name;
-        int doseNumber = vaccineService.DoseNumber;
+        string petName = vaccineService.Pet?.Name ?? "your pet";
+        
         return type switch
         {
-            "VACCINE_REMINDER" => $"Reminder for {petName}'s {doseNumber} dose of {vaccineName} vaccine",
+            "VACCINE_REMINDER" => $"Reminder for {petName}'s {nextDoseNumber} dose of {vaccineName} vaccine",
+            "VACCINE_REMINDER_1_DAY" => $"Reminder for {petName}'s {nextDoseNumber} dose of {vaccineName} vaccine",
             _ => $"Update from vaccine service"
         };
     }
@@ -376,14 +378,31 @@ public class NotificationService : INotificationService
     public async Task<NotificationDTO> CreateVaccineNotification(string type, Guid vaccineId)
     {
         var vaccine = await _repository.GetUserPetVaccineById(vaccineId);
-        if (vaccine == null) return null;
+        if (vaccine == null || vaccine.Pet == null) return null;
+        
+        // Tính toán liều tiêm tiếp theo
+        var lastDose = vaccine.UserPetVaccineDoses
+            .OrderByDescending(d => d.DoseNumber)
+            .FirstOrDefault();
+            
+        if (lastDose == null) return null;
+        
+        int nextDoseNumber = (lastDose.DoseNumber ?? 0) + 1;
+        
+        // Kiểm tra xem đã tiêm đủ liều chưa
+        if (nextDoseNumber > vaccine.NumberOfDoses) return null;
+        
+        // Lấy UserId từ Pet
+        var userId = vaccine.Pet.UserId;
+        if (!userId.HasValue) return null;
+        
         var notification = new Notification
         {
             Id = Guid.NewGuid(),
-            UserId = vaccine.UserId,
+            UserId = userId.Value,
             Type = type,
-            Title = GetVaccineNotificationTitle(type, vaccine),
-            Message = GetVaccineNotificationMessage(type, vaccine),
+            Title = GetVaccineNotificationTitle(type, vaccine, nextDoseNumber),
+            Message = GetVaccineNotificationMessage(type, vaccine, nextDoseNumber),
             RelatedEntityId = vaccine.Id,
             RelatedEntityType = "Vaccine",
             IsRead = false,
@@ -391,27 +410,29 @@ public class NotificationService : INotificationService
             ReadAt = null,
             ExpiresAt = DateTime.UtcNow.AddDays(2)
         };
-          Console.WriteLine("Notification created successfullyYYYYYYYYYYYYYYYYYYYYYYYYYYY");
-           var CreateNotification = await _repository.CreateNotification(notification);
-           var notificationDto = MapToDTO(CreateNotification);
-           notificationDto.Metadata.Add("userId", notification.UserId.ToString());
-            await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
-
-            await _pushTokenService.SendPushNotificationAsync(
-                notification.UserId,
-                notification.Title,
-                notification.Message,
-                new Dictionary<string, string>
-                {
-                    { "type", type },
-                    { "vaccineId", vaccineId.ToString() },
-                    { "notificationId", notification.Id.ToString() }
-                }
-            );
-
-            return notificationDto;
-
-        }
+        
+        Console.WriteLine("Notification created successfully");
+        var createdNotification = await _repository.CreateNotification(notification);
+        var notificationDto = MapToDTO(createdNotification);
+        notificationDto.Metadata.Add("userId", notification.UserId.ToString());
+        
+        await _hubContext.Clients.User(notification.UserId.ToString()).SendAsync("ReceiveNotification", notificationDto);
+        
+        await _pushTokenService.SendPushNotificationAsync(
+            notification.UserId,
+            notification.Title,
+            notification.Message,
+            new Dictionary<string, string>
+            {
+                { "type", type },
+                { "vaccineId", vaccineId.ToString() },
+                { "notificationId", notification.Id.ToString() },
+                { "nextDoseNumber", nextDoseNumber.ToString() }
+            }
+        );
+        
+        return notificationDto;
+    }
 
     public async Task<NotificationDTO> CreateUserBirthdayNotification(string type, Guid userId)
     {

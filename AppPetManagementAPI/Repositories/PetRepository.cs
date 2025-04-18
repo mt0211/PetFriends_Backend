@@ -119,9 +119,12 @@ namespace AppPetManagementAPI.Repositories
         }
         public async Task<UserPetVaccine> GetVaccineDetailByID(Guid id)
         {
-            return await _context.UserPetVaccines.Include(v=>v.UserPetVaccineDoses)
-                .Where(uv => uv.Id == id).FirstOrDefaultAsync();
+             return await _context.UserPetVaccines
+            .Include(v => v.UserPetVaccineDoses.OrderBy(d => d.DoseNumber))
+            .Where(uv => uv.Id == id)
+            .FirstOrDefaultAsync();
         }
+
         public async Task UpdateUserPetVaccineDose(UserPetVaccineDose dose)
         {
             _context.UserPetVaccineDoses.Update(dose);

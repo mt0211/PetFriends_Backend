@@ -17,6 +17,16 @@ namespace RealTimeCommunicationAPI.Repositories
         Task<bool> DeleteMessage(Guid messageId, Guid userId);
         Task<bool> DeleteConversation(Guid userId, Guid otherUserId);
         Task<ChatMessage> GetMessageById(Guid messageId);
-       Task<bool> MarkMessageForDelete(Guid messageId, Guid userId);
+        Task<bool> MarkMessageForDelete(Guid messageId, Guid userId);
+       
+       //Video call
+        Task<VideoCall> CreateVideoCall(VideoCall videoCall);
+        Task UpdateCallStatus(Guid callId, string status);
+        Task AcceptCall(Guid callId);
+        Task RejectCall(Guid callId);
+        Task EndCall(Guid callId);
+        Task<List<VideoCall>> GetUserCallHistory(Guid userId, int take = 20);
+        Task<List<VideoCall>> GetActiveCalls();
+        Task<VideoCall?> GetCallById(Guid callId);
     }
 }
