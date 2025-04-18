@@ -213,6 +213,88 @@ namespace RealTimeCommunicationAPI.Repositories
                 return false;
             }
         }
+        public async Task<VideoCall> CreateVideoCall(VideoCall videoCall)
+        {
+            videoCall.Id = Guid.NewGuid();
+            videoCall.CreatedAt = DateTime.UtcNow;
+            videoCall.Status = "INITIATED";
+            
+            await _context.VideoCalls.AddAsync(videoCall);
+            await _context.SaveChangesAsync();
+            
+            return videoCall;
+        }
+
+        public async Task UpdateCallStatus(Guid callId, string status)
+        {
+            var call = await _context.VideoCalls.FindAsync(callId);
+            if (call != null)
+            {
+                call.Status = status;
+                call.EndTime = status == "ENDED" ? DateTime.UtcNow : call.EndTime;
+                call.Duration = call.EndTime.HasValue ? (int)(call.EndTime.Value - call.StartTime).TotalSeconds : null;
+                
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task AcceptCall(Guid callId)
+        {
+            var call = await _context.VideoCalls.FindAsync(callId);
+            if (call != null && call.Status == "INITIATED")
+            {
+                call.Status = "ACCEPTED";
+                call.StartTime = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task RejectCall(Guid callId)
+        {
+            var call = await _context.VideoCalls.FindAsync(callId);
+            if (call != null && call.Status == "INITIATED")
+            {
+                call.Status = "REJECTED";
+                call.EndTime = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task EndCall(Guid callId)
+        {
+            var call = await _context.VideoCalls.FindAsync(callId);
+            if (call != null && call.Status == "ACCEPTED")
+            {
+                call.Status = "ENDED";
+                call.EndTime = DateTime.UtcNow;
+                call.Duration = (int)(call.EndTime.Value - call.StartTime).TotalSeconds;
+                
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<VideoCall>> GetUserCallHistory(Guid userId, int take = 20)
+        {
+            return await _context.VideoCalls
+                .Where(c => c.CallerId == userId || c.ReceiverId == userId)
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<List<VideoCall>> GetActiveCalls()
+        {
+            return await _context.VideoCalls
+                .Where(c => c.Status == "ACCEPTED" && !c.EndTime.HasValue)
+                .ToListAsync();
+        }
+
+        public async Task<VideoCall?> GetCallById(Guid callId)
+        {
+            return await _context.VideoCalls.FindAsync(callId);
+        }
        
     }
 }

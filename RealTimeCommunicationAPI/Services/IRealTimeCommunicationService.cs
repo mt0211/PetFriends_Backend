@@ -21,6 +21,16 @@ namespace RealTimeCommunicationAPI.Services
         Task<ResultModel> DeleteMessageInternal(Guid messageId, Guid userId);
         Task<ResultModel> DeleteConversationInternal(Guid userId, Guid otherUserId);
         Task<ResultModel> DeleteMessageForSenderInternal(Guid messageId, Guid userId);
+        Task<ResultModel> InitiateVideoCall(string token, Guid receiverId, string callType = "video");
+        Task<ResultModel> AcceptVideoCall(string token, Guid callId);
+        Task<ResultModel> RejectVideoCall(string token, Guid callId);
+        Task<ResultModel> EndVideoCall(string token, Guid callId);
+        Task<ResultModel> GetCallHistory(string token, int take = 20);
+        Task<ResultModel> GetCallById(string token, Guid callId);
+
+        Task<ResultModel> GetActiveCalls(string userId);
+
+        
       
     }
 }

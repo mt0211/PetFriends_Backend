@@ -13,4 +13,5 @@ public interface INotificationRepository
     Task MarkNotificationAsRead(Guid notificationId);
     Task<List<User>> GetListUsers();
     Task<UserPetVaccine> GetUserPetVaccineById(Guid vaccineId);
+    Task<(DateTime? NextDoseDate, int? NextDoseNumber)> CalculateNextDoseInfo(Guid userPetVaccineId);
 }
