@@ -27,7 +27,6 @@ namespace RealTimeCommunicationAPI.Services
         Task<ResultModel> EndVideoCall(string token, Guid callId);
         Task<ResultModel> GetCallHistory(string token, int take = 20);
         Task<ResultModel> GetCallById(string token, Guid callId);
-
         Task<ResultModel> GetActiveCalls(string userId);
 
         

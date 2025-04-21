@@ -15,7 +15,7 @@ namespace UserAuthenticationAPI.Controllers
         {
             _userService = userService;
             _verifyService = verifyService;
-        }
+        }  
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginReqModel userLoginReqModel)
@@ -71,7 +71,6 @@ namespace UserAuthenticationAPI.Controllers
             ResultModel result = await _userService.UpdateUserProfile(updateModel);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
-
 
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordReqModel changePasswordModel)

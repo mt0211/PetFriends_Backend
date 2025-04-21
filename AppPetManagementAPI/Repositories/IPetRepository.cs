@@ -32,5 +32,7 @@ namespace AppPetManagementAPI.Repositories
         //Fix api
         Task<Pet> GetPetById (Guid? petId);
         Task UpdatePetVaccination(Pet pet);
+        Task<List<Appointment>> GetListAppointmentByPetId(Guid petId);
+        Task UpdateAppointmentByPetId(Guid petId);
     }
 }

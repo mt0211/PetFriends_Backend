@@ -376,7 +376,16 @@ namespace AppointmentManagementAPI.Services
                         }
                     }
                 }
-
+                 decimal totalAmount = 0;
+                decimal discountAmount = 0;
+                foreach (var serviceId in appointment.ClinicServiceIds)
+                {
+                    var service = await _appointmentrepository.GetClinicServiceById(serviceId);
+                    if (service != null)
+                    {
+                        totalAmount += service.DiscountedPrice ?? 0;
+                    }
+                }
                 // ================================
                 // 3) TẠO APPOINTMENT
                 // ================================
@@ -391,6 +400,9 @@ namespace AppointmentManagementAPI.Services
                     StartAt = appointment.StartAt,
                     Status = appointment.Status,
                     Note = appointment.Note,
+                    TotalAmount = totalAmount,
+                    DiscountAmount = discountAmount,
+                    FinalAmount = totalAmount - discountAmount
                 };
                 await _appointmentrepository.Insert(newAppointment);
 

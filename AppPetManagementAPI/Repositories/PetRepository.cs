@@ -246,5 +246,32 @@ namespace AppPetManagementAPI.Repositories
             _context.Pets.Update(pet);
             await _context.SaveChangesAsync();
         }
+
+        
+        public async Task<List<Appointment>> GetListAppointmentByPetId(Guid petId)
+        {
+            return await _context.Appointments
+            .Where(a => a.PetId == petId)
+            // .Include(a => a.User)
+            // .Include(a => a.Pet)
+            .ToListAsync();
+        }
+
+        public async Task UpdateAppointmentByPetId(Guid petId)
+        {
+            var appointments = await _context.Appointments
+                .Where(a => a.PetId == petId)
+                .ToListAsync();
+                if (appointments == null)
+                {
+                    return;
+                }
+                foreach (var appointment in appointments)
+                {
+                    appointment.PetId = null;
+                    _context.Entry(appointment).State = EntityState.Modified;
+                }
+                await _context.SaveChangesAsync();
+        }
     }
 }

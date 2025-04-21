@@ -317,7 +317,9 @@ namespace ProfileManagementAppAPI.Repositories
             .Where(a=>a.StartAt.HasValue &&
             a.Status == "Pending" &&
             a.StartAt.Value > currenntDate &&
-            a.StartAt.Value <= nextDay) 
+            a.StartAt.Value <= nextDay &&
+            (a.IsReminderSent == null || a.IsReminderSent == false)
+            ) 
             .Include(a => a.User)
             .Include(a => a.Pet)
             .ToListAsync();
@@ -330,10 +332,27 @@ namespace ProfileManagementAppAPI.Repositories
             .Where(a=>a.StartAt.HasValue &&
             a.Status == "Pending" &&
             a.StartAt.Value > currenntDate &&
-            a.StartAt.Value <= nextDay) 
+            a.StartAt.Value <= nextDay && 
+            (a.IsReminderSent == null || a.IsReminderSent == false)
+            ) 
             .Include(a => a.User)
             .Include(a => a.Pet)
             .ToListAsync();
         }
+
+        public async Task UpdateSentReminder(Appointment appointment)
+        {
+             _context.Appointments.Attach(appointment);
+            _context.Entry(appointment).Property(x => x.IsReminderSent).IsModified = true;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateSentReminder1hours(Appointment appointment)
+        {
+             _context.Appointments.Attach(appointment);
+            _context.Entry(appointment).Property(x => x.IsReminderSent).IsModified = true;
+            await _context.SaveChangesAsync();
+        }
+        
     }
 }

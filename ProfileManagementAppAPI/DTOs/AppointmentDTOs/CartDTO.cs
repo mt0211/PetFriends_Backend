@@ -20,6 +20,7 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
         public List<CartServiceDTO> Services { get; set; } = new List<CartServiceDTO>();
         public DateTime? DateBook { get; set; }
         public string Notes { get; set; }
+        public decimal? TotalAmount { get; set; }
     }
 
     public class CartServiceDTO
