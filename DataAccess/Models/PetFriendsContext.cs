@@ -154,6 +154,8 @@ public partial class PetfriendsContext : DbContext
             entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.EndAt).HasColumnType("datetime");
             entity.Property(e => e.FinalAmount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.IsReminder1HourSent).HasDefaultValue(false);
+            entity.Property(e => e.IsReminderSent).HasDefaultValue(false);
             entity.Property(e => e.StartAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");

@@ -50,5 +50,6 @@ namespace AppointmentManagementAPI.Repository
 
         //Delete Appointment
         Task DeleteAppointment(Appointment entity);
+        Task<ClinicService> GetClinicServiceById(Guid serviceId);
     }
 }

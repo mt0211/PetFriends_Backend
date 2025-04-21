@@ -176,7 +176,19 @@ namespace AppPetManagementAPI.Services
             }
             try
             {
+                var appointmentListCheck = await _repository.GetListAppointmentByPetId(PetID);
+                foreach (var appointment in appointmentListCheck)
+                {
+                    if (appointment.Status == "Pending")
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 400;
+                        result.Message = "This pet has appointment pending, please cancel or complete the appointment before delete.";
+                        return result;
+                    }
+                }
                 var pet = await _repository.Get(PetID);
+                await _repository.UpdateAppointmentByPetId(PetID);
                 await _repository.RemoveActivitiesByPetId(PetID);
                 await _repository.RemoveUserPetVaccinesByPetId(PetID);
                 await _repository.RemovePetVaccinesByPetId(PetID);

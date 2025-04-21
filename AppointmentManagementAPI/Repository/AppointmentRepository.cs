@@ -792,6 +792,12 @@ namespace AppointmentManagementAPI.Repository
                 InvalidateAppointmentCache();
             }
 
+        public async Task<ClinicService> GetClinicServiceById(Guid serviceId)
+        {
+            return await _context.ClinicServices
+            .Where(cs => cs.Id == serviceId)
+            .FirstOrDefaultAsync();
+        }
             
             
     }
