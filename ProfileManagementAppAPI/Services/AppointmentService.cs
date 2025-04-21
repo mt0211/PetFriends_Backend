@@ -447,7 +447,7 @@ namespace ProfileManagementAppAPI.Services
                     if(checkUserCartItem != null)
                     {
                         result.IsSuccess = false;
-                        result.Code = 400;
+                        result.Code = 200;
                         result.Message = "Service already in cart";
                         return result;
                     }
@@ -534,7 +534,8 @@ namespace ProfileManagementAppAPI.Services
                         DiscountedPrice = item.ClinicService.DiscountedPrice,
                         PetId = item.Pet.Id,
                         PetName = item.Pet.Name
-                    }).ToList()
+                    }).ToList(),
+                    TotalAmount = cart.UserCartItems.Sum(item => item.ClinicService.DiscountedPrice)
                 };
 
             result.IsSuccess = true;
@@ -592,6 +593,8 @@ namespace ProfileManagementAppAPI.Services
                     result.Message = "Cart not found";
                     return result;
                 }
+               
+
 
                 // Tính tổng giá trị dịch vụ
                 decimal totalAmount = cart.UserCartItems.Sum(item => item.ClinicService.DiscountedPrice ?? 0);
@@ -652,7 +655,16 @@ namespace ProfileManagementAppAPI.Services
                         discountAmount = totalAmount;
                     }
                 }
-
+                foreach (var checkpromotion in appliedPromotions)
+                {
+                    if (checkpromotion.Promotion.EndDate < appointmentDateTime)
+                    {
+                        result.IsSuccess = false;
+                        result.Code = 200;
+                        result.Message = $"Promotion {checkpromotion.Promotion.Name} has expired after your appointment {appointmentDateTime}!";
+                        return result;
+                    }
+                }
                 // Tạo appointment mới
                 var appointment = new Appointment
                 {
@@ -665,7 +677,9 @@ namespace ProfileManagementAppAPI.Services
                     Note = updateCartDTO.Notes,
                     TotalAmount = totalAmount,
                     DiscountAmount = discountAmount,
-                    FinalAmount = totalAmount - discountAmount
+                    FinalAmount = totalAmount - discountAmount,
+                    IsReminderSent = false,
+                    IsReminder1HourSent = false,
                 };
                 await _repository.AddAppointment(appointment);
 
@@ -1291,7 +1305,21 @@ namespace ProfileManagementAppAPI.Services
             try
             {
                 var cart = await _repository.GetCartByUserId(id);
+                if (cart == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 200;
+                    result.Message = "Cart is empty!";
+                    return result;
+                }
                 var count = await _repository.CountService(cart.Id);
+                if (count == 0)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 200;
+                    result.Message = "Cart is empty!";
+                    return result;
+                }
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Data = count;

@@ -39,17 +39,19 @@ public class AppointmentReminderCheckerService : BackgroundService
         {
             var repo = scope.ServiceProvider.GetRequiredService<IAppointmentRepository>();
             var bus = scope.ServiceProvider.GetRequiredService<IMessageBus>();
-               var vietnamTime = DateTime.UtcNow.AddHours(7);
-               var appointmentReminder = await repo.GetAppointmentReminder(vietnamTime);
-               _logger?.LogInformation($"Found {appointmentReminder.Count} appointment reminders");
-               foreach (var appointment in appointmentReminder)
-               {
+            var vietnamTime = DateTime.UtcNow.AddHours(7);
+            var appointmentReminder = await repo.GetAppointmentReminder(vietnamTime);
+            _logger?.LogInformation($"Found {appointmentReminder.Count} appointment reminders");
+            foreach (var appointment in appointmentReminder)
+            {
                 _logger?.LogInformation($"Sending appointment reminder notification for appointment {appointment.Id}");
                 bus.PublishAppointmentReminderNotification
                 (
                     "APPOINTMENT_REMINDER",
                     appointment.Id
                 );
+                appointment.IsReminderSent = true;
+                await repo.UpdateSentReminder(appointment);
             }
         }
     }
@@ -61,17 +63,19 @@ public class AppointmentReminderCheckerService : BackgroundService
         {
             var repo = scope.ServiceProvider.GetRequiredService<IAppointmentRepository>();
             var bus = scope.ServiceProvider.GetRequiredService<IMessageBus>();
-               var vietnamTime = DateTime.UtcNow.AddHours(7);
-               var appointmentReminder = await repo.GetAppointmentReminder1hours(vietnamTime);
-               _logger?.LogInformation($"Found {appointmentReminder.Count} appointment reminders");
-               foreach (var appointment in appointmentReminder)
-               {
+            var vietnamTime = DateTime.UtcNow.AddHours(7);
+            var appointmentReminder = await repo.GetAppointmentReminder1hours(vietnamTime);
+            _logger?.LogInformation($"Found {appointmentReminder.Count} appointment reminders");
+            foreach (var appointment in appointmentReminder)
+            {
                 _logger?.LogInformation($"Sending appointment reminder notification for appointment {appointment.Id}");
                 bus.PublishAppointmentReminderNotification
                 (
                     "APPOINTMENT_REMINDER_1_HOUR",
                     appointment.Id
                 );
+                appointment.IsReminder1HourSent = true;
+                await repo.UpdateSentReminder(appointment);
             }
         }
     }

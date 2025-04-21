@@ -54,5 +54,9 @@ namespace ProfileManagementAppAPI.Repositories
          //APPOINTMENT REMINDER
          Task<List<Appointment>> GetAppointmentReminder(DateTime currenntDate);
          Task<List<Appointment>> GetAppointmentReminder1hours(DateTime currenntDate);
+         Task UpdateSentReminder(Appointment appointment);
+         Task UpdateSentReminder1hours(Appointment appointment);
+
+         
     }
 }

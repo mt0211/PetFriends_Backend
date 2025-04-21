@@ -31,6 +31,10 @@ public partial class Appointment
 
     public decimal? FinalAmount { get; set; }
 
+    public bool? IsReminderSent { get; set; }
+
+    public bool? IsReminder1HourSent { get; set; }
+
     public virtual ICollection<Activity> Activities { get; set; } = new List<Activity>();
 
     public virtual ICollection<AppointmentClinicService> AppointmentClinicServices { get; set; } = new List<AppointmentClinicService>();

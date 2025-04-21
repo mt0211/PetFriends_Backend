@@ -189,7 +189,7 @@ namespace AccountManagementAPI.Services
                     NewAccount.Email = userAddModel.Email;
                     NewAccount.Address = userAddModel.Address;
                     NewAccount.Role = userAddModel.Role;
-                    NewAccount.AvatarUrl = userAddModel.AvartarURL;
+                    NewAccount.AvatarUrl = userAddModel.AvatarURL;
                     var rawPassword = string.IsNullOrEmpty(userAddModel.Password) ? "123" : userAddModel.Password;
                     var hashedPasswordModel = Encoder.CreateHashPassword(rawPassword);
                     NewAccount.Password = hashedPasswordModel.HashedPassword;
@@ -246,7 +246,7 @@ namespace AccountManagementAPI.Services
                     Address = account.Address,
                     Role = account.Role,
                     Password = account.Password.ToString(),
-                    AvartarURL = account.AvatarUrl,
+                    AvatarURL = account.AvatarUrl,
                 };
                 Result.IsSuccess = true;
                 Result.Code = 200;
@@ -321,7 +321,7 @@ namespace AccountManagementAPI.Services
                 account.Dob = userUpdateModel.Dob;
                 account.Role = userUpdateModel.Role;
                 account.Status = userUpdateModel.Status;
-                account.AvatarUrl = userUpdateModel.AvartarURL;
+                account.AvatarUrl = userUpdateModel.AvatarURL;
 
                 _ = await _repository.Update(account);
                 Result.IsSuccess = true;
