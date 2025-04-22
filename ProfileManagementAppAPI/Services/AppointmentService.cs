@@ -972,6 +972,7 @@ namespace ProfileManagementAppAPI.Services
                     PetName = a.Pet?.Name ?? string.Empty,
                     CreatedAt = a.CreatedAt ?? DateTime.UtcNow,
                     StartAt = a.StartAt ?? DateTime.UtcNow,
+                    LastReview = a.Feedbacks?.FirstOrDefault()?.UpdatedAt ?? a.Feedbacks?.FirstOrDefault()?.CreatedAt,                  
                     Status = a.Status ?? string.Empty,
                     Notes = a.Note ?? string.Empty,
                     TotalAmount = a.TotalAmount ?? 0,

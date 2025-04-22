@@ -123,6 +123,7 @@ public class VerifyService : IVerifyService
             result.IsSuccess = true;
             result.Message = "OTP verified successfully.";
             result.Code = 200;
+            
             _messageBus.PublicUserActivity
                     (
                         "APP_USER_CREATED",

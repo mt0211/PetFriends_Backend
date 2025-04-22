@@ -209,6 +209,7 @@ namespace ProfileManagementAppAPI.Repositories
             .Include(a => a.User)
             .Include(a => a.Pet)
             .Include(a=> a.Feedbacks)
+            .Include(a => a.Feedbacks)
             .Include(a => a.AppointmentClinicServices)
             .ThenInclude(a => a.ClinicService)            
             .Where(a => a.UserId == userId)      
