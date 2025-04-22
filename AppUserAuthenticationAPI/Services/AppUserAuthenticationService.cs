@@ -41,11 +41,18 @@ namespace AppUserAuthenticationAPI.Services
                     Result.Message = "Email is not registered!";
                     return Result;
                 }
-                else if (User.Status != "ACTIVE")
+                else if (User.Status != "ACTIVE" && User.FullName == null)
                 {
                     Result.IsSuccess = false;
                     Result.Code = 400;
                     Result.Message = "Please verify your account";
+                    return Result;
+                }
+                else if (User.Status != "ACTIVE" && User.FullName != null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 400;
+                    Result.Message = "Your account is banned. Please contect with clinic to unban your account";
                     return Result;
                 }
                 else if (User.Role != "USER")
@@ -200,8 +207,6 @@ namespace AppUserAuthenticationAPI.Services
                             UserId = NewUser.Id,
                         };
                         _ = await _otpRepository.Insert(otpVerify);
-
-
                         Result.IsSuccess = true;
                         Result.Code = 200;
                         Result.Message = "Verification email sent successfully!";
@@ -422,11 +427,35 @@ namespace AppUserAuthenticationAPI.Services
                 }
                 user.FullName = userUpdateFullNameandPhoneNumberModel.FullName;
                 _ = await _appUserAuthenticationRepository.Update(user);
+                var userDto = new 
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    FullName = user.FullName,
+                    Status = user.Status,
+                    TypeGroup = user.TypeGroup,
+                    CreatedAt = user.CreatedAt,
+                    LastLoggedIn = user.LastLoggedIn
+                };
                 Result.IsSuccess = true;
-                Result.Data = user;
+                Result.Data = userDto;
                 Result.Code = 200;
                 Result.Message = "Updated full name successfully";
-            
+                   var chatMessage = new ChatMessage
+                        {
+                            Id              = Guid.NewGuid(),
+                            SenderId        = Guid.Parse("4EB49A8F-889A-4A62-8646-D9624EA0F372"),
+                            ReceiverId      = user.Id,
+                            Content         = "Hi, how can I assist you today?",
+                            SentTime        = DateTime.UtcNow.AddHours(7),
+                            IsRead          = false,
+                            MessageType     = "TEXT",
+                            MediaUrl        = null,
+                            CreatedAt       = DateTime.UtcNow.AddHours(7),
+                            IsDeleteForSender   = false,
+                            IsDeleteForReceiver = false
+                        };
+                        await _appUserAuthenticationRepository.CreateChatMessage(chatMessage);
             }
             catch (Exception ex)
             {

@@ -198,6 +198,17 @@ namespace AccountManagementAPI.Services
                     NewAccount.TypeGroup = "First-Time Visitors";
                     
                     _ = await _repository.Insert(NewAccount);
+                    if (!string.IsNullOrWhiteSpace(NewAccount.Email))
+                    {
+                        string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "CreateAccountNotification.html");
+                        string Html = File.ReadAllText(FilePath);
+                        Html = Html.Replace("{{Email}}", NewAccount.Email);
+                        bool EmailSent = await Email.SendEmail(NewAccount.Email, "Welcome to our system", Html);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Email does not exist. Skipping email notification.");
+                    }
                     Result.IsSuccess = true;
                     Result.Code = 200;
                     Result.Data = NewAccount;

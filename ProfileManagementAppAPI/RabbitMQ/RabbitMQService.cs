@@ -19,7 +19,7 @@ public class RabbitMQService : IMessageBus
             Password = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "admin123",
             Port = int.Parse(Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672")
         };
-        // var factory = new ConnectionFactory() { HostName = "localhost" };
+         //var factory = new ConnectionFactory() { HostName = "localhost" };
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
         _channel.ExchangeDeclare(FeedbackExchangeName, ExchangeType.Fanout);

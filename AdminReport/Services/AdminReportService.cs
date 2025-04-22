@@ -159,20 +159,34 @@ namespace AdminReport.Services
 
             try
             {
-                // var UsageLimit = await _repository.GetTopVaccine();
-                // UsageLimit = new TopVaccineResModel
-                // {
-                //     Name = UsageLimit.Name,
-                //     Count = UsageLimit.NumberOfDoses
-                // };
+                var vaccineList = await _repository.GetTopVaccine();
                 
-                result.IsSuccess = true;
-                result.Code = 200;
-              //  result.Data = UsageLimit;
-                result.Message = "Successfully get vaccine usage statistics";
+                if (vaccineList != null && vaccineList.Any())
+                {
+                    // Danh sách đã được sắp xếp từ cao đến thấp trong repository
+                    var topVaccines = vaccineList.Select(v => new TopVaccineResModel
+                    {
+                        Name = v.Name,
+                        Count = v.NumberOfDoses
+                    }).ToList();
+                    
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = topVaccines;
+                    result.Message = "Successfully get vaccine usage statistics";
+                }
+                else
+                {
+                    // Trường hợp không có dữ liệu
+                    result.IsSuccess = true;
+                    result.Code = 200;
+                    result.Data = new List<TopVaccineResModel>();
+                    result.Message = "No vaccine usage data found";
+                }
             }
             catch (Exception ex)
             {
+                result.IsSuccess = false;
                 result.Code = 500;
                 result.ResponseFailed = ex.InnerException != null
                     ? ex.InnerException.Message + "\n" + ex.StackTrace
@@ -180,6 +194,7 @@ namespace AdminReport.Services
             }
             return result;
         }
+
         public async Task<ResultModel> ExportAllReportsToExcel(string token, int year, int? month)
         {
             var result = new ResultModel();
