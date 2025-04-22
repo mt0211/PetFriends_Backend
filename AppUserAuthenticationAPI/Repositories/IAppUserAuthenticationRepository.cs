@@ -12,5 +12,6 @@ namespace AppUserAuthenticationAPI.Repositories
         Task<User> GetUserByPhoneNumber(string phoneNumber);
         Task<int> GetNumberOfAppointment(Guid userId);
          Task UpdateUserTypeGroup(User user);
+         Task CreateChatMessage(ChatMessage chatMessage);
     }
 }

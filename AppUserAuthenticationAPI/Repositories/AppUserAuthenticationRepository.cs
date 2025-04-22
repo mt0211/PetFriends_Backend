@@ -72,5 +72,11 @@ namespace AppUserAuthenticationAPI.Repositories
                _context.Entry(user).Property(u => u.TypeGroup).IsModified = true;
                await _context.SaveChangesAsync();
         }
+
+        public async Task CreateChatMessage(ChatMessage chatMessage)
+        {
+            await _context.ChatMessages.AddAsync(chatMessage);
+            await _context.SaveChangesAsync();
+        }
     }
 }
