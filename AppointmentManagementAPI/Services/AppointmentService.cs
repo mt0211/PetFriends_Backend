@@ -20,7 +20,7 @@ namespace AppointmentManagementAPI.Services
             _appointmentrepository = appointmentrepository;
             _messageBus = messageBus;
         }
-        public async Task<ResultModel> GetAllAppointment(string token, int page, int size)
+        public async Task<ResultModel> GetAllAppointment(string token)
         {
             var result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
@@ -33,11 +33,8 @@ namespace AppointmentManagementAPI.Services
             }
             try
             {
-                if (page <= 0) page = 1;
-                if (size <= 0) size = 10;
-                
-                // Fetch raw data from the repository
-                var appointments = await _appointmentrepository.GetAllApointment(page, size);
+                // Fetch all appointments without pagination
+                var appointments = await _appointmentrepository.GetAllApointment();
 
                 if (!appointments.Any())
                 {
@@ -46,9 +43,6 @@ namespace AppointmentManagementAPI.Services
                     result.Message = "No appointments found";
                     return result;
                 }
-
-                // Get total count from cached method
-                var totalCount = await _appointmentrepository.GetAppointmentCount();
 
                 // Transform entities to DTO
                 var appointmentList = appointments.Select(a => new AppointmentListModel
@@ -62,18 +56,9 @@ namespace AppointmentManagementAPI.Services
                     Status = a.Status
                 }).ToList();
                 
-                // Create pagination model
-                var paginationModel = new PaginationModel<AppointmentListModel>
-                {
-                    Page = page,
-                    TotalRecords = totalCount,
-                    TotalPage = (int)Math.Ceiling(totalCount / (double)size),
-                    ListData = appointmentList
-                };
-
                 result.IsSuccess = true;
                 result.Code = 200;
-                result.Data = paginationModel;
+                result.Data = appointmentList;
                 result.Message = "Successfully retrieved appointments";
             }
             catch (Exception ex)

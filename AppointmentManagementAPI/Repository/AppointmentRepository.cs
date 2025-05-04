@@ -31,10 +31,10 @@ namespace AppointmentManagementAPI.Repository
             _cache = cache;
         }
 
-        public async Task<IEnumerable<dynamic>> GetAllApointment(int page, int pageSize)
+        public async Task<IEnumerable<dynamic>> GetAllApointment()
         {
-            string cacheKey = $"appointments_page{page}_size{pageSize}";
-            
+           string cacheKey = "all_appointments_no_pagination";
+    
             // Kiểm tra timestamp vô hiệu hóa cache
             long? invalidationTimestamp = null;
             _cache.TryGetValue("appointment_cache_invalidation_timestamp", out invalidationTimestamp);
@@ -45,7 +45,7 @@ namespace AppointmentManagementAPI.Repository
                 // So sánh timestamp entry cache với timestamp vô hiệu hóa
                 if (invalidationTimestamp == null || cachedEntry.Created > invalidationTimestamp)
                 {
-                    _logger.LogInformation("Returning cached appointment list for page {Page}, size {Size}", page, pageSize);
+                    _logger.LogInformation("Returning cached appointment list without pagination");
                     return cachedEntry.Data;
                 }
                 
@@ -54,17 +54,13 @@ namespace AppointmentManagementAPI.Repository
             
             try
             {
-                _logger.LogInformation("Cache miss. Fetching appointment list from database for page {Page}, size {Size}", page, pageSize);
+                _logger.LogInformation("Cache miss. Fetching all appointments from database without pagination");
                 
-                // Tối ưu: Tách truy vấn thành 2 phần riêng biệt
-                
-                // 1. Truy vấn chính - chỉ lấy thông tin appointments cơ bản
+                // Truy vấn chính - chỉ lấy thông tin appointments cơ bản
                 var appointmentsQuery = _context.Appointments
                     .AsNoTracking()
                     .OrderByDescending(a => a.CreatedAt)
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .TagWith("GetAllAppointments_Main_Query") // Thêm tag cho dễ theo dõi trong logs
+                    .TagWith("GetAllAppointmentsWithoutPagination_Main_Query")
                     .Select(a => new 
                     {
                         a.Id,
@@ -90,9 +86,7 @@ namespace AppointmentManagementAPI.Repository
                 // Lấy danh sách các ID của appointments đã tìm thấy
                 var appointmentIds = appointments.Select(a => a.Id).ToList();
                 
-                // 2. Truy vấn user/pet names và services trong một lần gộp
-                
-                // 2.1 Lấy user names và pet names
+                // Lấy user names và pet names
                 var userIds = appointments.Where(a => a.UserId.HasValue).Select(a => a.UserId.Value).ToList();
                 var guestUserIds = appointments.Where(a => a.GuestUserId.HasValue).Select(a => a.GuestUserId.Value).ToList();
                 var petIds = appointments.Where(a => a.PetId.HasValue).Select(a => a.PetId.Value).ToList();
@@ -155,7 +149,7 @@ namespace AppointmentManagementAPI.Repository
                     }
                 }
                 
-                // 2.2 Lấy service names cho mỗi appointment
+                // Lấy service names cho mỗi appointment
                 var serviceNameDict = new Dictionary<Guid, List<string>>();
                 
                 var serviceQuery = await _context.AppointmentClinicServices
@@ -176,7 +170,7 @@ namespace AppointmentManagementAPI.Repository
                     serviceNameDict[service.AppointmentId].Add(service.ServiceName);
                 }
                 
-                // 3. Kết hợp kết quả
+                // Kết hợp kết quả
                 var result = appointments.Select(a => new
                 {
                     Id = a.Id,
@@ -209,7 +203,7 @@ namespace AppointmentManagementAPI.Repository
             catch (Exception ex)
             {
                 // Log exception
-                _logger.LogError($"Error in GetAllApointment: {ex.Message}");
+                _logger.LogError($"Error in GetAllAppointmentsWithoutPagination: {ex.Message}");
                 throw;
             }
         }

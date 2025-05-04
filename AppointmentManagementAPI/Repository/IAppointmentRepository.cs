@@ -6,7 +6,7 @@ namespace AppointmentManagementAPI.Repository
 {
     public interface IAppointmentRepository : IRepository<Appointment>
     {
-        Task<IEnumerable<dynamic>> GetAllApointment(int page, int pageSize);
+        Task<IEnumerable<dynamic>> GetAllApointment();
         Task<(string Email, string FullName, string status, DateTime? CreatedAt, DateTime? StartAt, DateTime? EndAt)> GetAppointmentAndUserEmail(Guid AppointmentID);
         Task<IEnumerable<ClinicService>> GetListClinicservices();
         Task<User> GetUserByPhoneNumber(string phonenumber);

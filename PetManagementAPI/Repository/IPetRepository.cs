@@ -16,5 +16,7 @@ namespace PetManagementAPI.Repository
         Task UpdatePetBasicInfo(Guid petId,string name,string gender,string species,string breed,DateTime? dateOfBirth,Guid? userId,string userPhoneNumber,byte vaccinated);
         Task RemoveAllPetVaccinesAsync(Guid petId);
         Task UpdatePetVaccinesAsync(Guid petId, List<Guid> newVaccineIds);
+        Task<User> GetUserById(Guid userId);
+        Task<UserCartItem> GetUserCartItemByPetId(Guid petId);
     }
 }
