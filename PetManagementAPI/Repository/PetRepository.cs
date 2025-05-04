@@ -55,6 +55,32 @@ namespace PetManagementAPI.Repository.PetRepository
             return user;
         }
 
+        public async Task<User> GetUserById(Guid userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return null;
+            }
+            return user;
+        }
+
+        // public async Task<UserCart> GetUserCartByUserId(Guid userId)
+        // {
+        //     var userCart = await _context.UserCarts.FirstOrDefaultAsync(uc => uc.UserId == userId && uc.Status == 0);
+        //     if (userCart == null)
+        //     {
+        //         return null;
+        //     }
+        //     return userCart;
+        // }
+
+        public async Task<UserCartItem> GetUserCartItemByPetId(Guid petId)
+        {
+            return await _context.UserCartItems
+                .FirstOrDefaultAsync(uci => uci.PetId == petId && uci.Cart.Status == 0);
+        }
+
 
         public async Task<IEnumerable<Vaccine>> GetAllVaccine()
         {
@@ -89,6 +115,7 @@ namespace PetManagementAPI.Repository.PetRepository
                     Breed = p.Breed,
                     DateOfBirth = p.DateOfBirth,
                     OwnerName = p.User != null ? p.User.FullName : "N/A",
+                    UserId = p.User.Id,
                     OwnerPhoneNumber = p.UserPhoneNumber,
                     Vaccinated = p.Vaccinated,
                     VaccineNames = _context.UserPetVaccines
@@ -103,22 +130,34 @@ namespace PetManagementAPI.Repository.PetRepository
 
         public async Task DeletePetWithVaccinesAsync(Guid petId)
         {
-            // 1. Xóa các activity liên quan đến Pet này
-            var activities = _context.Activities.Where(a => a.PetId == petId);
-            _context.Activities.RemoveRange(activities);
+             // 1. Find all appointments related to this pet
+        var appointments = await _context.Appointments.Where(a => a.PetId == petId).ToListAsync();
+        
+        foreach (var appointment in appointments)
+        {
+            // 1a. Delete appointment clinic services for each appointment
+            var appointmentServices = _context.AppointmentClinicServices.Where(acs => acs.AppointmentId == appointment.Id);
+            _context.AppointmentClinicServices.RemoveRange(appointmentServices);
+        }
+        
+        // 1b. Now delete the appointments themselves
+        _context.Appointments.RemoveRange(appointments);
 
-            // 2. Xóa các UserPetVaccines liên quan
-            var petVaccines = _context.UserPetVaccines.Where(pv => pv.PetId == petId);
-            _context.UserPetVaccines.RemoveRange(petVaccines);
+        // 2. Delete activities related to this pet
+        var activities = _context.Activities.Where(a => a.PetId == petId);
+        _context.Activities.RemoveRange(activities);
 
-            // 3. Xóa Pet
-            var pet = await _context.Pets.FindAsync(petId);
-            if (pet != null)
-            {
-                _context.Pets.Remove(pet);
-            }
+        // 3. Delete UserPetVaccines and related UserPetVaccineDoses using the existing method
+        await RemoveAllPetVaccinesAsync(petId);
 
-            await _context.SaveChangesAsync();
+        // 4. Delete the Pet
+        var pet = await _context.Pets.FindAsync(petId);
+        if (pet != null)
+        {
+            _context.Pets.Remove(pet);
+        }
+
+        await _context.SaveChangesAsync();
         }
 
         public async Task UpdatePetBasicInfo(
@@ -259,5 +298,7 @@ namespace PetManagementAPI.Repository.PetRepository
                 throw;
             }
         }
+
+       
     }
 }

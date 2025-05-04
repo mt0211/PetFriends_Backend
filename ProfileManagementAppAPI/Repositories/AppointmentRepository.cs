@@ -60,10 +60,16 @@ namespace ProfileManagementAppAPI.Repositories
             return await _context.Feedbacks.FirstOrDefaultAsync(r => r.AppointmentId == appointmentId);
 
         }
-
+        //  _context.UserCarts.Attach(userCart);
+        //     _context.Entry(userCart).Property(c => c.Datebook).IsModified = true;
+        //     _context.Entry(userCart).Property(c => c.Notes).IsModified = true;
+        //     _context.Entry(userCart).Property(c => c.Status).IsModified = true;
         public async Task UpdateReview(Feedback reviewUpdateModel)
         {
-            _context.Feedbacks.Update(reviewUpdateModel);
+          _context.Feedbacks.Attach(reviewUpdateModel);
+          _context.Entry(reviewUpdateModel).Property(c => c.Content).IsModified = true;
+          _context.Entry(reviewUpdateModel).Property(c => c.Rating).IsModified = true;
+          _context.Entry(reviewUpdateModel).Property(c => c.UpdatedAt).IsModified = true;
             await _context.SaveChangesAsync();
         }
         public async Task<dynamic> GetClinicInformation()

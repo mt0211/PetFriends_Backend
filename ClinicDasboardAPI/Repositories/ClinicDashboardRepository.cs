@@ -12,7 +12,7 @@ namespace ClinicDasboardAPI.Repositories
         }
         public async Task<(int userCount, int petCount, decimal totalRevenue, float avgRating)> GetDataCount()
         {
-            var userCount = await _context.Users.CountAsync();
+            var userCount = await _context.Users.Where(u => u.Role == "USER").CountAsync();
             var petCount = await _context.Pets.CountAsync();
             var today = DateTime.Today;
             var startOfMonth = new DateOnly(today.Year, today.Month, 1);

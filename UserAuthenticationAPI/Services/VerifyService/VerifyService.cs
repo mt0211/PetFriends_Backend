@@ -114,8 +114,18 @@ public class VerifyService : IVerifyService
             }
             otp.IsUsed = 1;
             await _otpRepository.Update(otp);
-            user.Status = "ACTIVE";
+            user.Status = "INACTIVE";
             await _userRepository.Update(user);
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ContactAdminVerify.html");
+                string Html = File.ReadAllText(FilePath);
+                bool EmailSent = await Email.SendEmail(email, "Verify account", Html);
+            }
+            else
+            {
+                Console.WriteLine("Email does not exist. Skipping email notification.");
+            }
             result.IsSuccess = true;
             result.Message = "OTP verified successfully.";
             result.Code = 200;

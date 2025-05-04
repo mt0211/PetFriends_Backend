@@ -35,11 +35,18 @@ public class UserService : IUserService
                 Result.Message = "Email is not registered!";
                 return Result;
             }
-            else if (User.Status != "ACTIVE")
+            else if (User.Status == "RESETPASSWORD")
             {
                 Result.IsSuccess = false;
                 Result.Code = 400;
-                Result.Message = "Please verify your account";
+                Result.Message = "Please complete reset your password then login again";
+                return Result;
+            }
+            else if (User.Status == "INACTIVE")
+            {
+                Result.IsSuccess = false;
+                Result.Code = 400;
+                Result.Message = "Your account is not active. Please check your email and contact with admin to activate your account";
                 return Result;
             }
             else if (User.Role != "PARTNER")
@@ -414,7 +421,7 @@ public class UserService : IUserService
             {
                 result.IsSuccess = false;
                 result.Code = 400;
-                result.Message = "Can't login with Google because your account is not active";
+                result.Message = "Can't login with Google because your account is not active. Please contact with admin to activate your account";
                 return result;
             }
             user.LastLoggedIn = DateTime.Now;
@@ -493,12 +500,21 @@ public class UserService : IUserService
                 Email = payload.Email,
                 FullName = payload.Name,
                 AvatarUrl = payload.Picture,
-                Status = "ACTIVE",
+                Status = "INACTIVE",
                 CreatedAt = DateTime.Now,
                 Role = "PARTNER",
                 LastLoggedIn = DateTime.Now
             };
-            
+            if (!string.IsNullOrWhiteSpace(payload.Email))
+            {
+                string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TemplateEmail", "ContactAdminVerify.html");
+                string Html = File.ReadAllText(FilePath);
+                bool EmailSent = await Email.SendEmail(payload.Email, "Verify account", Html);
+            }
+            else
+            {
+                Console.WriteLine("Email does not exist. Skipping email notification.");
+            }
             await _userRepository.Insert(newUser);
             _logger.LogInformation($"Created new user via Google signup: {payload.Email}");
 
@@ -521,7 +537,7 @@ public class UserService : IUserService
             
             result.IsSuccess = true;
             result.Code = 201; // Created
-            result.Message = "Sign up successfully";
+            result.Message = "Sign up successfully with your google account. Please check email and contact with admin to activate your account";
             result.Data = signUpResData;
         }
         catch (InvalidJwtException ex)
