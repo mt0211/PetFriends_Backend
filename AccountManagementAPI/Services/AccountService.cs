@@ -246,22 +246,30 @@ namespace AccountManagementAPI.Services
             {
                 var account = await _repository.Get(AccountID);
 
+                if (account == null)
+                {
+                    Result.IsSuccess = false;
+                    Result.Code = 404; // Not Found
+                    Result.Message = "Account not found";
+                    return Result;
+                }
+
                 var accountDetail = new UserDetailModel
                 {
                     Id = account.Id,
-                    FullName = account.FullName,
-                    PhoneNumber = account.PhoneNumber,
+                    FullName = account.FullName ?? string.Empty,
+                    PhoneNumber = account.PhoneNumber ?? string.Empty,
                     Dob = account.Dob,
-                    Status = account.Status,
-                    Email = account.Email,
-                    Address = account.Address,
-                    Role = account.Role,
-                    Password = account.Password.ToString(),
-                    AvatarURL = account.AvatarUrl,
+                    Status = account.Status ?? string.Empty,
+                    Email = account.Email ?? string.Empty,
+                    Address = account.Address ?? string.Empty,
+                    Role = account.Role ?? string.Empty,
+                    Password = account.Password != null ? account.Password.ToString() : string.Empty,
+                    AvatarURL = account.AvatarUrl ?? string.Empty,
                 };
                 Result.IsSuccess = true;
                 Result.Code = 200;
-                Result.Data = account;
+                Result.Data = accountDetail;
                 Result.Message = "Get account detail successfully!";
 
             }

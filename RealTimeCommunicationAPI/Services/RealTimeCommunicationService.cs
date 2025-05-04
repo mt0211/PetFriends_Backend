@@ -543,7 +543,11 @@ namespace RealTimeCommunicationAPI.Services
                     CallerId = callerId,
                     ReceiverId = receiverId,
                     CallType = callType,
-                    Status = "INITIATED"
+                    CreatedAt = DateTime.UtcNow.AddHours(7),
+                    Status = "INITIATED",
+                    StartTime = DateTime.UtcNow.AddHours(7),
+                    Duration = 0,
+                    EndTime = DateTime.UtcNow.AddHours(7),
                 };
 
                 var createdCall = await _repository.CreateVideoCall(call);
@@ -556,6 +560,7 @@ namespace RealTimeCommunicationAPI.Services
             {
                 Result.IsSuccess = false;
                 Result.Code = 400;
+                Result.Message = $"Failed to initiate call {e.InnerException.Message}";
                 Result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
             }
 
@@ -566,13 +571,16 @@ namespace RealTimeCommunicationAPI.Services
         {
             var Result = new ResultModel();
             var userId = Encoder.DecodeToken(token, "userid");
-            if (!Guid.TryParse(userId, out Guid receiverId))
+                Console.WriteLine($"📥 AcceptVideoCall tokenNNNNNNNNNNNNNNNNNN: {token}");
+                Console.WriteLine($"📤 Decoded userIdDDDDDDDDDDDDDDDDDDDDD: {userId}");
+         if (string.IsNullOrWhiteSpace(userId) || !Guid.TryParse(userId, out Guid receiverId))
             {
                 Result.IsSuccess = false;
                 Result.Code = 400;
-                Result.Message = "Invalid user ID";
+                Result.Message = $"Invalid user ID: {userId}";
                 return Result;
             }
+
 
             try
             {

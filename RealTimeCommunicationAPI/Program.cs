@@ -119,6 +119,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
+
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 // 7. Cấu hình SignalR
 builder.Services.AddSignalR(options =>
 {
@@ -179,7 +181,7 @@ app.Use(async (context, next) =>
 
 // 15. Map SignalR Hubs
 app.MapHub<ChatHub>("/chatHub").RequireCors("AllowClient");
-app.MapHub<VideoHub>("/videoHub");
+app.MapHub<VideoHub>("/videoHub").RequireCors("AllowClient");
 
 
 // 16. Map Controllers

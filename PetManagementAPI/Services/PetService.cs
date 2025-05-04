@@ -245,18 +245,29 @@ namespace PetManagementAPI.Services
             try
             {
                 var pet = await _petRepository.GetPetById(petId);
-                //if (pet == null)
-                //{
-                //    result.IsSuccess = false;
-                //    result.Code = 404; // Not found
-                //    result.Message = "Pet not found.";
-                //    return result;
-                //}
+                if (pet == null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 404; // Not found
+                    result.Message = "Pet not found.";
+                    return result;
+                }
 
-                // Xóa Pet và các bản ghi liên quan trong PetVaccine
+                // Check if pet is in any active cart
+                var cartItem = await _petRepository.GetUserCartItemByPetId(petId);
+                if (cartItem != null)
+                {
+                    result.IsSuccess = false;
+                    result.Code = 400; // Bad request
+                    result.Message = "Cannot delete this pet because it is currently in a shopping cart.";
+                    return result;
+                }
+
+                // If we get here, the pet is not in any cart, so we can proceed with deletion
+                var user = await _petRepository.GetUserById(pet.UserId);
                 await _petRepository.DeletePetWithVaccinesAsync(petId);
 
-                // Thành công
+                // Success
                 result.IsSuccess = true;
                 result.Code = 200;
                 result.Message = "Pet and related vaccines deleted successfully.";
@@ -272,6 +283,7 @@ namespace PetManagementAPI.Services
 
             return result;
         }
+
 
         public async Task<ResultModel> UpdatePet(string token, UpdatePetReqModel petDto)
         {

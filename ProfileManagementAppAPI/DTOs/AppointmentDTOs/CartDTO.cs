@@ -73,6 +73,7 @@ namespace ProfileManagementAppAPI.DTOs.AppointmentDTOs
         public DateTime CreatedAt { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime? LastReview { get; set; }
+        public DateTime? LastUpdatedReview { get; set; }
         public string Status { get; set; }
         public string Notes { get; set; }
         public decimal? TotalAmount { get; set; }

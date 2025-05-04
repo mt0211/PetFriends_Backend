@@ -16,14 +16,14 @@ namespace AppointmentManagementAPI.Controllers
             _appointmentService = appointmentService;
         }
         [HttpGet("appointment-list")]
-        public async Task<IActionResult> GetAppointmentList(int page, int size)
+        public async Task<IActionResult> GetAppointmentList()
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             if (string.IsNullOrEmpty(token))
             {
                 return BadRequest("Unable to retrieve user ID");
             }
-            var result = await _appointmentService.GetAllAppointment(token, page, size);
+            var result = await _appointmentService.GetAllAppointment(token);
             return result.IsSuccess ? Ok(result) : BadRequest(result);
         }
         [HttpPut("update-appointment-status")]
